@@ -91,17 +91,28 @@ export default function AIChat() {
         }),
       });
 
+      const data = (await res.json()) as {
+        reply?: string;
+        error?: string;
+      };
+
       if (!res.ok) {
+        console.warn(
+          "[AIChat] /api/chat 失败，使用兜底:",
+          res.status,
+          data.error ?? data
+        );
         throw new Error("chat_api_failed");
       }
 
-      const data = (await res.json()) as { reply?: string };
       if (!data.reply?.trim()) {
+        console.warn("[AIChat] 回复为空，使用兜底");
         throw new Error("empty_reply");
       }
 
       return data.reply.trim();
-    } catch {
+    } catch (error) {
+      console.warn("[AIChat] 调用千问失败，使用兜底回复", error);
       return getGentleFallbackReply(userText, replyIndex);
     }
   }

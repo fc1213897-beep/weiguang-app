@@ -11,12 +11,19 @@ type ChatRequestBody = {
   history?: ChatHistoryItem[];
 };
 
+/** 通义千问 OpenAI 兼容接口 */
+const QWEN_API_URL =
+  "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
+
 const MAX_HISTORY = 12;
 
 export async function POST(request: NextRequest) {
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.DASHSCOPE_API_KEY;
+    console.log("[chat] DASHSCOPE_API_KEY loaded:", !!apiKey);
+
     if (!apiKey) {
+      console.error("[chat] missing DASHSCOPE_API_KEY");
       return NextResponse.json(
         { error: "missing_api_key" },
         { status: 500 }
@@ -46,52 +53,57 @@ export async function POST(request: NextRequest) {
         content: item.content.trim(),
       }));
 
-    const openaiRes = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          temperature: 0.8,
-          max_tokens: 200,
-          messages: [
-            { role: "system", content: XIAOGUANG_SYSTEM_PROMPT },
-            ...history,
-            { role: "user", content: message },
-          ],
-        }),
-      }
-    );
+    const qwenRes = await fetch(QWEN_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "qwen-plus",
+        temperature: 0.8,
+        max_tokens: 200,
+        messages: [
+          { role: "system", content: XIAOGUANG_SYSTEM_PROMPT },
+          ...history,
+          { role: "user", content: message },
+        ],
+      }),
+    });
 
-    if (!openaiRes.ok) {
-      const errText = await openaiRes.text();
-      console.error("OpenAI API error:", openaiRes.status, errText);
+    console.log("[chat] Qwen API status:", qwenRes.status);
+
+    if (!qwenRes.ok) {
+      const errText = await qwenRes.text();
+      console.error("[chat] Qwen API error:", errText);
       return NextResponse.json(
-        { error: "openai_request_failed" },
+        { error: "qwen_request_failed" },
         { status: 502 }
       );
     }
 
-    const data = (await openaiRes.json()) as {
+    const data = (await qwenRes.json()) as {
       choices?: { message?: { content?: string } }[];
+      error?: { message?: string; code?: string };
     };
 
     const reply = data.choices?.[0]?.message?.content?.trim();
 
     if (!reply) {
+      console.error(
+        "[chat] Qwen empty reply:",
+        JSON.stringify(data)
+      );
       return NextResponse.json(
         { error: "empty_reply" },
         { status: 502 }
       );
     }
 
+    console.log("[chat] Qwen reply ok, length:", reply.length);
     return NextResponse.json({ reply });
   } catch (error) {
-    console.error("Chat API error:", error);
+    console.error("[chat] internal error:", error);
     return NextResponse.json(
       { error: "internal_error" },
       { status: 500 }
