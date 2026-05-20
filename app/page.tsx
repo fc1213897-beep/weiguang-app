@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AIChat from "@/components/AIChat";
 import TaskCard from "@/components/TaskCard";
 
 export default function Home() {
@@ -65,6 +66,8 @@ export default function Home() {
               {tasks.length}
             </p>
           </div>
+
+          <AIChat />
         </aside>
 
         {/* 右侧区域 */}
