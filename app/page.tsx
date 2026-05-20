@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AIChat from "@/components/AIChat";
+import MobileTabNav, { type MobileTabId } from "@/components/MobileTabNav";
 import TaskCard from "@/components/TaskCard";
 import {
   loadFromStorage,
@@ -14,6 +15,7 @@ export default function Home() {
   const [task, setTask] = useState("");
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [storageReady, setStorageReady] = useState(false);
+  const [mobileTab, setMobileTab] = useState<MobileTabId>("tasks");
 
   // 首次进入：客户端挂载后从 localStorage 恢复任务
   useEffect(() => {
@@ -53,10 +55,16 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">
+    <main className="min-h-screen bg-[#FFF7ED] p-4 pb-20 sm:p-6 sm:pb-20 lg:p-8 lg:pb-8">
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-[280px_1fr] lg:gap-6">
-        {/* 左侧区域 */}
-        <aside className="rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
+        {/* 左侧区域：桌面端常显；手机端仅在「小光陪伴」Tab */}
+        <aside
+          className={[
+            "rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6",
+            mobileTab === "companion" ? "block" : "hidden",
+            "lg:block",
+          ].join(" ")}
+        >
           <h1 className="text-2xl font-bold text-orange-500 sm:text-3xl">
             微光 ✨
           </h1>
@@ -89,8 +97,14 @@ export default function Home() {
           <AIChat />
         </aside>
 
-        {/* 右侧区域 */}
-        <section className="rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6 lg:p-8">
+        {/* 右侧区域：桌面端常显；手机端仅在「今日任务」Tab */}
+        <section
+          className={[
+            "rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6 lg:p-8",
+            mobileTab === "tasks" ? "block" : "hidden",
+            "lg:block",
+          ].join(" ")}
+        >
           <h2 className="text-2xl font-bold sm:text-3xl">今日学习计划</h2>
 
           <p className="mt-2 text-sm text-gray-500 sm:mt-3 sm:text-base">
@@ -140,6 +154,8 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      <MobileTabNav active={mobileTab} onChange={setMobileTab} />
     </main>
   );
 }
