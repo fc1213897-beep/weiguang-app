@@ -12,17 +12,24 @@ const [tasks, setTasks] = useState<
 
   function addTask() {
     const value = task.trim();
-console.log(tasks);
     if (!value) return;
 
     setTasks([
-  ...tasks,
-  {
-    text: value,
-    done: false,
-  },
-]);
+      ...tasks,
+      {
+        text: value,
+        done: false,
+      },
+    ]);
     setTask("");
+  }
+
+  function toggleTask(index: number) {
+    setTasks((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, done: !item.done } : item
+      )
+    );
   }
 
   return (
@@ -99,36 +106,15 @@ console.log(tasks);
               </div>
             ) : (
               tasks.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between rounded-2xl bg-orange-50 p-5"
-                >
-                  <span
-  className={`text-lg ${
-    item.done ? "line-through text-gray-400" : ""
-  }`}
->
-  🌙 {item.text}
-</span>
-
-                  <button
-  className={`rounded-full px-3 py-1 text-sm text-white ${
-    item.done ? "bg-green-500" : "bg-orange-400"
-  }`}
-  onClick={() => {
-    const newTasks = [...tasks];
-    newTasks[index].done = !newTasks[index].done;
-    setTasks(newTasks);
-  }}
->
-  {item.done ? "已完成" : "待完成"}
-</button>
-                </div>
+                <TaskCard
+                  key={`${item.text}-${index}`}
+                  text={item.text}
+                  done={item.done}
+                  onToggle={() => toggleTask(index)}
+                />
               ))
             )}
-         
           </div>
-<TaskCard />
           {/* 底部陪伴语 */}
           <div className="mt-8 rounded-2xl bg-gray-50 p-5 text-gray-600">
             小光：
