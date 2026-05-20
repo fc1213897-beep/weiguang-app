@@ -92,10 +92,10 @@ export default function TaskCard({
 
       <div
         className={[
-          "group relative flex items-center justify-between gap-4 overflow-hidden rounded-3xl border p-5",
+          "group relative flex flex-col gap-3 overflow-hidden rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:rounded-3xl sm:p-5",
           "transition-all duration-300 ease-out",
-          "hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-12px_rgba(251,191,136,0.55)]",
-          "hover:border-amber-200/90",
+          "sm:hover:-translate-y-0.5 sm:hover:shadow-[0_10px_28px_-12px_rgba(251,191,136,0.55)]",
+          "sm:hover:border-amber-200/90",
           done
             ? "border-emerald-100/90 bg-gradient-to-br from-emerald-50/80 via-white to-amber-50/40"
             : "border-orange-100/80 bg-gradient-to-br from-orange-50/90 via-[#FFFBF5] to-amber-50/50",
@@ -111,7 +111,7 @@ export default function TaskCard({
           <div className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-orange-200/20 blur-xl" />
         </div>
 
-        <div className="relative flex min-w-0 flex-1 items-center gap-3">
+        <div className="relative flex w-full min-w-0 flex-1 items-start gap-2.5 sm:items-center sm:gap-3">
           <span
             className={[
               "shrink-0 text-xl transition-transform duration-300 group-hover:scale-110",
@@ -126,7 +126,7 @@ export default function TaskCard({
           <span className="relative min-w-0">
             <span
               className={[
-                "block truncate text-lg leading-relaxed transition-colors duration-300",
+                "block break-words text-base leading-relaxed transition-colors duration-300 sm:truncate sm:text-lg",
                 done
                   ? "font-normal text-stone-400"
                   : "font-medium text-stone-700 group-hover:text-stone-800",
@@ -151,8 +151,8 @@ export default function TaskCard({
           onClick={onToggle}
           disabled={!onToggle}
           className={[
-            "relative shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-all duration-300",
-            "group-hover:scale-105",
+            "relative shrink-0 self-end rounded-full px-3.5 py-1.5 text-sm transition-all duration-300 sm:self-auto",
+            "sm:group-hover:scale-105",
             "cursor-pointer disabled:cursor-default",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/80",
             done
