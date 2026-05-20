@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getGentleFallbackReply } from "@/lib/fallback-reply";
 import {
   loadFromStorage,
   saveToStorage,
@@ -9,14 +10,6 @@ import {
   type ChatMessage,
 } from "@/lib/storage";
 
-const DEFAULT_REPLIES = [
-  "今天先完成一个小目标就很好。",
-  "累的话可以慢一点，我们一点点来。",
-  "哪怕只是背 5 个单词，也是在前进。",
-  "不用一下子做到完美，有在努力就够了。",
-  "我在这儿陪你，一步一步来。",
-];
-
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: 0,
@@ -24,28 +17,6 @@ const INITIAL_MESSAGES: ChatMessage[] = [
     text: "嗨，我是小光。有什么想说的，都可以告诉我 ✨",
   },
 ];
-
-function getGentleReply(userText: string, index: number): string {
-  const t = userText;
-
-  if (/累|疲|困|睡/.test(t)) {
-    return "累的话就歇一歇也没关系，缓过来了我们再慢慢开始。";
-  }
-  if (/焦虑|烦|压力|慌|内耗/.test(t)) {
-    return "别急，我们先做眼前这一小步，就已经很好了。";
-  }
-  if (/不想|摆烂|放弃|学不动/.test(t)) {
-    return "那今天先完成一个最小的任务吧，也算是在往前走。";
-  }
-  if (/难|学不会|看不懂|跟不上/.test(t)) {
-    return "难的时候很正常，拆成小一点，就会轻松很多。";
-  }
-  if (/坚持|长期|备考|考研/.test(t)) {
-    return "长期的事本来就需要耐心，你能走到这里已经很棒了。";
-  }
-
-  return DEFAULT_REPLIES[index % DEFAULT_REPLIES.length];
-}
 
 function getNextIdFromMessages(messages: ChatMessage[]): number {
   if (messages.length === 0) return 1;
@@ -57,6 +28,7 @@ export default function AIChat() {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [replyIndex, setReplyIndex] = useState(0);
   const [storageReady, setStorageReady] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const idRef = useRef(1);
 
@@ -98,9 +70,45 @@ export default function AIChat() {
     }
   }, [messages]);
 
-  function sendMessage() {
+  async function fetchAIReply(
+    userText: string,
+    historyMessages: ChatMessage[]
+  ): Promise<string> {
+    const history = historyMessages
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .map((m) => ({
+        role: m.role,
+        content: m.text,
+      }));
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userText,
+          history,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("chat_api_failed");
+      }
+
+      const data = (await res.json()) as { reply?: string };
+      if (!data.reply?.trim()) {
+        throw new Error("empty_reply");
+      }
+
+      return data.reply.trim();
+    } catch {
+      return getGentleFallbackReply(userText, replyIndex);
+    }
+  }
+
+  async function sendMessage() {
     const value = input.trim();
-    if (!value) return;
+    if (!value || isSending) return;
 
     const userMsg: ChatMessage = {
       id: idRef.current++,
@@ -108,22 +116,28 @@ export default function AIChat() {
       text: value,
     };
 
-    const assistantText = getGentleReply(value, replyIndex);
+    const historyBeforeSend = messages;
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsSending(true);
+
+    const assistantText = await fetchAIReply(value, historyBeforeSend);
+
     const assistantMsg: ChatMessage = {
       id: idRef.current++,
       role: "assistant",
       text: assistantText,
     };
 
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setMessages((prev) => [...prev, assistantMsg]);
     setReplyIndex((i) => i + 1);
-    setInput("");
+    setIsSending(false);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      void sendMessage();
     }
   }
 
@@ -165,22 +179,27 @@ export default function AIChat() {
             </div>
           </div>
         ))}
+        {isSending && (
+          <p className="text-xs text-stone-400">小光正在想怎么陪你…</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
-          className="w-full flex-1 rounded-xl border border-orange-100 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-300 sm:text-base"
+          className="w-full flex-1 rounded-xl border border-orange-100 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-300 disabled:opacity-60 sm:text-base"
           placeholder="例如：今天有点累…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          disabled={isSending}
         />
         <button
           type="button"
-          className="w-full shrink-0 rounded-xl bg-orange-400 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-orange-500 sm:w-auto"
-          onClick={sendMessage}
+          className="w-full shrink-0 rounded-xl bg-orange-400 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          onClick={() => void sendMessage()}
+          disabled={isSending}
         >
-          发送
+          {isSending ? "发送中…" : "发送"}
         </button>
       </div>
     </div>
