@@ -102,13 +102,26 @@ console.log(tasks);
                   key={index}
                   className="flex items-center justify-between rounded-2xl bg-orange-50 p-5"
                 >
-                  <span className="text-lg">
-                    🌙 {item.text}
-                  </span>
+                  <span
+  className={`text-lg ${
+    item.done ? "line-through text-gray-400" : ""
+  }`}
+>
+  🌙 {item.text}
+</span>
 
-                  <span className="rounded-full bg-orange-200 px-3 py-1 text-sm text-orange-700">
-                    待完成
-                  </span>
+                  <button
+  className={`rounded-full px-3 py-1 text-sm text-white ${
+    item.done ? "bg-green-500" : "bg-orange-400"
+  }`}
+  onClick={() => {
+    const newTasks = [...tasks];
+    newTasks[index].done = !newTasks[index].done;
+    setTasks(newTasks);
+  }}
+>
+  {item.done ? "已完成" : "待完成"}
+</button>
                 </div>
               ))
             )}
