@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import AIChat from "@/components/AIChat";
+import CharacterModal from "@/components/CharacterModal";
 import MobileTabNav, { type MobileTabId } from "@/components/MobileTabNav";
 import TaskCard from "@/components/TaskCard";
+import TimeGreeting from "@/components/TimeGreeting";
 import {
   loadFromStorage,
   saveToStorage,
@@ -80,10 +82,7 @@ export default function Home() {
               小光
             </p>
 
-            <p className="mt-2 text-sm leading-6 text-gray-600 sm:mt-3 sm:leading-7">
-              今天也慢慢来，
-              不用一下子做到完美。
-            </p>
+            <TimeGreeting className="mt-2 text-sm leading-6 text-gray-600 sm:mt-3 sm:leading-7" />
           </div>
 
           <div className="mt-4 rounded-2xl bg-gray-50 p-3 sm:mt-6 sm:p-4">
@@ -156,6 +155,7 @@ export default function Home() {
       </div>
 
       <MobileTabNav active={mobileTab} onChange={setMobileTab} />
+      <CharacterModal />
     </main>
   );
 }
