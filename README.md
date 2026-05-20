@@ -1,36 +1,267 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 微光（Weiguang）README.md
 
-## Getting Started
+## 一、项目简介
 
-First, run the development server:
+微光（Weiguang）是一款面向长期学习用户的情感陪伴型 AI 学习搭子。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+产品核心并不是传统的任务管理，而是通过 AI 陪伴、轻量学习计划与情绪反馈，帮助用户缓解学习焦虑、降低孤独感，并提升长期坚持感。
+
+微光希望成为用户在深夜学习、自我怀疑与长期奋斗过程中的一个温柔陪伴者。
+
+---
+
+# 二、产品定位
+
+## 产品类型
+
+情感陪伴型 AI 学习工具
+
+---
+
+## 核心关键词
+
+* AI 学习搭子
+* 情感陪伴
+* 低压力学习
+* 长期坚持
+* 学习反馈
+* 温柔鼓励
+
+---
+
+# 三、目标用户
+
+当前阶段主要面向：
+
+* 考研学生
+* 长期备考用户
+* 自律困难用户
+* 容易焦虑或孤独的学习者
+
+---
+
+# 四、用户核心问题
+
+长期学习用户通常存在以下问题：
+
+* 学习过程孤独
+* 容易焦虑和内耗
+* 难以长期坚持
+* 缺少情绪反馈
+* 传统 Todo 工具过于冷冰冰
+* 完不成任务时容易产生挫败感
+
+---
+
+# 五、产品核心理念
+
+微光并不是一个强调效率和 KPI 的工具。
+
+相比于“完成多少任务”，微光更关注：
+
+* 是否有人陪你坚持
+* 是否能够降低心理压力
+* 是否能让用户感受到温柔反馈
+* 是否能够帮助用户长期坚持学习
+
+---
+
+# 六、MVP（V1）功能范围
+
+当前版本仅实现最小核心功能：
+
+## 1. 今日任务
+
+用户可以：
+
+* 添加任务
+* 查看任务
+* 切换完成状态
+
+---
+
+## 2. AI 陪伴区（核心）
+
+展示：
+
+* 鼓励型文案
+* 陪伴式反馈
+* 温柔提醒
+
+未来支持：
+
+* AI 对话
+* 情绪安慰
+* 学习反馈
+
+---
+
+## 3. 学习状态
+
+展示：
+
+* 今日任务数
+* 已完成任务状态
+
+---
+
+# 七、AI 人设定义（重要）
+
+AI 不应像：
+
+* 老师
+* KPI 管理员
+* 打卡监督者
+
+而更应该像：
+
+* 深夜一起学习的搭子
+* 温柔陪伴者
+* 理解焦虑的人
+
+---
+
+## AI 说话风格
+
+### 正确方向
+
+“今天先完成一个小任务就很好。”
+
+“累的话可以慢一点，我们一点点来。”
+
+“哪怕只是背5个单词，也是在前进。”
+
+---
+
+### 避免方向
+
+“请保持自律。”
+
+“你今天效率太低了。”
+
+“必须完成目标。”
+
+---
+
+# 八、页面结构（V1）
+
+## 首页结构
+
+```text
+首页
+├── 左侧 AI 陪伴区
+│   ├── AI 角色
+│   ├── 今日鼓励
+│   └── 学习状态
+│
+└── 右侧任务区
+    ├── 今日任务
+    ├── 添加任务
+    └── 完成状态切换
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# 九、技术栈
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+当前技术方案：
 
-## Learn More
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# 十、开发方式（AI Native）
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+项目采用 AI 协作开发方式：
 
-## Deploy on Vercel
+* 人类负责：
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+  * 产品设计
+  * 需求拆解
+  * Prompt 定义
+  * 功能规划
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* AI 负责：
+
+  * 页面生成
+  * 功能代码生成
+  * UI 辅助开发
+  * 代码优化
+
+---
+
+# 十一、Git 工作流
+
+## 日常开发流程
+
+```bash
+git status
+git add .
+git commit -m "功能说明"
+git push
+```
+
+---
+
+## Git 核心理解
+
+### git commit
+
+本地历史版本存档
+
+---
+
+### git push
+
+同步到 GitHub
+
+---
+
+# 十二、未来规划（Roadmap）
+
+## V0.1
+
+* Todo 功能
+* AI 角色 UI
+* 完成状态切换
+
+---
+
+## V0.2
+
+* 本地存储
+* 刷新不丢数据
+
+---
+
+## V0.3
+
+* AI 对话
+* 情绪陪伴
+
+---
+
+## V0.4
+
+* 学习连续天数
+* AI 主动鼓励
+
+---
+
+## V0.5
+
+* Agent 化学习陪伴
+* 长期记忆
+* 情绪识别
+* 学习节奏分析
+
+---
+
+# 十三、项目目标
+
+微光最终希望实现：
+
+“让长期学习不再那么孤独。”
