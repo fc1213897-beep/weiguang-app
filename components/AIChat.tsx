@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-type Message = {
-  id: number;
-  role: "user" | "assistant";
-  text: string;
-};
+import {
+  loadFromStorage,
+  saveToStorage,
+  STORAGE_KEYS,
+  type AIChatStorage,
+  type ChatMessage,
+} from "@/lib/storage";
 
 const DEFAULT_REPLIES = [
   "今天先完成一个小目标就很好。",
@@ -14,6 +15,14 @@ const DEFAULT_REPLIES = [
   "哪怕只是背 5 个单词，也是在前进。",
   "不用一下子做到完美，有在努力就够了。",
   "我在这儿陪你，一步一步来。",
+];
+
+const INITIAL_MESSAGES: ChatMessage[] = [
+  {
+    id: 0,
+    role: "assistant",
+    text: "嗨，我是小光。有什么想说的，都可以告诉我 ✨",
+  },
 ];
 
 function getGentleReply(userText: string, index: number): string {
@@ -38,18 +47,49 @@ function getGentleReply(userText: string, index: number): string {
   return DEFAULT_REPLIES[index % DEFAULT_REPLIES.length];
 }
 
+function getNextIdFromMessages(messages: ChatMessage[]): number {
+  if (messages.length === 0) return 1;
+  return Math.max(...messages.map((m) => m.id)) + 1;
+}
+
 export default function AIChat() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 0,
-      role: "assistant",
-      text: "嗨，我是小光。有什么想说的，都可以告诉我 ✨",
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [replyIndex, setReplyIndex] = useState(0);
+  const [storageReady, setStorageReady] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const idRef = useRef(1);
+
+  // 首次进入：客户端挂载后从 localStorage 恢复聊天记录
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => {
+      const saved = loadFromStorage<AIChatStorage | null>(
+        STORAGE_KEYS.aiChat,
+        null
+      );
+
+      if (saved?.messages?.length) {
+        setMessages(saved.messages);
+        setReplyIndex(saved.replyIndex ?? 0);
+        idRef.current =
+          saved.nextId ?? getNextIdFromMessages(saved.messages);
+      }
+
+      setStorageReady(true);
+    });
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
+  // 聊天记录变化后写入 localStorage
+  useEffect(() => {
+    if (!storageReady) return;
+
+    saveToStorage<AIChatStorage>(STORAGE_KEYS.aiChat, {
+      messages,
+      replyIndex,
+      nextId: idRef.current,
+    });
+  }, [messages, replyIndex, storageReady]);
 
   useEffect(() => {
     const el = listRef.current;
@@ -62,14 +102,14 @@ export default function AIChat() {
     const value = input.trim();
     if (!value) return;
 
-    const userMsg: Message = {
+    const userMsg: ChatMessage = {
       id: idRef.current++,
       role: "user",
       text: value,
     };
 
     const assistantText = getGentleReply(value, replyIndex);
-    const assistantMsg: Message = {
+    const assistantMsg: ChatMessage = {
       id: idRef.current++,
       role: "assistant",
       text: assistantText,
