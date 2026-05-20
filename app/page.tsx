@@ -94,7 +94,7 @@ console.log(tasks);
             {tasks.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center text-gray-400">
                 还没有任务，
-                先添加一个吧 ✨
+                先添加一两个吧 ✨
               </div>
             ) : (
               tasks.map((item, index) => (
