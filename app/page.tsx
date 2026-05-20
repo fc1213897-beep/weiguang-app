@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import TaskCard from "@/components/TaskCard";
 
 export default function Home() {
  const [task, setTask] = useState("");
@@ -125,8 +126,9 @@ console.log(tasks);
                 </div>
               ))
             )}
+         
           </div>
-
+<TaskCard />
           {/* 底部陪伴语 */}
           <div className="mt-8 rounded-2xl bg-gray-50 p-5 text-gray-600">
             小光：
