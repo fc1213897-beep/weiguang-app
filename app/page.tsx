@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AIChat from "@/components/AIChat";
 import CharacterModal from "@/components/CharacterModal";
 import MobileTabNav, { type MobileTabId } from "@/components/MobileTabNav";
-import TaskCard from "@/components/TaskCard";
+import TaskInput from "@/components/TaskInput";
+import TaskList from "@/components/TaskList";
+import TodoCalendar from "@/components/TodoCalendar";
 import TimeGreeting from "@/components/TimeGreeting";
 import {
   loadFromStorage,
@@ -12,17 +14,46 @@ import {
   STORAGE_KEYS,
   type TaskItem,
 } from "@/lib/storage";
+import {
+  filterTasksByDate,
+  generateTaskId,
+  getPlanTitle,
+  getTodayDateString,
+  normalizeTaskItems,
+} from "@/lib/task-utils";
 
 export default function Home() {
   const [task, setTask] = useState("");
   const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [selectedDate, setSelectedDate] = useState(getTodayDateString);
   const [storageReady, setStorageReady] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTabId>("tasks");
 
-  // 首次进入：客户端挂载后从 localStorage 恢复任务
+  const today = getTodayDateString();
+
+  const datesWithTasks = useMemo(() => {
+    const set = new Set<string>();
+    for (const item of tasks) {
+      set.add(item.date);
+    }
+    return set;
+  }, [tasks]);
+
+  const tasksForSelectedDate = useMemo(
+    () => filterTasksByDate(tasks, selectedDate),
+    [tasks, selectedDate]
+  );
+
+  const todayTaskCount = useMemo(
+    () => filterTasksByDate(tasks, today).length,
+    [tasks, today]
+  );
+
+  // 首次进入：客户端挂载后从 localStorage 恢复任务（兼容旧数据）
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
-      setTasks(loadFromStorage<TaskItem[]>(STORAGE_KEYS.tasks, []));
+      const raw = loadFromStorage<unknown>(STORAGE_KEYS.tasks, []);
+      setTasks(normalizeTaskItems(raw));
       setStorageReady(true);
     });
     return () => cancelAnimationFrame(frameId);
@@ -38,22 +69,37 @@ export default function Home() {
     const value = task.trim();
     if (!value) return;
 
-    setTasks([
-      ...tasks,
+    setTasks((prev) => [
+      ...prev,
       {
+        id: generateTaskId(),
         text: value,
         done: false,
+        date: selectedDate,
       },
     ]);
     setTask("");
   }
 
-  function toggleTask(index: number) {
+  function toggleTask(id: string) {
     setTasks((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, done: !item.done } : item
+      prev.map((item) =>
+        item.id === id ? { ...item, done: !item.done } : item
       )
     );
+  }
+
+  function editTask(id: string, text: string) {
+    const value = text.trim();
+    if (!value) return;
+
+    setTasks((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, text: value } : item))
+    );
+  }
+
+  function deleteTask(id: string) {
+    setTasks((prev) => prev.filter((item) => item.id !== id));
   }
 
   return (
@@ -89,7 +135,7 @@ export default function Home() {
             <p className="text-sm text-gray-500">今日任务数</p>
 
             <p className="mt-1 text-2xl font-bold text-orange-500 sm:mt-2 sm:text-3xl">
-              {tasks.length}
+              {todayTaskCount}
             </p>
           </div>
 
@@ -104,48 +150,36 @@ export default function Home() {
             "lg:block",
           ].join(" ")}
         >
-          <h2 className="text-2xl font-bold sm:text-3xl">今日学习计划</h2>
+          <h2 className="text-2xl font-bold sm:text-3xl">
+            {getPlanTitle(selectedDate)}
+          </h2>
 
           <p className="mt-2 text-sm text-gray-500 sm:mt-3 sm:text-base">
             完成一个小目标，也是在前进。
           </p>
 
-          {/* 输入区域 */}
-          <div className="mt-5 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:gap-4">
-            <input
-              className="w-full flex-1 rounded-2xl border border-gray-200 px-4 py-3 text-base outline-none focus:border-orange-400 sm:px-5 sm:py-4"
-              placeholder="例如：背50个英语单词"
-              value={task}
-              onChange={(e) => setTask(e.target.value)}
+          <div className="mt-5 sm:mt-6">
+            <TodoCalendar
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              datesWithTasks={datesWithTasks}
             />
-
-            <button
-              className="w-full shrink-0 rounded-2xl bg-orange-500 px-6 py-3 text-white transition hover:bg-orange-600 sm:w-auto sm:py-4"
-              onClick={addTask}
-            >
-              添加任务
-            </button>
           </div>
 
-          {/* 任务列表 */}
-          <div className="mt-5 space-y-3 sm:mt-8 sm:space-y-4">
-            {tasks.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-400 sm:p-10 sm:text-base">
-                还没有任务，
-                先添加一两个吧 ✨
-              </div>
-            ) : (
-              tasks.map((item, index) => (
-                <TaskCard
-                  key={`${item.text}-${index}`}
-                  text={item.text}
-                  done={item.done}
-                  onToggle={() => toggleTask(index)}
-                />
-              ))
-            )}
+          <div className="mt-5 sm:mt-8">
+            <TaskInput value={task} onChange={setTask} onAdd={addTask} />
           </div>
-          {/* 底部陪伴语 */}
+
+          <div className="mt-5 sm:mt-8">
+            <TaskList
+              tasks={tasksForSelectedDate}
+              selectedDate={selectedDate}
+              onToggle={toggleTask}
+              onEdit={editTask}
+              onDelete={deleteTask}
+            />
+          </div>
+
           <div className="mt-5 rounded-2xl bg-gray-50 p-4 text-sm leading-6 text-gray-600 sm:mt-8 sm:p-5 sm:text-base sm:leading-normal">
             小光：
             今天不求完美，
