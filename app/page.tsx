@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import AIChat from "@/components/AIChat";
 import CharacterModal from "@/components/CharacterModal";
+import CompanionSidebar from "@/components/CompanionSidebar";
 import MobileTabNav, { type MobileTabId } from "@/components/MobileTabNav";
 import TaskInput from "@/components/TaskInput";
 import TaskList from "@/components/TaskList";
 import TaskStats from "@/components/TaskStats";
 import TodoCalendar from "@/components/TodoCalendar";
-import TimeGreeting from "@/components/TimeGreeting";
 import {
   loadFromStorage,
   saveToStorage,
@@ -30,8 +29,6 @@ export default function Home() {
   const [storageReady, setStorageReady] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTabId>("tasks");
 
-  const today = getTodayDateString();
-
   const datesWithTasks = useMemo(() => {
     const set = new Set<string>();
     for (const item of tasks) {
@@ -43,11 +40,6 @@ export default function Home() {
   const tasksForSelectedDate = useMemo(
     () => filterTasksByDate(tasks, selectedDate),
     [tasks, selectedDate]
-  );
-
-  const todayTaskCount = useMemo(
-    () => filterTasksByDate(tasks, today).length,
-    [tasks, today]
   );
 
   // 首次进入：客户端挂载后从 localStorage 恢复任务（兼容旧数据）
@@ -109,38 +101,16 @@ export default function Home() {
         {/* 左侧区域：桌面端常显；手机端仅在「小光陪伴」Tab */}
         <aside
           className={[
-            "rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6",
-            mobileTab === "companion" ? "block" : "hidden",
-            "lg:block",
+            "flex flex-col rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6 lg:min-h-[32rem]",
+            mobileTab === "companion" ? "flex" : "hidden",
+            "lg:flex",
           ].join(" ")}
         >
-          <h1 className="text-2xl font-bold text-orange-500 sm:text-3xl">
-            微光 ✨
-          </h1>
-
-          <p className="mt-2 text-sm text-gray-500 sm:mt-3">
-            陪你熬过备考的每一天
-          </p>
-
-          <div className="mt-5 rounded-2xl bg-orange-100 p-4 text-center sm:mt-8 sm:rounded-3xl sm:p-6">
-            <div className="text-5xl sm:text-7xl">🌙</div>
-
-            <p className="mt-3 text-lg font-semibold sm:mt-4 sm:text-xl">
-              小光
-            </p>
-
-            <TimeGreeting className="mt-2 text-sm leading-6 text-gray-600 sm:mt-3 sm:leading-7" />
-          </div>
-
-          <div className="mt-4 rounded-2xl bg-gray-50 p-3 sm:mt-6 sm:p-4">
-            <p className="text-sm text-gray-500">今日任务数</p>
-
-            <p className="mt-1 text-2xl font-bold text-orange-500 sm:mt-2 sm:text-3xl">
-              {todayTaskCount}
-            </p>
-          </div>
-
-          <AIChat />
+          <CompanionSidebar
+            tasks={tasksForSelectedDate}
+            selectedDate={selectedDate}
+            className="min-h-0 flex-1"
+          />
         </aside>
 
         {/* 右侧区域：桌面端常显；手机端仅在「今日任务」Tab */}
@@ -151,15 +121,13 @@ export default function Home() {
             "lg:block",
           ].join(" ")}
         >
-          <h2 className="text-2xl font-bold sm:text-3xl">
-            {getPlanTitle(selectedDate)}
-          </h2>
+          <header className="border-b border-orange-50 pb-4">
+            <h2 className="text-2xl font-bold sm:text-3xl">
+              {getPlanTitle(selectedDate)}
+            </h2>
+          </header>
 
-          <p className="mt-2 text-sm text-gray-500 sm:mt-3 sm:text-base">
-            完成一个小目标，也是在前进。
-          </p>
-
-          <div className="mt-5 sm:mt-6">
+          <div className="mt-4 sm:mt-5">
             <TodoCalendar
               selectedDate={selectedDate}
               onSelectDate={setSelectedDate}
@@ -167,18 +135,18 @@ export default function Home() {
             />
           </div>
 
-          <div className="mt-5 sm:mt-6">
+          <div className="mt-4 sm:mt-5">
             <TaskStats
               tasks={tasksForSelectedDate}
               selectedDate={selectedDate}
             />
           </div>
 
-          <div className="mt-5 sm:mt-8">
+          <div className="mt-4 sm:mt-5">
             <TaskInput value={task} onChange={setTask} onAdd={addTask} />
           </div>
 
-          <div className="mt-5 sm:mt-8">
+          <div className="mt-4 sm:mt-5">
             <TaskList
               tasks={tasksForSelectedDate}
               selectedDate={selectedDate}
@@ -188,11 +156,9 @@ export default function Home() {
             />
           </div>
 
-          <div className="mt-5 rounded-2xl bg-gray-50 p-4 text-sm leading-6 text-gray-600 sm:mt-8 sm:p-5 sm:text-base sm:leading-normal">
-            小光：
-            今天不求完美，
-            先完成一个任务就很好。
-          </div>
+          <p className="mt-4 text-center text-xs text-stone-400 sm:mt-6">
+            完成一个小目标，也是在前进。
+          </p>
         </section>
       </div>
 

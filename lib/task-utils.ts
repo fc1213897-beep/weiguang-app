@@ -90,6 +90,23 @@ export function computeTaskStats(tasks: TaskItem[]): TaskStatsSummary {
   return { total, completed, pending };
 }
 
+/** 日期加减天数，返回 YYYY-MM-DD */
+export function addDaysToDateString(dateStr: string, delta: number): string {
+  const parsed = parseDateString(dateStr);
+  if (!parsed) return dateStr;
+  parsed.setDate(parsed.getDate() + delta);
+  return formatDateString(parsed);
+}
+
+const WEEKDAY_NAMES = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+
+/** 选中日期展示文案，如「5月21日 周四」 */
+export function formatSelectedDateDisplay(dateStr: string): string {
+  const parsed = parseDateString(dateStr);
+  if (!parsed) return dateStr;
+  return `${parsed.getMonth() + 1}月${parsed.getDate()}日 ${WEEKDAY_NAMES[parsed.getDay()]}`;
+}
+
 /** 统计范围短标签，用于统计卡片标题 */
 export function getStatsScopeLabel(date: string): string {
   const today = getTodayDateString();

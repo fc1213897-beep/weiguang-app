@@ -23,7 +23,11 @@ function getNextIdFromMessages(messages: ChatMessage[]): number {
   return Math.max(...messages.map((m) => m.id)) + 1;
 }
 
-export default function AIChat() {
+type Props = {
+  className?: string;
+};
+
+export default function AIChat({ className }: Props) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [replyIndex, setReplyIndex] = useState(0);
@@ -153,20 +157,22 @@ export default function AIChat() {
   }
 
   return (
-    <div className="mt-4 flex flex-col rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/60 to-[#FFFBF5] p-3 sm:mt-6 sm:p-4">
-      <div className="mb-3 flex items-center gap-2">
+    <div
+      className={[
+        "flex flex-col rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/60 to-[#FFFBF5] p-3 sm:p-4",
+        className ?? "mt-4 sm:mt-6",
+      ].join(" ")}
+    >
+      <div className="mb-3 shrink-0 flex items-center gap-2">
         <span className="text-lg" aria-hidden>
           💬
         </span>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-stone-700">和小光聊聊</p>
-          <p className="text-xs text-stone-500">说说今天的心情吧</p>
-        </div>
+        <p className="text-sm font-semibold text-stone-700">和小光聊聊</p>
       </div>
 
       <div
         ref={listRef}
-        className="mb-3 max-h-44 space-y-2.5 overflow-y-auto rounded-xl bg-white/70 p-2.5 sm:max-h-52 sm:p-3"
+        className="mb-3 min-h-[8.5rem] flex-1 space-y-2.5 overflow-y-auto rounded-xl bg-white/70 p-2.5 max-h-48 sm:max-h-56 lg:max-h-64 sm:p-3"
       >
         {messages.map((msg) => (
           <div
@@ -195,7 +201,7 @@ export default function AIChat() {
         )}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="shrink-0 flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
           className="w-full flex-1 rounded-xl border border-orange-100 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-300 disabled:opacity-60 sm:text-base"
           placeholder="例如：今天有点累…"
