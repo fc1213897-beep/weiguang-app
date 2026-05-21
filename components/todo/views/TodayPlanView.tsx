@@ -12,7 +12,7 @@ import {
 import { useTodoSelectors } from "@/hooks/useTodoSelectors";
 import { useTodoStore } from "@/store/todoStore";
 
-/** 桌面端：今日计划工作台 */
+/** 桌面端：今日计划 — 列表为主，创建区次要 */
 export default function TodayPlanView() {
   const { selectedDate, datesWithTasks } = useTodoSelectors();
   const setSelectedDate = useTodoStore((s) => s.setSelectedDate);
@@ -30,19 +30,28 @@ export default function TodayPlanView() {
         </p>
       </header>
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_280px]">
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="min-w-0 space-y-5">
           <TodoCalendar
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
             datesWithTasks={datesWithTasks}
+            defaultExpanded
           />
           <TaskList />
         </div>
-        <div className="min-w-0 space-y-5">
+
+        <aside className="min-w-0 space-y-4 lg:sticky lg:top-0 lg:self-start">
           <TaskStats variant="companion" />
-          <PlanCreateForm variant="desktop" showSuggestionBlock />
-        </div>
+          <details className="rounded-2xl border border-orange-100/70 bg-orange-50/30 open:shadow-sm">
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-orange-700 marker:content-none [&::-webkit-details-marker]:hidden">
+              ＋ 新建学习计划（展开填写）
+            </summary>
+            <div className="border-t border-orange-100/60 px-3 pb-3 pt-1">
+              <PlanCreateForm variant="desktop" showSuggestionBlock={false} />
+            </div>
+          </details>
+        </aside>
       </div>
     </div>
   );

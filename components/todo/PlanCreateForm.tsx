@@ -15,12 +15,15 @@ type Props = {
   variant?: "mobile" | "desktop";
   onCreated?: () => void;
   showSuggestionBlock?: boolean;
+  /** 为 false 时由弹窗底栏提交（避免按钮被遮挡） */
+  showSubmitButton?: boolean;
 };
 
 export default function PlanCreateForm({
   variant = "mobile",
   onCreated,
   showSuggestionBlock = true,
+  showSubmitButton = true,
 }: Props) {
   const planDraft = useTodoStore((s) => s.planDraft);
   const setPlanDraft = useTodoStore((s) => s.setPlanDraft);
@@ -204,13 +207,19 @@ export default function PlanCreateForm({
           )}
         </div>
 
-        <Button
-          fullWidth
-          className={isDesktop ? "mt-4 max-w-xs rounded-2xl py-3" : "mt-5 rounded-2xl py-3 text-base"}
-          onClick={handleCreate}
-        >
-          {isDesktop ? "创建计划" : "放进今日计划 ✨"}
-        </Button>
+        {showSubmitButton && (
+          <Button
+            fullWidth
+            className={
+              isDesktop
+                ? "mt-4 max-w-xs rounded-2xl py-3"
+                : "mt-5 rounded-2xl py-3 text-base"
+            }
+            onClick={handleCreate}
+          >
+            {isDesktop ? "创建计划" : "放进今日计划 ✨"}
+          </Button>
+        )}
       </div>
     </>
   );

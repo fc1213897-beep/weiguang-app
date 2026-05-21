@@ -15,6 +15,8 @@ type Props = {
   onSelectDate: (date: string) => void;
   /** 有任务的日期集合，用于日历上显示小圆点 */
   datesWithTasks?: Set<string>;
+  /** 手机端默认 false 收起，桌面端可 true */
+  defaultExpanded?: boolean;
 };
 
 const WEEKDAY_LABELS = ["日", "一", "二", "三", "四", "五", "六"];
@@ -23,12 +25,13 @@ export default function TodoCalendar({
   selectedDate,
   onSelectDate,
   datesWithTasks,
+  defaultExpanded = false,
 }: Props) {
   const today = getTodayDateString();
   const parsedSelected = parseDateString(selectedDate);
   const initialView = parsedSelected ?? new Date();
 
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const [viewYear, setViewYear] = useState(initialView.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialView.getMonth());
 
