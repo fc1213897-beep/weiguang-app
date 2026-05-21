@@ -1,5 +1,11 @@
 import { create } from "zustand";
 import { createDefaultPlanDraft } from "@/lib/task-plan";
+import {
+  createTask as createCloudTask,
+  deleteTask as deleteCloudTask,
+  updateTask as updateCloudTask,
+} from "@/lib/supabase/tasks";
+import { taskItemToCreateInput, taskRowToTaskItem } from "@/lib/task-cloud-map";
 import type { PlanDraft, TaskItem } from "@/types/task";
 import {
   generateTaskId,
@@ -12,11 +18,16 @@ type TodoState = {
   tasks: TaskItem[];
   planDraft: PlanDraft;
   storageReady: boolean;
+  /** 已登录时走 Supabase，不写 localStorage */
+  syncEnabled: boolean;
   setSelectedDate: (date: string) => void;
   setPlanDraft: (patch: Partial<PlanDraft>) => void;
   resetPlanDraft: () => void;
   setTasks: (tasks: TaskItem[]) => void;
   setStorageReady: (ready: boolean) => void;
+  setSyncEnabled: (enabled: boolean) => void;
+  /** 用云端数据替换某一天的本地任务列表 */
+  mergeTasksForDate: (date: string, items: TaskItem[]) => void;
   addTask: () => boolean;
   addTaskFromDraft: (draft: PlanDraft, options?: { useSelectedDate?: boolean }) => boolean;
   toggleTask: (id: string) => void;
@@ -29,6 +40,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
   tasks: [],
   planDraft: createDefaultPlanDraft(getTodayDateString()),
   storageReady: false,
+  syncEnabled: false,
 
   setSelectedDate: (date) =>
     set((s) => ({
@@ -46,31 +58,52 @@ export const useTodoStore = create<TodoState>((set, get) => ({
 
   setTasks: (tasks) => set({ tasks }),
   setStorageReady: (ready) => set({ storageReady: ready }),
+  setSyncEnabled: (enabled) => set({ syncEnabled: enabled }),
+
+  mergeTasksForDate: (date, items) =>
+    set((s) => ({
+      tasks: [...s.tasks.filter((t) => t.date !== date), ...items],
+    })),
 
   addTaskFromDraft: (draft, options) => {
     const value = draft.text.trim();
     if (!value) return false;
-    const { selectedDate, tasks } = get();
+    const { selectedDate, tasks, syncEnabled } = get();
     const taskDate =
       options?.useSelectedDate || !draft.date || !isValidDateString(draft.date)
         ? selectedDate
         : draft.date;
 
-    set({
-      tasks: [
-        ...tasks,
-        {
-          id: generateTaskId(),
-          text: value,
-          done: false,
-          date: taskDate,
-          category: draft.category,
-          priority: draft.priority,
-          pomodoroMinutes: draft.pomodoroMinutes,
-          note: draft.note?.trim() ?? "",
-        },
-      ],
-    });
+    const optimistic: TaskItem = {
+      id: generateTaskId(),
+      text: value,
+      done: false,
+      date: taskDate,
+      category: draft.category,
+      priority: draft.priority,
+      pomodoroMinutes: draft.pomodoroMinutes,
+      note: draft.note?.trim() ?? "",
+    };
+
+    set({ tasks: [...tasks, optimistic] });
+
+    if (syncEnabled) {
+      void (async () => {
+        const res = await createCloudTask(taskItemToCreateInput(optimistic));
+        if (res.data) {
+          const saved = taskRowToTaskItem(res.data);
+          set((s) => ({
+            tasks: s.tasks.map((t) => (t.id === optimistic.id ? saved : t)),
+          }));
+        } else {
+          set((s) => ({
+            tasks: s.tasks.filter((t) => t.id !== optimistic.id),
+          }));
+          console.error("[todo sync] createTask", res.error);
+        }
+      })();
+    }
+
     return true;
   },
 
@@ -81,12 +114,21 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     return ok;
   },
 
-  toggleTask: (id) =>
+  toggleTask: (id) => {
+    const item = get().tasks.find((t) => t.id === id);
+    if (!item) return;
+    const nextDone = !item.done;
     set((s) => ({
-      tasks: s.tasks.map((item) =>
-        item.id === id ? { ...item, done: !item.done } : item
+      tasks: s.tasks.map((t) =>
+        t.id === id ? { ...t, done: nextDone } : t
       ),
-    })),
+    }));
+    if (get().syncEnabled) {
+      void updateCloudTask(id, { completed: nextDone }).then((res) => {
+        if (res.error) console.error("[todo sync] updateTask", res.error);
+      });
+    }
+  },
 
   editTask: (id, text) => {
     const value = text.trim();
@@ -96,8 +138,19 @@ export const useTodoStore = create<TodoState>((set, get) => ({
         item.id === id ? { ...item, text: value } : item
       ),
     }));
+    if (get().syncEnabled) {
+      void updateCloudTask(id, { title: value }).then((res) => {
+        if (res.error) console.error("[todo sync] updateTask", res.error);
+      });
+    }
   },
 
-  deleteTask: (id) =>
-    set((s) => ({ tasks: s.tasks.filter((item) => item.id !== id) })),
+  deleteTask: (id) => {
+    set((s) => ({ tasks: s.tasks.filter((item) => item.id !== id) }));
+    if (get().syncEnabled) {
+      void deleteCloudTask(id).then((res) => {
+        if (res.error) console.error("[todo sync] deleteTask", res.error);
+      });
+    }
+  },
 }));
