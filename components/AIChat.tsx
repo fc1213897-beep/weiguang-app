@@ -172,7 +172,7 @@ export default function AIChat({ className }: Props) {
 
       <div
         ref={listRef}
-        className="mb-3 min-h-[8.5rem] flex-1 space-y-2.5 overflow-y-auto rounded-xl bg-white/70 p-2.5 max-h-48 sm:max-h-56 lg:max-h-64 sm:p-3"
+        className="mb-3 min-h-[8.5rem] flex-1 space-y-2.5 overflow-y-auto rounded-xl bg-white/70 p-2.5 max-h-48 sm:max-h-56 sm:p-3 lg:max-h-none lg:min-h-[18rem]"
       >
         {messages.map((msg) => (
           <div
@@ -181,7 +181,7 @@ export default function AIChat({ className }: Props) {
           >
             <div
               className={[
-                "max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed sm:max-w-[85%]",
+                "max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed sm:max-w-[85%] lg:max-w-[90%]",
                 msg.role === "user"
                   ? "rounded-br-md bg-orange-400 text-white"
                   : "rounded-bl-md bg-amber-50 text-stone-700 ring-1 ring-amber-100/80",
@@ -201,7 +201,7 @@ export default function AIChat({ className }: Props) {
         )}
       </div>
 
-      <div className="shrink-0 flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="shrink-0 flex flex-col gap-2 lg:flex-col lg:gap-2.5 xl:flex-row xl:items-center">
         <input
           className="w-full flex-1 rounded-xl border border-orange-100 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-300 disabled:opacity-60 sm:text-base"
           placeholder="例如：今天有点累…"
