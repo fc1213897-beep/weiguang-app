@@ -6,6 +6,7 @@ import CharacterModal from "@/components/CharacterModal";
 import MobileTabNav, { type MobileTabId } from "@/components/MobileTabNav";
 import TaskInput from "@/components/TaskInput";
 import TaskList from "@/components/TaskList";
+import TaskStats from "@/components/TaskStats";
 import TodoCalendar from "@/components/TodoCalendar";
 import TimeGreeting from "@/components/TimeGreeting";
 import {
@@ -163,6 +164,13 @@ export default function Home() {
               selectedDate={selectedDate}
               onSelectDate={setSelectedDate}
               datesWithTasks={datesWithTasks}
+            />
+          </div>
+
+          <div className="mt-5 sm:mt-6">
+            <TaskStats
+              tasks={tasksForSelectedDate}
+              selectedDate={selectedDate}
             />
           </div>
 

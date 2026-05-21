@@ -75,6 +75,32 @@ export function filterTasksByDate(
   return tasks.filter((item) => item.date === date);
 }
 
+/** 任务统计摘要 */
+export type TaskStatsSummary = {
+  total: number;
+  completed: number;
+  pending: number;
+};
+
+/** 根据任务列表计算统计（基于真实 tasks 数据） */
+export function computeTaskStats(tasks: TaskItem[]): TaskStatsSummary {
+  const total = tasks.length;
+  const completed = tasks.filter((item) => item.done).length;
+  const pending = total - completed;
+  return { total, completed, pending };
+}
+
+/** 统计范围短标签，用于统计卡片标题 */
+export function getStatsScopeLabel(date: string): string {
+  const today = getTodayDateString();
+  if (date === today) return "今日";
+
+  const parsed = parseDateString(date);
+  if (!parsed) return "当日";
+
+  return `${parsed.getMonth() + 1}月${parsed.getDate()}日`;
+}
+
 /** 选中日期对应的标题文案 */
 export function getPlanTitle(date: string): string {
   const today = getTodayDateString();
