@@ -4,25 +4,8 @@ export const STORAGE_KEYS = {
   aiChat: "weiguang-ai-chat",
 } as const;
 
-export type TaskItem = {
-  id: string;
-  text: string;
-  done: boolean;
-  /** 任务归属日期，格式 YYYY-MM-DD */
-  date: string;
-};
-
-export type ChatMessage = {
-  id: number;
-  role: "user" | "assistant";
-  text: string;
-};
-
-export type AIChatStorage = {
-  messages: ChatMessage[];
-  replyIndex: number;
-  nextId: number;
-};
+export type { TaskItem } from "@/types/task";
+export type { ChatMessage, AIChatStorage } from "@/types/chat";
 
 /** 从 localStorage 读取，失败或不存在时返回 fallback */
 export function loadFromStorage<T>(key: string, fallback: T): T {

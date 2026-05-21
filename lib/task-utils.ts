@@ -1,4 +1,4 @@
-import type { TaskItem } from "@/lib/storage";
+import type { TaskItem } from "@/types/task";
 
 /** 格式化为 YYYY-MM-DD */
 export function formatDateString(date: Date): string {
