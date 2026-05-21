@@ -1,5 +1,6 @@
 "use client";
 
+import MobileAuthPanel from "@/components/auth/MobileAuthPanel";
 import CharacterModal from "@/components/companion/CharacterModal";
 import ChatPanel from "@/components/chat/ChatPanel";
 import DesktopSidebar from "@/components/layout/DesktopSidebar";
@@ -61,6 +62,7 @@ export default function AppShell() {
 
         {/* 手机 */}
         <div className="mx-auto w-full min-w-0 max-w-7xl lg:hidden">
+          <MobileAuthPanel />
           <MobileTaskView />
           <MobileCompanionView />
         </div>

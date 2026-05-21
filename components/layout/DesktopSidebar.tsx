@@ -1,5 +1,6 @@
 "use client";
 
+import AuthStatusBadge from "@/components/auth/AuthStatusBadge";
 import type { DesktopNavId } from "@/types/ui";
 import { useUIStore } from "@/store/uiStore";
 
@@ -48,9 +49,14 @@ export default function DesktopSidebar() {
         })}
       </nav>
 
-      <p className="mt-auto px-2 pb-2 text-center text-xs text-stone-400">
-        陪你熬过备考的每一天
-      </p>
+      <div className="mt-auto border-t border-orange-100/60 px-1 pt-3">
+        <AuthStatusBadge
+          onOpenLogin={() => setDesktopNav("settings")}
+        />
+        <p className="mt-2 px-2 pb-2 text-center text-xs text-stone-400">
+          陪你熬过备考的每一天
+        </p>
+      </div>
     </aside>
   );
 }
