@@ -13,6 +13,7 @@ type Props = {
   category?: TaskCategory;
   priority?: TaskPriority;
   pomodoroMinutes?: number;
+  note?: string;
   onToggle?: () => void;
   onSave?: (text: string) => void;
   onDelete?: () => void;
@@ -24,6 +25,7 @@ export default function TaskCard({
   category = "study",
   priority = "medium",
   pomodoroMinutes = 0,
+  note = "",
   onToggle,
   onSave,
   onDelete,
@@ -237,6 +239,11 @@ export default function TaskCard({
                       </span>
                     )}
                   </span>
+                )}
+                {!isEditing && note.trim() && (
+                  <p className="mt-1.5 text-xs leading-relaxed text-stone-400">
+                    {note}
+                  </p>
                 )}
                 {done && (
                   <span

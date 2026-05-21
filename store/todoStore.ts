@@ -1,7 +1,11 @@
 import { create } from "zustand";
-import { DEFAULT_PLAN_DRAFT } from "@/lib/task-plan";
+import { createDefaultPlanDraft } from "@/lib/task-plan";
 import type { PlanDraft, TaskItem } from "@/types/task";
-import { generateTaskId, getTodayDateString } from "@/lib/task-utils";
+import {
+  generateTaskId,
+  getTodayDateString,
+  isValidDateString,
+} from "@/lib/task-utils";
 
 type TodoState = {
   selectedDate: string;
@@ -14,7 +18,7 @@ type TodoState = {
   setTasks: (tasks: TaskItem[]) => void;
   setStorageReady: (ready: boolean) => void;
   addTask: () => boolean;
-  addTaskFromDraft: (draft: PlanDraft) => boolean;
+  addTaskFromDraft: (draft: PlanDraft, options?: { useSelectedDate?: boolean }) => boolean;
   toggleTask: (id: string) => void;
   editTask: (id: string, text: string) => void;
   deleteTask: (id: string) => void;
@@ -23,20 +27,35 @@ type TodoState = {
 export const useTodoStore = create<TodoState>((set, get) => ({
   selectedDate: getTodayDateString(),
   tasks: [],
-  planDraft: { ...DEFAULT_PLAN_DRAFT },
+  planDraft: createDefaultPlanDraft(getTodayDateString()),
   storageReady: false,
 
-  setSelectedDate: (date) => set({ selectedDate: date }),
+  setSelectedDate: (date) =>
+    set((s) => ({
+      selectedDate: date,
+      planDraft: { ...s.planDraft, date },
+    })),
+
   setPlanDraft: (patch) =>
     set((s) => ({ planDraft: { ...s.planDraft, ...patch } })),
-  resetPlanDraft: () => set({ planDraft: { ...DEFAULT_PLAN_DRAFT } }),
+
+  resetPlanDraft: () =>
+    set((s) => ({
+      planDraft: createDefaultPlanDraft(s.selectedDate),
+    })),
+
   setTasks: (tasks) => set({ tasks }),
   setStorageReady: (ready) => set({ storageReady: ready }),
 
-  addTaskFromDraft: (draft) => {
+  addTaskFromDraft: (draft, options) => {
     const value = draft.text.trim();
     if (!value) return false;
     const { selectedDate, tasks } = get();
+    const taskDate =
+      options?.useSelectedDate || !draft.date || !isValidDateString(draft.date)
+        ? selectedDate
+        : draft.date;
+
     set({
       tasks: [
         ...tasks,
@@ -44,10 +63,11 @@ export const useTodoStore = create<TodoState>((set, get) => ({
           id: generateTaskId(),
           text: value,
           done: false,
-          date: selectedDate,
+          date: taskDate,
           category: draft.category,
           priority: draft.priority,
           pomodoroMinutes: draft.pomodoroMinutes,
+          note: draft.note?.trim() ?? "",
         },
       ],
     });
@@ -57,7 +77,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
   addTask: () => {
     const { planDraft } = get();
     const ok = get().addTaskFromDraft(planDraft);
-    if (ok) set({ planDraft: { ...DEFAULT_PLAN_DRAFT } });
+    if (ok) get().resetPlanDraft();
     return ok;
   },
 

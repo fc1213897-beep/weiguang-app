@@ -74,6 +74,7 @@ export function normalizeTaskItems(raw: unknown): TaskItem[] {
       category: normalizeCategory(record.category),
       priority: normalizePriority(record.priority),
       pomodoroMinutes: normalizePomodoro(record.pomodoroMinutes),
+      note: typeof record.note === "string" ? record.note : "",
     });
   }
 

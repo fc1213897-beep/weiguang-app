@@ -13,7 +13,9 @@ export default function PlanQuickEntry() {
   const addTaskFromDraft = useTodoStore((s) => s.addTaskFromDraft);
 
   function handleXiaoguangQuick() {
-    addTaskFromDraft(getRandomXiaoguangSuggestion());
+    addTaskFromDraft(getRandomXiaoguangSuggestion(), {
+      useSelectedDate: true,
+    });
   }
 
   return (
@@ -40,7 +42,12 @@ export default function PlanQuickEntry() {
           <button
             key={preset.text}
             type="button"
-            onClick={() => addTaskFromDraft(preset)}
+            onClick={() =>
+              addTaskFromDraft(
+                { ...preset, date: "", note: "" },
+                { useSelectedDate: true }
+              )
+            }
             className="rounded-full bg-white px-3 py-1.5 text-xs text-stone-600 ring-1 ring-orange-100/80 transition hover:bg-orange-100/60 hover:text-orange-700 sm:text-sm"
           >
             {preset.text.includes("单词")

@@ -2,14 +2,19 @@
 
 import CharacterModal from "@/components/companion/CharacterModal";
 import ChatPanel from "@/components/chat/ChatPanel";
-import CompanionRail from "@/components/companion/CompanionRail";
+import DesktopSidebar from "@/components/layout/DesktopSidebar";
+import DesktopWorkbench from "@/components/layout/DesktopWorkbench";
+import MobileCompanionView from "@/components/layout/MobileCompanionView";
 import MobileTabNav from "@/components/layout/MobileTabNav";
-import TaskPanel from "@/components/todo/TaskPanel";
+import MobileTaskView from "@/components/layout/MobileTaskView";
 import { MotionStyles } from "@/components/ui/motion-styles";
 import { panelClass } from "@/lib/tokens";
 import { useUIStore } from "@/store/uiStore";
 
-/** 三栏工作台布局 + 手机 Tab */
+/**
+ * 桌面端：导航 + 工作台 + 右侧聊天
+ * 手机端：Tab 切换轻量视图
+ */
 export default function AppShell() {
   const mobileTab = useUIStore((s) => s.mobileTab);
 
@@ -17,61 +22,55 @@ export default function AppShell() {
     <>
       <MotionStyles />
       <main
-        className={`wg-page-in min-h-screen overflow-x-hidden bg-[#FFF7ED] p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:p-8 lg:pb-8`}
+        className={[
+          "wg-page-in min-h-screen bg-[#FFF7ED] p-4 sm:p-6",
+          "max-lg:pb-[calc(5.5rem+env(safe-area-inset-bottom))]",
+          "lg:p-6 lg:pb-6 xl:p-8",
+        ].join(" ")}
       >
-        <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[minmax(200px,240px)_minmax(0,1fr)_minmax(300px,400px)] lg:items-start lg:gap-5 xl:max-w-[88rem] xl:grid-cols-[240px_minmax(0,1fr)_400px] xl:gap-6">
-          <aside
-            className={[
-              panelClass,
-              "hidden flex-col lg:col-start-1 lg:row-start-1 lg:flex lg:sticky lg:top-8 lg:min-h-[calc(100vh-4rem)]",
-            ].join(" ")}
-          >
-            <CompanionRail variant="desktop" />
-          </aside>
+        {/* 桌面：学习工作台 */}
+        <div className="mx-auto hidden min-h-[calc(100vh-3rem)] w-full min-w-0 max-w-[88rem] gap-5 lg:grid lg:grid-cols-[200px_minmax(0,1fr)_minmax(300px,360px)]">
+          <div className={[panelClass, "flex flex-col lg:sticky lg:top-6 lg:self-start lg:p-4"].join(" ")}>
+            <DesktopSidebar />
+          </div>
 
-          <section
-            className={[
-              panelClass,
-              "lg:col-start-2 lg:row-start-1 lg:overflow-visible lg:p-7 lg:shadow-md",
-              mobileTab === "tasks" ? "block" : "hidden",
-              "lg:block",
-            ].join(" ")}
-          >
-            <TaskPanel />
+          <section className={[panelClass, "min-w-0 lg:p-6 lg:shadow-md"].join(" ")}>
+            <DesktopWorkbench />
           </section>
 
           <aside
             className={[
               panelClass,
-              "hidden min-w-0 flex-col lg:col-start-3 lg:row-start-1 lg:flex lg:sticky lg:top-8 lg:min-h-[calc(100vh-4rem)] lg:p-5",
+              "flex min-w-0 flex-col lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:p-4",
             ].join(" ")}
           >
             <ChatPanel />
           </aside>
-
-          <aside
-            className={[
-              panelClass,
-              "w-full flex-col gap-3 lg:hidden",
-              mobileTab === "companion" ? "flex" : "hidden",
-            ].join(" ")}
-          >
-            <CompanionRail variant="mobile" />
-            <div className="min-w-0 border-t border-orange-100/60 pt-3">
-              <p className="mb-2 text-sm font-semibold text-stone-700">
-                和小光聊聊
-              </p>
-              <ChatPanel showHeader={false} />
-            </div>
-            <p className="pb-1 text-center text-xs text-stone-400">
-              陪你熬过备考的每一天
-            </p>
-          </aside>
         </div>
 
-        <MobileTabNav />
-        <CharacterModal />
+        {/* 手机：Tab 视图 */}
+        <div className="mx-auto w-full min-w-0 max-w-7xl overflow-x-hidden lg:hidden">
+          <div
+            className={[
+              panelClass,
+              mobileTab === "tasks" ? "block" : "hidden",
+            ].join(" ")}
+          >
+            <MobileTaskView />
+          </div>
+          <div
+            className={[
+              panelClass,
+              mobileTab === "companion" ? "block" : "hidden",
+            ].join(" ")}
+          >
+            <MobileCompanionView />
+          </div>
+        </div>
       </main>
+
+      <MobileTabNav />
+      <CharacterModal />
     </>
   );
 }

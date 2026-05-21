@@ -14,6 +14,8 @@ export type TaskItem = {
   priority: TaskPriority;
   /** 番茄钟分钟数，0 表示未设置 */
   pomodoroMinutes: number;
+  /** 备注，可选 */
+  note: string;
 };
 
 /** 创建面板草稿 */
@@ -22,4 +24,6 @@ export type PlanDraft = {
   category: TaskCategory;
   priority: TaskPriority;
   pomodoroMinutes: number;
+  date: string;
+  note: string;
 };

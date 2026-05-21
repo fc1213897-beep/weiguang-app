@@ -28,8 +28,8 @@ export const POMODORO_OPTIONS = [
   { minutes: 45, label: "45 分" },
 ] as const;
 
-/** 首页一键快速添加 */
-export const QUICK_PLAN_PRESETS: PlanDraft[] = [
+/** 首页一键快速添加（日期由 store 填入 selectedDate） */
+export const QUICK_PLAN_PRESETS: Omit<PlanDraft, "date" | "note">[] = [
   {
     text: "背 10 个单词",
     category: "study",
@@ -50,15 +50,29 @@ export const QUICK_PLAN_PRESETS: PlanDraft[] = [
   },
 ];
 
+export function createDefaultPlanDraft(date: string): PlanDraft {
+  return {
+    text: "",
+    category: "study",
+    priority: "medium",
+    pomodoroMinutes: 25,
+    date,
+    note: "",
+  };
+}
+
+/** 静态默认（仅类型占位，实际请用 createDefaultPlanDraft） */
 export const DEFAULT_PLAN_DRAFT: PlanDraft = {
   text: "",
   category: "study",
   priority: "medium",
   pomodoroMinutes: 25,
+  date: "",
+  note: "",
 };
 
 /** 小光推荐的最小目标库（本地随机，非 API） */
-const XIAOGUANG_SUGGESTIONS: PlanDraft[] = [
+const XIAOGUANG_SUGGESTIONS: Omit<PlanDraft, "date" | "note">[] = [
   {
     text: "背 10 个单词",
     category: "study",
@@ -126,7 +140,7 @@ export function getRandomXiaoguangSuggestion(): PlanDraft {
     XIAOGUANG_SUGGESTIONS[
       Math.floor(Math.random() * XIAOGUANG_SUGGESTIONS.length)
     ];
-  return { ...pick };
+  return { ...pick, date: "", note: "" };
 }
 
 export function getCategoryMeta(category: TaskCategory) {

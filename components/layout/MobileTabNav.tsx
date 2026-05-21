@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useUIStore } from "@/store/uiStore";
 
 const TABS = [
@@ -7,13 +9,27 @@ const TABS = [
   { id: "companion" as const, label: "小光陪伴", icon: "🌙" },
 ];
 
+/** 手机端底部固定 Tab（挂载到 body，避免被 main overflow 影响 fixed） */
 export default function MobileTabNav() {
   const mobileTab = useUIStore((s) => s.mobileTab);
   const setMobileTab = useUIStore((s) => s.setMobileTab);
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  function handleTabChange(tab: (typeof TABS)[number]["id"]) {
+    setMobileTab(tab);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  const nav = (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-orange-100/80 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_24px_-8px_rgba(251,146,60,0.15)] backdrop-blur-md lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-[60] w-full border-t border-orange-100/80 bg-white/95 shadow-[0_-4px_24px_-8px_rgba(251,146,60,0.15)] backdrop-blur-md lg:hidden"
+      style={{
+        paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))",
+      }}
       aria-label="模块切换"
     >
       <div className="mx-auto flex max-w-6xl">
@@ -23,12 +39,13 @@ export default function MobileTabNav() {
             <button
               key={tab.id}
               type="button"
-              onClick={() => setMobileTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={[
                 "flex flex-1 flex-col items-center gap-0.5 py-2.5 transition-colors",
+                "touch-manipulation",
                 isActive
                   ? "font-semibold text-orange-500"
-                  : "text-gray-400 hover:text-gray-500",
+                  : "text-gray-400 active:text-gray-500",
               ].join(" ")}
               aria-current={isActive ? "page" : undefined}
             >
@@ -42,4 +59,7 @@ export default function MobileTabNav() {
       </div>
     </nav>
   );
+
+  if (!mounted) return null;
+  return createPortal(nav, document.body);
 }
