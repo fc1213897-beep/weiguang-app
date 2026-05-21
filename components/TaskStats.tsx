@@ -11,6 +11,7 @@ type Props = {
   selectedDate: string;
   /** full：任务区三栏；companion：陪伴区双栏（已完成更醒目） */
   variant?: "full" | "companion";
+  className?: string;
 };
 
 const FULL_STAT_ITEMS = [
@@ -44,52 +45,58 @@ export default function TaskStats({
   tasks,
   selectedDate,
   variant = "full",
+  className = "",
 }: Props) {
   const stats = useMemo(() => computeTaskStats(tasks), [tasks]);
   const scopeLabel = getStatsScopeLabel(selectedDate);
 
   if (variant === "companion") {
     return (
-      <div className="rounded-2xl border border-orange-100/60 bg-gradient-to-br from-orange-50/40 via-white to-amber-50/30 p-3 sm:rounded-3xl sm:p-4">
-        <p className="mb-3 text-sm text-stone-500">
+      <div
+        className={[
+          "w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-orange-100/60 bg-gradient-to-br from-orange-50/40 via-white to-amber-50/30 p-3 sm:rounded-3xl sm:p-4",
+          className,
+        ].join(" ")}
+      >
+        <p className="mb-2.5 text-sm text-stone-500 sm:mb-3">
           <span className="font-medium text-stone-600">{scopeLabel}</span>
           学习进度
         </p>
 
-        <div className="flex flex-col gap-2.5">
-          {/* 已完成：更醒目，仍保持温柔风格 */}
-          <div className="rounded-2xl border-2 border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white p-4 shadow-[0_4px_20px_-8px_rgba(52,211,153,0.35)] ring-2 ring-emerald-100/70 sm:rounded-3xl sm:p-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:gap-2.5">
+          <div className="rounded-2xl border-2 border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white p-3 shadow-[0_4px_20px_-8px_rgba(52,211,153,0.35)] ring-1 ring-emerald-100/70 sm:p-4 sm:ring-2">
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <span
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100/90 text-lg"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100/90 text-base sm:h-9 sm:w-9 sm:text-lg"
                   aria-hidden
                 >
                   ✨
                 </span>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold text-emerald-800">
                     已完成
                   </p>
-                  <p className="text-xs text-emerald-600/80">做得很棒</p>
+                  <p className="truncate text-xs text-emerald-600/80">
+                    做得很棒
+                  </p>
                 </div>
               </div>
-              <p className="text-3xl font-extrabold tabular-nums text-emerald-600 sm:text-4xl">
+              <p className="shrink-0 text-2xl font-extrabold tabular-nums text-emerald-600 sm:text-3xl">
                 {stats.completed}
               </p>
             </div>
           </div>
 
-          {/* 未完成 */}
-          <div className="rounded-2xl border border-amber-100/80 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 p-3.5 sm:rounded-3xl sm:p-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-base" aria-hidden>
+          <div className="rounded-2xl border border-amber-100/80 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/30 p-3 sm:p-3.5">
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="shrink-0 text-base" aria-hidden>
                   🌙
                 </span>
                 <span className="text-sm text-stone-600">未完成</span>
               </div>
-              <p className="text-2xl font-bold tabular-nums text-amber-700 sm:text-3xl">
+              <p className="shrink-0 text-xl font-bold tabular-nums text-amber-700 sm:text-2xl">
                 {stats.pending}
               </p>
             </div>
@@ -106,7 +113,7 @@ export default function TaskStats({
   };
 
   return (
-    <div>
+    <div className={["w-full min-w-0 max-w-full", className].join(" ")}>
       <p className="mb-3 text-sm text-stone-500">
         <span className="font-medium text-stone-600">{scopeLabel}</span>
         任务概览

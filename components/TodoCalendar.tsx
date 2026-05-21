@@ -78,7 +78,7 @@ export default function TodoCalendar({
   }
 
   return (
-    <div className="rounded-2xl border border-orange-100/80 bg-gradient-to-br from-orange-50/60 via-white to-amber-50/40 p-3 sm:rounded-3xl sm:p-4">
+    <div className="w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-orange-100/80 bg-gradient-to-br from-orange-50/60 via-white to-amber-50/40 p-3 sm:rounded-3xl sm:p-4">
       {/* 精简态：日期切换 + 展开入口 */}
       {!expanded && (
         <div className="space-y-2.5">

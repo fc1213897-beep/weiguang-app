@@ -24,7 +24,7 @@ import {
 } from "@/lib/task-utils";
 
 const panelClass =
-  "rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6";
+  "min-w-0 max-w-full overflow-hidden rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6";
 
 export default function Home() {
   const [task, setTask] = useState("");
@@ -97,9 +97,17 @@ export default function Home() {
     setTasks((prev) => prev.filter((item) => item.id !== id));
   }
 
-  /** 左栏：品牌、小光、今日进度（桌面端固定展示） */
-  const leftRail = (
-    <div className="flex h-full flex-col">
+  const progressStats = (
+    <TaskStats
+      tasks={tasksForSelectedDate}
+      selectedDate={selectedDate}
+      variant="companion"
+    />
+  );
+
+  /** 桌面左栏 */
+  const leftRailDesktop = (
+    <div className="flex h-full min-w-0 flex-col">
       <header className="shrink-0 border-b border-orange-100/60 pb-3">
         <h1 className="text-xl font-bold tracking-tight text-orange-500 lg:text-2xl">
           微光 ✨
@@ -107,8 +115,8 @@ export default function Home() {
       </header>
 
       <div className="mt-4 shrink-0 rounded-2xl bg-orange-50/80 px-3 py-3 sm:rounded-3xl sm:px-4 sm:py-4">
-        <div className="flex items-start gap-3">
-          <span className="text-3xl lg:text-4xl" aria-hidden>
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="shrink-0 text-3xl lg:text-4xl" aria-hidden>
             🌙
           </span>
           <div className="min-w-0 flex-1">
@@ -118,13 +126,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="mt-4 shrink-0">
-        <TaskStats
-          tasks={tasksForSelectedDate}
-          selectedDate={selectedDate}
-          variant="companion"
-        />
-      </div>
+      <div className="mt-4 min-w-0 shrink-0">{progressStats}</div>
 
       <p className="mt-auto hidden pt-4 text-center text-xs leading-5 text-stone-400 lg:block">
         陪你熬过备考的每一天
@@ -132,40 +134,63 @@ export default function Home() {
     </div>
   );
 
-  /** 右栏 / 手机陪伴 Tab：聊天区 */
+  /** 手机陪伴 Tab：更紧凑的顶部信息 */
+  const leftRailMobile = (
+    <div className="w-full min-w-0 space-y-3">
+      <header className="border-b border-orange-100/60 pb-2.5">
+        <h1 className="text-lg font-bold text-orange-500">微光 ✨</h1>
+      </header>
+
+      <div className="flex min-w-0 items-start gap-2.5 rounded-2xl bg-orange-50/80 p-2.5">
+        <span className="shrink-0 text-2xl" aria-hidden>
+          🌙
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-stone-700">小光</p>
+          <TimeGreeting className="mt-0.5 line-clamp-3 text-xs leading-5 text-stone-500" />
+        </div>
+      </div>
+
+      <div className="min-w-0">{progressStats}</div>
+    </div>
+  );
+
   const chatPanel = (
-    <AIChat className="mt-0 flex h-full min-h-0 flex-col lg:min-h-[calc(100vh-11rem)]" />
+    <AIChat
+      hideHeader
+      className="mt-0 w-full min-w-0 max-w-full lg:min-h-[calc(100vh-11rem)] lg:flex lg:flex-col"
+    />
   );
 
   return (
-    <main className="min-h-screen bg-[#FFF7ED] p-4 pb-20 sm:p-6 sm:pb-20 lg:p-8 lg:pb-8">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[minmax(200px,240px)_minmax(0,1fr)_minmax(300px,400px)] lg:items-start lg:gap-5 xl:max-w-[88rem] xl:grid-cols-[240px_minmax(0,1fr)_400px] xl:gap-6">
-        {/* 左栏：桌面常显 */}
+    <main className="min-h-screen overflow-x-hidden bg-[#FFF7ED] p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:p-8 lg:pb-8">
+      <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[minmax(200px,240px)_minmax(0,1fr)_minmax(300px,400px)] lg:items-start lg:gap-5 xl:max-w-[88rem] xl:grid-cols-[240px_minmax(0,1fr)_400px] xl:gap-6">
+        {/* 左栏：桌面 */}
         <aside
           className={[
             panelClass,
             "hidden flex-col lg:col-start-1 lg:row-start-1 lg:flex lg:sticky lg:top-8 lg:min-h-[calc(100vh-4rem)]",
           ].join(" ")}
         >
-          {leftRail}
+          {leftRailDesktop}
         </aside>
 
-        {/* 中栏：任务主视觉；手机「今日任务」Tab */}
+        {/* 中栏：今日任务 */}
         <section
           className={[
             panelClass,
-            "lg:col-start-2 lg:row-start-1 lg:p-7 lg:shadow-md",
+            "lg:col-start-2 lg:row-start-1 lg:overflow-visible lg:p-7 lg:shadow-md",
             mobileTab === "tasks" ? "block" : "hidden",
             "lg:block",
           ].join(" ")}
         >
           <header className="border-b border-orange-50 pb-4 lg:pb-5">
-            <h2 className="text-2xl font-bold text-stone-800 sm:text-3xl lg:text-[1.75rem] xl:text-3xl">
+            <h2 className="text-xl font-bold text-stone-800 sm:text-2xl lg:text-[1.75rem] xl:text-3xl">
               {getPlanTitle(selectedDate)}
             </h2>
           </header>
 
-          <div className="mt-4 sm:mt-5">
+          <div className="mt-4 min-w-0 sm:mt-5">
             <TodoCalendar
               selectedDate={selectedDate}
               onSelectDate={setSelectedDate}
@@ -173,20 +198,15 @@ export default function Home() {
             />
           </div>
 
-          {/* 手机端任务 Tab 内展示统计；桌面端已在左栏展示，避免重复 */}
-          <div className="mt-4 lg:hidden sm:mt-5">
-            <TaskStats
-              tasks={tasksForSelectedDate}
-              selectedDate={selectedDate}
-              variant="companion"
-            />
+          <div className="mt-4 min-w-0 lg:hidden sm:mt-5">
+            {progressStats}
           </div>
 
-          <div className="mt-4 sm:mt-5">
+          <div className="mt-4 min-w-0 sm:mt-5">
             <TaskInput value={task} onChange={setTask} onAdd={addTask} />
           </div>
 
-          <div className="mt-4 sm:mt-5">
+          <div className="mt-4 min-w-0 sm:mt-5">
             <TaskList
               tasks={tasksForSelectedDate}
               selectedDate={selectedDate}
@@ -201,35 +221,40 @@ export default function Home() {
           </p>
         </section>
 
-        {/* 右栏：桌面聊天区 */}
+        {/* 右栏：桌面聊天 */}
         <aside
           className={[
             panelClass,
-            "hidden flex-col lg:col-start-3 lg:row-start-1 lg:flex lg:sticky lg:top-8 lg:min-h-[calc(100vh-4rem)] lg:p-5",
+            "hidden min-w-0 flex-col lg:col-start-3 lg:row-start-1 lg:flex lg:sticky lg:top-8 lg:min-h-[calc(100vh-4rem)] lg:p-5",
           ].join(" ")}
         >
           <header className="mb-3 shrink-0 border-b border-orange-100/60 pb-3">
             <h2 className="text-lg font-bold text-stone-800">小光陪伴</h2>
             <p className="mt-1 text-xs text-stone-500">说说今天的心情吧</p>
           </header>
-          <div className="flex min-h-0 flex-1 flex-col">{chatPanel}</div>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">{chatPanel}</div>
         </aside>
 
-        {/* 手机「小光陪伴」Tab：左栏信息 + 聊天上下排列 */}
+        {/* 手机「小光陪伴」Tab */}
         <aside
           className={[
             panelClass,
-            "flex flex-col gap-4 lg:hidden",
+            "w-full flex-col gap-3 lg:hidden",
             mobileTab === "companion" ? "flex" : "hidden",
           ].join(" ")}
         >
-          {leftRail}
-          <div className="border-t border-orange-100/60 pt-4">
-            <p className="mb-3 text-sm font-semibold text-stone-700">
+          {leftRailMobile}
+
+          <div className="min-w-0 border-t border-orange-100/60 pt-3">
+            <p className="mb-2 text-sm font-semibold text-stone-700">
               和小光聊聊
             </p>
-            {chatPanel}
+            <div className="min-w-0">{chatPanel}</div>
           </div>
+
+          <p className="pb-1 text-center text-xs text-stone-400">
+            陪你熬过备考的每一天
+          </p>
         </aside>
       </div>
 
