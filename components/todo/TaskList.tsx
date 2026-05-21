@@ -30,6 +30,9 @@ export default function TaskList() {
           key={item.id}
           text={item.text}
           done={item.done}
+          category={item.category}
+          priority={item.priority}
+          pomodoroMinutes={item.pomodoroMinutes}
           onToggle={() => toggleTask(item.id)}
           onSave={(text) => editTask(item.id, text)}
           onDelete={() => deleteTask(item.id)}

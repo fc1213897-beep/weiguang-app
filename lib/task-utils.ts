@@ -1,3 +1,8 @@
+import {
+  normalizeCategory,
+  normalizePomodoro,
+  normalizePriority,
+} from "@/lib/task-plan";
 import type { TaskItem } from "@/types/task";
 
 /** 格式化为 YYYY-MM-DD */
@@ -61,7 +66,15 @@ export function normalizeTaskItems(raw: unknown): TaskItem[] {
         ? record.date
         : today;
 
-    result.push({ id, text, done, date });
+    result.push({
+      id,
+      text,
+      done,
+      date,
+      category: normalizeCategory(record.category),
+      priority: normalizePriority(record.priority),
+      pomodoroMinutes: normalizePomodoro(record.pomodoroMinutes),
+    });
   }
 
   return result;

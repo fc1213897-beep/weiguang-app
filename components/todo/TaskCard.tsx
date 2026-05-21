@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  getCategoryMeta,
+  getPriorityLabel,
+} from "@/lib/task-plan";
+import type { TaskCategory, TaskPriority } from "@/types/task";
 
 type Props = {
   text: string;
   done: boolean;
+  category?: TaskCategory;
+  priority?: TaskPriority;
+  pomodoroMinutes?: number;
   onToggle?: () => void;
   onSave?: (text: string) => void;
   onDelete?: () => void;
@@ -13,10 +21,15 @@ type Props = {
 export default function TaskCard({
   text,
   done,
+  category = "study",
+  priority = "medium",
+  pomodoroMinutes = 0,
   onToggle,
   onSave,
   onDelete,
 }: Props) {
+  const catMeta = getCategoryMeta(category);
+  const priorityLabel = getPriorityLabel(priority);
   const [justCompleted, setJustCompleted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(text);
@@ -201,6 +214,30 @@ export default function TaskCard({
                 >
                   {text}
                 </span>
+                {!isEditing && (
+                  <span className="mt-1.5 flex flex-wrap gap-1.5">
+                    <span className="rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-stone-500 ring-1 ring-orange-100/80">
+                      {catMeta.icon} {catMeta.label}
+                    </span>
+                    <span
+                      className={[
+                        "rounded-full px-2 py-0.5 text-[11px] ring-1",
+                        priority === "high"
+                          ? "bg-rose-50/90 text-rose-600 ring-rose-100"
+                          : priority === "low"
+                            ? "bg-emerald-50/90 text-emerald-600 ring-emerald-100"
+                            : "bg-amber-50/90 text-amber-700 ring-amber-100",
+                      ].join(" ")}
+                    >
+                      {priorityLabel}
+                    </span>
+                    {pomodoroMinutes > 0 && (
+                      <span className="rounded-full bg-orange-50/90 px-2 py-0.5 text-[11px] text-orange-600 ring-1 ring-orange-100">
+                        🍅 {pomodoroMinutes} 分钟
+                      </span>
+                    )}
+                  </span>
+                )}
                 {done && (
                   <span
                     className={[
