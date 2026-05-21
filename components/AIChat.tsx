@@ -37,8 +37,9 @@ export default function AIChat({ className, hideHeader = false }: Props) {
   const [isSending, setIsSending] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const idRef = useRef(1);
+  /** 仅对新回复做渐显，避免历史消息重复动画 */
+  const fadeInAssistantIdRef = useRef<number | null>(null);
 
-  // 首次进入：客户端挂载后从 localStorage 恢复聊天记录
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
       const saved = loadFromStorage<AIChatStorage | null>(
@@ -58,7 +59,6 @@ export default function AIChat({ className, hideHeader = false }: Props) {
     return () => cancelAnimationFrame(frameId);
   }, []);
 
-  // 聊天记录变化后写入 localStorage
   useEffect(() => {
     if (!storageReady) return;
 
@@ -74,7 +74,7 @@ export default function AIChat({ className, hideHeader = false }: Props) {
     if (el) {
       el.scrollTop = el.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isSending]);
 
   async function fetchAIReply(
     userText: string,
@@ -146,6 +146,7 @@ export default function AIChat({ className, hideHeader = false }: Props) {
       text: assistantText,
     };
 
+    fadeInAssistantIdRef.current = assistantMsg.id;
     setMessages((prev) => [...prev, assistantMsg]);
     setReplyIndex((i) => i + 1);
     setIsSending(false);
@@ -159,74 +160,136 @@ export default function AIChat({ className, hideHeader = false }: Props) {
   }
 
   return (
-    <div
-      className={[
-        "flex w-full min-w-0 max-w-full flex-col rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/60 to-[#FFFBF5] p-3 sm:p-4",
-        className ?? "mt-4 sm:mt-6",
-      ].join(" ")}
-    >
-      {!hideHeader && (
-        <div className="mb-3 flex shrink-0 items-center gap-2">
-          <span className="text-lg" aria-hidden>
-            💬
-          </span>
-          <p className="text-sm font-semibold text-stone-700">和小光聊聊</p>
-        </div>
-      )}
+    <>
+      <style>{`
+        @keyframes wg-msg-fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes wg-thinking-pulse {
+          0%,
+          100% {
+            opacity: 0.45;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        .wg-msg-fade-in {
+          animation: wg-msg-fade-in 0.65s ease-out both;
+          will-change: opacity, transform;
+        }
+        .wg-thinking-dot {
+          animation: wg-thinking-pulse 1.4s ease-in-out infinite;
+        }
+        .wg-thinking-dot:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+        .wg-thinking-dot:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .wg-msg-fade-in,
+          .wg-thinking-dot {
+            animation: none;
+          }
+        }
+      `}</style>
 
       <div
-        ref={listRef}
         className={[
-          "mb-3 min-h-[6rem] space-y-2.5 overflow-y-auto overflow-x-hidden rounded-xl bg-white/70 p-2.5 sm:p-3",
-          "max-h-[min(11rem,34dvh)] sm:max-h-52",
-          "lg:min-h-[18rem] lg:max-h-none lg:flex-1",
+          "flex w-full min-w-0 max-w-full flex-col rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/60 to-[#FFFBF5] p-3 sm:p-4",
+          className ?? "mt-4 sm:mt-6",
         ].join(" ")}
       >
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
+        {!hideHeader && (
+          <div className="mb-3 flex shrink-0 items-center gap-2">
+            <span className="text-lg" aria-hidden>
+              💬
+            </span>
+            <p className="text-sm font-semibold text-stone-700">和小光聊聊</p>
+          </div>
+        )}
+
+        <div
+          ref={listRef}
+          className={[
+            "mb-3 min-h-[6rem] space-y-2.5 overflow-y-auto overflow-x-hidden rounded-xl bg-white/70 p-2.5 sm:p-3",
+            "max-h-[min(11rem,34dvh)] sm:max-h-52",
+            "lg:min-h-[18rem] lg:max-h-none lg:flex-1",
+          ].join(" ")}
+        >
+          {messages.map((msg) => (
             <div
-              className={[
-                "max-w-[92%] break-words rounded-2xl px-3 py-2 text-sm leading-relaxed sm:max-w-[85%] lg:max-w-[90%]",
-                msg.role === "user"
-                  ? "rounded-br-md bg-orange-400 text-white"
-                  : "rounded-bl-md bg-amber-50 text-stone-700 ring-1 ring-amber-100/80",
-              ].join(" ")}
+              key={msg.id}
+              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
-              {msg.role === "assistant" && (
+              <div
+                className={[
+                  "max-w-[92%] break-words rounded-2xl px-3 py-2 text-sm leading-relaxed sm:max-w-[85%] lg:max-w-[90%]",
+                  msg.role === "user"
+                    ? "rounded-br-md bg-orange-400 text-white"
+                    : "rounded-bl-md bg-amber-50 text-stone-700 ring-1 ring-amber-100/80",
+                  msg.role === "assistant" &&
+                  msg.id === fadeInAssistantIdRef.current
+                    ? "wg-msg-fade-in"
+                    : "",
+                ].join(" ")}
+              >
+                {msg.role === "assistant" && (
+                  <span className="mb-0.5 block text-xs font-medium text-orange-500/90">
+                    小光
+                  </span>
+                )}
+                {msg.text}
+              </div>
+            </div>
+          ))}
+
+          {isSending && (
+            <div className="flex justify-start" aria-live="polite" aria-busy="true">
+              <div className="rounded-bl-md bg-amber-50 px-3 py-2.5 ring-1 ring-amber-100/80">
                 <span className="mb-0.5 block text-xs font-medium text-orange-500/90">
                   小光
                 </span>
-              )}
-              {msg.text}
+                <p className="flex items-center gap-1 text-sm text-stone-500">
+                  正在思考
+                  <span className="inline-flex gap-0.5" aria-hidden>
+                    <span className="wg-thinking-dot">.</span>
+                    <span className="wg-thinking-dot">.</span>
+                    <span className="wg-thinking-dot">.</span>
+                  </span>
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
-        {isSending && (
-          <p className="text-xs text-stone-400">小光正在想怎么陪你…</p>
-        )}
-      </div>
+          )}
+        </div>
 
-      <div className="flex shrink-0 flex-col gap-2 lg:gap-2.5 xl:flex-row xl:items-center">
-        <input
-          className="w-full min-w-0 flex-1 rounded-xl border border-orange-100 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-300 disabled:opacity-60 sm:text-base"
-          placeholder="例如：今天有点累…"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={isSending}
-        />
-        <button
-          type="button"
-          className="w-full shrink-0 rounded-xl bg-orange-400 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-          onClick={() => void sendMessage()}
-          disabled={isSending}
-        >
-          {isSending ? "发送中…" : "发送"}
-        </button>
+        <div className="flex shrink-0 flex-col gap-2 lg:gap-2.5 xl:flex-row xl:items-center">
+          <input
+            className="w-full min-w-0 flex-1 rounded-xl border border-orange-100 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-300 disabled:opacity-60 sm:text-base"
+            placeholder="例如：今天有点累…"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isSending}
+          />
+          <button
+            type="button"
+            className="w-full shrink-0 rounded-xl bg-orange-400 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            onClick={() => void sendMessage()}
+            disabled={isSending}
+          >
+            {isSending ? "发送中…" : "发送"}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

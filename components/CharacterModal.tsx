@@ -40,35 +40,90 @@ export default function CharacterModal() {
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-stone-900/25 p-4 backdrop-blur-[2px] sm:items-center sm:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="character-modal-title"
-    >
-      <div className="w-full max-w-sm rounded-3xl border border-orange-100/90 bg-gradient-to-b from-[#FFFBF5] via-white to-orange-50/80 p-6 shadow-[0_20px_60px_-16px_rgba(251,146,60,0.35)] sm:max-w-md sm:p-8">
-        {/* 虚拟形象占位 */}
-        <div className="relative mx-auto mb-5 flex h-28 w-28 items-center justify-center sm:mb-6 sm:h-32 sm:w-32">
-          <div
-            className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-100 via-amber-50 to-orange-200/60"
-            aria-hidden
-          />
-          <span
-            className="absolute -right-1 top-0 text-2xl sm:text-3xl"
-            aria-hidden
-          >
-            ✨
-          </span>
-          <span
-            className="absolute -left-1 bottom-2 text-xl opacity-80 sm:text-2xl"
-            aria-hidden
-          >
-            ✨
-          </span>
-          <span className="relative text-6xl sm:text-7xl" aria-hidden>
-            🌙
-          </span>
-        </div>
+    <>
+      <style>{`
+        @keyframes wg-breathe {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+        @keyframes wg-glow-breathe {
+          0%,
+          100% {
+            opacity: 0.55;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.85;
+            transform: scale(1.08);
+          }
+        }
+        @keyframes wg-modal-in {
+          from {
+            opacity: 0;
+            transform: translateY(12px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .wg-character-breathe {
+          animation: wg-breathe 4s ease-in-out infinite;
+          will-change: transform;
+        }
+        .wg-glow-breathe {
+          animation: wg-glow-breathe 4s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
+        .wg-modal-in {
+          animation: wg-modal-in 0.55s ease-out both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .wg-character-breathe,
+          .wg-glow-breathe,
+          .wg-modal-in {
+            animation: none;
+          }
+        }
+      `}</style>
+
+      <div
+        className="fixed inset-0 z-[100] flex items-end justify-center bg-stone-900/25 p-4 backdrop-blur-[2px] sm:items-center sm:p-6"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="character-modal-title"
+      >
+        <div className="wg-modal-in w-full max-w-sm rounded-3xl border border-orange-100/90 bg-gradient-to-b from-[#FFFBF5] via-white to-orange-50/80 p-6 shadow-[0_20px_60px_-16px_rgba(251,146,60,0.35)] sm:max-w-md sm:p-8">
+          {/* 虚拟形象：轻微呼吸 */}
+          <div className="relative mx-auto mb-5 flex h-28 w-28 items-center justify-center sm:mb-6 sm:h-32 sm:w-32">
+            <div
+              className="wg-glow-breathe absolute inset-0 rounded-full bg-gradient-to-br from-orange-100 via-amber-50 to-orange-200/60"
+              aria-hidden
+            />
+            <span
+              className="absolute -right-1 top-0 text-2xl opacity-80 sm:text-3xl"
+              aria-hidden
+            >
+              ✨
+            </span>
+            <span
+              className="absolute -left-1 bottom-2 text-xl opacity-70 sm:text-2xl"
+              aria-hidden
+            >
+              ✨
+            </span>
+            <span
+              className="wg-character-breathe relative text-6xl sm:text-7xl"
+              aria-hidden
+            >
+              🌙
+            </span>
+          </div>
 
         <p
           id="character-modal-title"
@@ -92,7 +147,8 @@ export default function CharacterModal() {
         >
           开始今天
         </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

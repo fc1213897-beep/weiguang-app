@@ -24,7 +24,10 @@ import {
 } from "@/lib/task-utils";
 
 const panelClass =
-  "min-w-0 max-w-full overflow-hidden rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6";
+  "wg-panel-card min-w-0 max-w-full overflow-hidden rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6";
+
+const innerCardClass =
+  "wg-inner-card rounded-2xl bg-orange-50/80 sm:rounded-3xl";
 
 export default function Home() {
   const [task, setTask] = useState("");
@@ -114,9 +117,14 @@ export default function Home() {
         </h1>
       </header>
 
-      <div className="mt-4 shrink-0 rounded-2xl bg-orange-50/80 px-3 py-3 sm:rounded-3xl sm:px-4 sm:py-4">
+      <div
+        className={`${innerCardClass} shrink-0 px-3 py-3 sm:px-4 sm:py-4`}
+      >
         <div className="flex min-w-0 items-start gap-3">
-          <span className="shrink-0 text-3xl lg:text-4xl" aria-hidden>
+          <span
+            className="wg-character-breathe shrink-0 text-3xl lg:text-4xl"
+            aria-hidden
+          >
             🌙
           </span>
           <div className="min-w-0 flex-1">
@@ -141,8 +149,8 @@ export default function Home() {
         <h1 className="text-lg font-bold text-orange-500">微光 ✨</h1>
       </header>
 
-      <div className="flex min-w-0 items-start gap-2.5 rounded-2xl bg-orange-50/80 p-2.5">
-        <span className="shrink-0 text-2xl" aria-hidden>
+      <div className={`${innerCardClass} flex min-w-0 items-start gap-2.5 p-2.5`}>
+        <span className="wg-character-breathe shrink-0 text-2xl" aria-hidden>
           🌙
         </span>
         <div className="min-w-0 flex-1">
@@ -163,7 +171,56 @@ export default function Home() {
   );
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#FFF7ED] p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:p-8 lg:pb-8">
+    <>
+      <style>{`
+        @keyframes wg-breathe {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.06);
+          }
+        }
+        .wg-character-breathe {
+          display: inline-block;
+          animation: wg-breathe 4s ease-in-out infinite;
+          will-change: transform;
+        }
+        .wg-panel-card,
+        .wg-inner-card {
+          transition:
+            transform 0.45s ease,
+            box-shadow 0.45s ease;
+        }
+        @media (hover: hover) and (pointer: fine) {
+          .wg-panel-card:hover {
+            transform: translateY(-2px);
+            box-shadow:
+              0 12px 32px -12px rgba(251, 146, 60, 0.18),
+              0 4px 16px -6px rgba(120, 113, 108, 0.08);
+          }
+          .wg-inner-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px -10px rgba(251, 146, 60, 0.2);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .wg-character-breathe {
+            animation: none;
+          }
+          .wg-panel-card,
+          .wg-inner-card {
+            transition: none;
+          }
+          .wg-panel-card:hover,
+          .wg-inner-card:hover {
+            transform: none;
+          }
+        }
+      `}</style>
+
+      <main className="min-h-screen overflow-x-hidden bg-[#FFF7ED] p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:p-8 lg:pb-8">
       <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[minmax(200px,240px)_minmax(0,1fr)_minmax(300px,400px)] lg:items-start lg:gap-5 xl:max-w-[88rem] xl:grid-cols-[240px_minmax(0,1fr)_400px] xl:gap-6">
         {/* 左栏：桌面 */}
         <aside
@@ -260,6 +317,7 @@ export default function Home() {
 
       <MobileTabNav active={mobileTab} onChange={setMobileTab} />
       <CharacterModal />
-    </main>
+      </main>
+    </>
   );
 }
