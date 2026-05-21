@@ -54,7 +54,44 @@ export type ListTasksFilter = {
 };
 
 /** CRUD 统一返回结构 */
-export type TaskCrudResult<T> = {
+export type CrudResult<T> = {
   data: T | null;
   error: string | null;
+};
+
+/** @deprecated 使用 CrudResult */
+export type TaskCrudResult<T> = CrudResult<T>;
+
+/** 聊天消息角色 */
+export type DbMessageRole = "user" | "assistant" | "system";
+
+/** chat_sessions 表行 */
+export type ChatSessionRow = {
+  id: string;
+  user_id: string;
+  title: string;
+  is_default: boolean;
+  reply_index: number;
+  last_message_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** messages 表行 */
+export type MessageRow = {
+  id: string;
+  session_id: string;
+  user_id: string;
+  role: DbMessageRole;
+  content: string;
+  client_seq: number | null;
+  created_at: string;
+};
+
+/** 写入消息入参 */
+export type InsertMessageInput = {
+  session_id: string;
+  role: DbMessageRole;
+  content: string;
+  client_seq: number;
 };

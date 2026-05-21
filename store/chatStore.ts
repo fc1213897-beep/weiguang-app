@@ -1,5 +1,9 @@
 import { create } from "zustand";
 import { getGentleFallbackReply } from "@/lib/fallback-reply";
+import {
+  insertMessage as insertCloudMessage,
+  updateSessionReplyIndex,
+} from "@/lib/supabase/chat";
 import type { ChatMessage } from "@/types/chat";
 
 const INITIAL_MESSAGES: ChatMessage[] = [
@@ -22,9 +26,14 @@ type ChatState = {
   input: string;
   isSending: boolean;
   storageReady: boolean;
+  /** 已登录时写入 Supabase，不存 localStorage */
+  syncEnabled: boolean;
+  cloudSessionId: string | null;
   fadeInAssistantId: number | null;
   setInput: (v: string) => void;
   setStorageReady: (ready: boolean) => void;
+  setSyncEnabled: (enabled: boolean) => void;
+  setCloudSessionId: (id: string | null) => void;
   hydrate: (data: {
     messages: ChatMessage[];
     replyIndex: number;
@@ -63,10 +72,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
   input: "",
   isSending: false,
   storageReady: false,
+  syncEnabled: false,
+  cloudSessionId: null,
   fadeInAssistantId: null,
 
   setInput: (v) => set({ input: v }),
   setStorageReady: (ready) => set({ storageReady: ready }),
+  setSyncEnabled: (enabled) => set({ syncEnabled: enabled }),
+  setCloudSessionId: (id) => set({ cloudSessionId: id }),
 
   hydrate: ({ messages, replyIndex, nextId }) =>
     set({ messages, replyIndex, nextId }),
@@ -90,6 +103,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
       nextId: nextId + 1,
     });
 
+    const { syncEnabled, cloudSessionId } = get();
+    if (syncEnabled && cloudSessionId) {
+      void insertCloudMessage({
+        session_id: cloudSessionId,
+        role: "user",
+        content: value,
+        client_seq: userMsg.id,
+      }).then((res) => {
+        if (res.error) console.error("[chat sync] insert user", res.error);
+      });
+    }
+
     const assistantText = await fetchAIReply(
       value,
       historyBeforeSend,
@@ -103,13 +128,33 @@ export const useChatStore = create<ChatState>((set, get) => ({
       text: assistantText,
     };
 
+    const newReplyIndex = get().replyIndex + 1;
+
     set((s) => ({
       messages: [...s.messages, assistantMsg],
-      replyIndex: s.replyIndex + 1,
+      replyIndex: newReplyIndex,
       nextId: assistantId + 1,
       isSending: false,
       fadeInAssistantId: assistantId,
     }));
+
+    const after = get();
+    if (after.syncEnabled && after.cloudSessionId) {
+      void insertCloudMessage({
+        session_id: after.cloudSessionId,
+        role: "assistant",
+        content: assistantText,
+        client_seq: assistantId,
+      }).then((res) => {
+        if (res.error) console.error("[chat sync] insert assistant", res.error);
+      });
+      void updateSessionReplyIndex(
+        after.cloudSessionId,
+        newReplyIndex
+      ).then((res) => {
+        if (res.error) console.error("[chat sync] reply_index", res.error);
+      });
+    }
   },
 }));
 

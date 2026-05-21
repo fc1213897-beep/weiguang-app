@@ -3,6 +3,7 @@
 import AppShell from "@/components/layout/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatHydration } from "@/hooks/useChatHydration";
+import { useChatSync } from "@/hooks/useChatSync";
 import { useTodoHydration } from "@/hooks/useTodoHydration";
 import { useTodoSync } from "@/hooks/useTodoSync";
 
@@ -12,6 +13,7 @@ export default function Home() {
   useTodoHydration();
   useTodoSync();
   useChatHydration();
+  useChatSync();
 
   return <AppShell />;
 }
