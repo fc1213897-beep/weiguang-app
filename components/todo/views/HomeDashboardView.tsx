@@ -20,6 +20,16 @@ export default function HomeDashboardView() {
 
   return (
     <div className="space-y-6">
+      <section className="rounded-3xl bg-stone-900 px-5 py-5 text-white">
+        <p className="text-xs uppercase tracking-[0.16em] text-stone-300">HOME</p>
+        <h2 className="mt-2 text-2xl font-semibold">今日状态空间</h2>
+        <p className="mt-1 text-sm text-stone-300">这里不做任务执行，只看状态与方向。</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <a href="/today" className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-900">去 Today 执行</a>
+          <a href="/chat" className="rounded-full border border-white/30 px-3 py-1.5 text-xs font-medium text-white">去 AI 陪伴</a>
+        </div>
+      </section>
+
       <section className="grid gap-3 rounded-3xl bg-white/80 p-4 sm:grid-cols-4 sm:p-5">
         <div>
           <p className="text-xs text-stone-400">时间问候</p>
