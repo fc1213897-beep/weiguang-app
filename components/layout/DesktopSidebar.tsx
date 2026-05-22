@@ -1,11 +1,19 @@
 "use client";
 
 import AuthStatusBadge from "@/components/auth/AuthStatusBadge";
+<<<<<<< HEAD
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { computeTaskStats } from "@/lib/task-utils";
 import { useTodoStore } from "@/store/todoStore";
+=======
+import { useMemo } from "react";
+import { computeTaskStats } from "@/lib/task-utils";
+import type { DesktopNavId } from "@/types/ui";
+import { useTodoStore } from "@/store/todoStore";
+import { useUIStore } from "@/store/uiStore";
+>>>>>>> main
 
 const NAV_ITEMS = [
   { id: "home", label: "首页空间", icon: "🏠", href: "/home" },
@@ -17,7 +25,12 @@ const NAV_ITEMS = [
 ] as const;
 
 export default function DesktopSidebar() {
+<<<<<<< HEAD
   const pathname = usePathname();
+=======
+  const desktopNav = useUIStore((s) => s.desktopNav);
+  const setDesktopNav = useUIStore((s) => s.setDesktopNav);
+>>>>>>> main
   const tasks = useTodoStore((s) => s.tasks);
   const stats = useMemo(() => computeTaskStats(tasks), [tasks]);
   const focusMinutes = tasks.reduce((sum, t) => sum + (t.pomodoroMinutes ?? 0), 0);
@@ -49,7 +62,11 @@ export default function DesktopSidebar() {
         })}
       </nav>
 
+<<<<<<< HEAD
       <div className="mb-3 mt-4 space-y-2 rounded-2xl bg-stone-50/80 p-3">
+=======
+      <div className="mb-3 mt-4 space-y-2 rounded-2xl border border-stone-200/80 bg-stone-50/80 p-3">
+>>>>>>> main
         <p className="text-xs font-medium text-stone-500">今日状态</p>
         <div className="flex items-center justify-between text-xs">
           <span className="text-stone-500">连续学习</span>

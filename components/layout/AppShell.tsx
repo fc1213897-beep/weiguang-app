@@ -18,7 +18,11 @@ import { panelClass } from "@/lib/tokens";
 type RouteId = "home" | "today" | "tasks" | "chat" | "stats" | "settings";
 
 /** 三栏工作台（桌面）+ 双 Tab（手机） */
+<<<<<<< HEAD
 export default function AppShell({ route = "home" }: { route?: RouteId }) {
+=======
+export default function AppShell() {
+>>>>>>> main
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const t = window.setTimeout(() => setLoading(false), 380);
@@ -60,7 +64,11 @@ export default function AppShell({ route = "home" }: { route?: RouteId }) {
               </div>
               <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-700">在线</div>
             </div>
+<<<<<<< HEAD
             {loading ? <div className="space-y-3"><div className="h-24 animate-pulse rounded-2xl bg-stone-100" /><div className="h-40 animate-pulse rounded-2xl bg-stone-100" /></div> : <DesktopWorkbench route={route} />}
+=======
+            {loading ? <div className="space-y-3"><div className="h-24 animate-pulse rounded-2xl bg-stone-100" /><div className="h-40 animate-pulse rounded-2xl bg-stone-100" /></div> : <DesktopWorkbench />}
+>>>>>>> main
           </section>
 
           <aside
