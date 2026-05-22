@@ -42,9 +42,9 @@ export const panelClass = [
   wgTokens.motion.panelHover,
   "min-w-0 max-w-full overflow-hidden",
   wgTokens.radius.md,
-  wgTokens.colors.surface,
+  "bg-white/92 backdrop-blur-sm border border-orange-100/70",
   wgTokens.spacing.panel,
-  wgTokens.shadow.panel,
+  "shadow-[0_14px_36px_-24px_rgba(251,146,60,0.35),0_8px_18px_-16px_rgba(41,37,36,0.25)]",
   "sm:rounded-3xl",
 ].join(" ");
 

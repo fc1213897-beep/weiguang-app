@@ -1,19 +1,5 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import AppShell from "@/components/layout/AppShell";
-import { useAuth } from "@/hooks/useAuth";
-import { useChatHydration } from "@/hooks/useChatHydration";
-import { useChatSync } from "@/hooks/useChatSync";
-import { useTodoHydration } from "@/hooks/useTodoHydration";
-import { useTodoSync } from "@/hooks/useTodoSync";
-
-/** 页面入口：仅负责挂载布局与全局持久化 */
-export default function Home() {
-  useAuth();
-  useTodoHydration();
-  useTodoSync();
-  useChatHydration();
-  useChatSync();
-
-  return <AppShell />;
+export default function RootRedirectPage() {
+  redirect("/home");
 }
