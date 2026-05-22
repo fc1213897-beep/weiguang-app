@@ -49,6 +49,15 @@ export default function HomeDashboardView() {
         </div>
       </section>
 
+      <section className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-3xl bg-white/80 p-4">
+          <p className="text-xs text-stone-500">今日成长摘要</p>
+          <p className="mt-1 text-sm text-stone-700">完成 {stats.completed} 项，继续保持你的节奏。</p>
+        </div>
+        <a href="/stats" className="rounded-3xl bg-white/80 p-4 text-sm font-medium text-orange-600">进入学习统计 →</a>
+        <a href="/stats" className="rounded-3xl bg-white/80 p-4 text-sm font-medium text-emerald-600">进入成长中心 →</a>
+      </section>
+
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-3 rounded-3xl bg-white/85 p-4">
           <h3 className="text-sm font-semibold text-stone-800">今日专注入口</h3>
