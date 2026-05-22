@@ -15,9 +15,12 @@ import { MotionStyles } from "@/components/ui/motion-styles";
 import { DESKTOP_GRID_CLASS, MOBILE_MAIN_PB } from "@/lib/layout";
 import { panelClass } from "@/lib/tokens";
 
-/** 三栏工作台（桌面）+ 双 Tab（手机） */
-export default function AppShell() {
+type RouteId = "home" | "today" | "tasks" | "chat" | "stats" | "settings";
+
+/** 三栏工作台（桌面）+ 手机端多视图 */
+export default function AppShell({ route = "home" }: { route?: RouteId }) {
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const t = window.setTimeout(() => setLoading(false), 380);
     return () => window.clearTimeout(t);
@@ -50,15 +53,34 @@ export default function AppShell() {
             <DesktopSidebar />
           </div>
 
-          <section className={[panelClass, "min-w-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:p-6 lg:shadow-md"].join(" ")}>
+          <section
+            className={[
+              panelClass,
+              "min-w-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:p-6 lg:shadow-md",
+            ].join(" ")}
+          >
             <div className="mb-4 flex items-center justify-between border-b border-orange-100/70 pb-3">
               <div>
-                <p className="text-xs tracking-wide text-stone-400">WEIGUANG WORKSPACE</p>
-                <p className="text-sm font-medium text-stone-700">今日也在稳步前进</p>
+                <p className="text-xs tracking-wide text-stone-400">
+                  WEIGUANG WORKSPACE
+                </p>
+                <p className="text-sm font-medium text-stone-700">
+                  今日也在稳步前进
+                </p>
               </div>
-              <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-700">在线</div>
+              <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-700">
+                在线
+              </div>
             </div>
-            {loading ? <div className="space-y-3"><div className="h-24 animate-pulse rounded-2xl bg-stone-100" /><div className="h-40 animate-pulse rounded-2xl bg-stone-100" /></div> : <DesktopWorkbench />}
+
+            {loading ? (
+              <div className="space-y-3">
+                <div className="h-24 animate-pulse rounded-2xl bg-stone-100" />
+                <div className="h-40 animate-pulse rounded-2xl bg-stone-100" />
+              </div>
+            ) : (
+              <DesktopWorkbench route={route} />
+            )}
           </section>
 
           <aside
@@ -80,6 +102,7 @@ export default function AppShell() {
             </div>
             <MobileDrawerMenu />
           </div>
+
           <MobileAuthPanel />
           <MobileTaskView />
           <MobileCompanionView />
