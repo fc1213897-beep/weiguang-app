@@ -19,7 +19,7 @@ export default function PlanQuickEntry() {
   }
 
   return (
-    <div className="rounded-2xl border border-dashed border-orange-200/90 bg-orange-50/30 px-3 py-3 sm:rounded-3xl sm:px-4 sm:py-4">
+    <div className="rounded-2xl border border-dashed border-orange-200/90 bg-gradient-to-br from-orange-50/50 via-white to-amber-50/40 px-3 py-3 sm:rounded-3xl sm:px-4 sm:py-4">
       <button
         type="button"
         onClick={() => setCreatePlanOpen(true)}
@@ -31,7 +31,7 @@ export default function PlanQuickEntry() {
       <button
         type="button"
         onClick={handleXiaoguangQuick}
-        className="mt-2.5 w-full rounded-2xl bg-white/90 py-2.5 text-sm text-orange-700 ring-1 ring-orange-100/90 transition hover:bg-orange-50/90"
+        className="mt-2.5 w-full rounded-2xl bg-white py-2.5 text-sm font-medium text-orange-700 ring-1 ring-orange-200/70 transition hover:bg-orange-50/90"
       >
         ✨ 小光建议一个最小目标
       </button>

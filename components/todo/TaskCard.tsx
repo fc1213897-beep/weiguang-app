@@ -143,7 +143,7 @@ export default function TaskCard({
         className={[
           "group relative flex flex-col gap-3 overflow-hidden rounded-2xl border p-4 sm:rounded-3xl sm:p-5",
           "transition-all duration-300 ease-out",
-          "sm:hover:-translate-y-0.5 sm:hover:shadow-[0_10px_28px_-12px_rgba(251,191,136,0.55)]",
+          "sm:hover:-translate-y-0.5 sm:hover:shadow-[0_10px_28px_-14px_rgba(251,191,136,0.45)]",
           "sm:hover:border-amber-200/90",
           done
             ? "border-emerald-100/90 bg-gradient-to-br from-emerald-50/80 via-white to-amber-50/40"
@@ -162,7 +162,7 @@ export default function TaskCard({
         {isEditing ? (
           <div className="relative flex w-full min-w-0 flex-col gap-3">
             <input
-              className="w-full min-w-0 rounded-xl border border-orange-200 bg-white px-3 py-2.5 text-base outline-none focus:border-orange-400 sm:px-4 sm:py-3"
+              className="w-full min-w-0 rounded-xl border border-orange-200 bg-white px-3 py-2.5 text-base outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 sm:px-4 sm:py-3"
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={(e) => {
@@ -178,7 +178,7 @@ export default function TaskCard({
               <button
                 type="button"
                 onClick={handleSaveEdit}
-                className="rounded-full bg-orange-500 px-4 py-1.5 text-sm text-white transition hover:bg-orange-600"
+                className="rounded-full bg-orange-500 px-4 py-1.5 text-sm text-white shadow-sm transition hover:bg-orange-600"
               >
                 保存
               </button>
@@ -288,8 +288,8 @@ export default function TaskCard({
                   "cursor-pointer disabled:cursor-default",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/80",
                   done
-                    ? "bg-emerald-100/90 text-emerald-700 ring-1 ring-emerald-200/60 hover:bg-emerald-200/80"
-                    : "bg-amber-100/90 text-amber-800/90 ring-1 ring-amber-200/50 hover:bg-amber-200/80",
+                  ? "bg-emerald-100/90 text-emerald-700 ring-1 ring-emerald-200/60 hover:bg-emerald-200/80"
+                    : "bg-orange-500 text-white shadow-sm hover:bg-orange-600",
                   justCompleted ? "task-badge-pop" : "",
                 ].join(" ")}
               >

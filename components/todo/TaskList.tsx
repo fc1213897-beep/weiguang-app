@@ -15,10 +15,12 @@ export default function TaskList() {
 
   if (tasksForSelectedDate.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-400 sm:p-10 sm:text-base">
-        {isToday
-          ? "今天还没有任务，先添加一两个吧 ✨"
-          : "这一天还没有任务，可以添加新计划 ✨"}
+      <div className="rounded-2xl border border-dashed border-orange-200/80 bg-orange-50/30 p-6 text-center sm:p-10">
+        <p className="text-3xl" aria-hidden>🗒️</p>
+        <p className="mt-2 text-sm font-medium text-stone-700 sm:text-base">当前还没有任务</p>
+        <p className="mt-1 text-xs text-stone-500 sm:text-sm">
+          {isToday ? "先添加一个最小目标，开始就很棒。" : "这一天还没有安排，可以补充一个小计划。"}
+        </p>
       </div>
     );
   }

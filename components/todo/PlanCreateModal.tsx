@@ -42,7 +42,7 @@ export default function PlanCreateModal() {
 
   const dialog = (
     <div
-      className="fixed inset-0 flex items-end justify-center bg-stone-900/35 p-3 backdrop-blur-[2px] sm:items-center sm:p-6"
+      className="fixed inset-0 flex items-end justify-center bg-stone-900/35 p-0 backdrop-blur-[2px] sm:items-center sm:p-6"
       style={{ zIndex: Z_MODAL }}
       role="dialog"
       aria-modal="true"
@@ -50,9 +50,9 @@ export default function PlanCreateModal() {
       onClick={handleClose}
     >
       <div
-        className="wg-modal-in flex w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-orange-100/90 bg-gradient-to-b from-[#FFFBF7] via-white to-orange-50/50 shadow-xl sm:max-w-md"
+        className="wg-modal-in flex h-[100dvh] w-full max-w-lg flex-col overflow-hidden rounded-none border border-orange-100/90 bg-[#fffdf9] shadow-xl sm:h-auto sm:max-h-[88dvh] sm:rounded-3xl sm:max-w-md"
         style={{
-          maxHeight: "min(88dvh, 720px)",
+          maxHeight: "min(100dvh, 720px)",
         }}
         onClick={(e) => e.stopPropagation()}
       >

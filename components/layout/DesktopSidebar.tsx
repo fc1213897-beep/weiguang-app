@@ -1,7 +1,10 @@
 "use client";
 
 import AuthStatusBadge from "@/components/auth/AuthStatusBadge";
+import { useMemo } from "react";
+import { computeTaskStats } from "@/lib/task-utils";
 import type { DesktopNavId } from "@/types/ui";
+import { useTodoStore } from "@/store/todoStore";
 import { useUIStore } from "@/store/uiStore";
 
 const NAV_ITEMS: {
@@ -20,6 +23,9 @@ const NAV_ITEMS: {
 export default function DesktopSidebar() {
   const desktopNav = useUIStore((s) => s.desktopNav);
   const setDesktopNav = useUIStore((s) => s.setDesktopNav);
+  const tasks = useTodoStore((s) => s.tasks);
+  const stats = useMemo(() => computeTaskStats(tasks), [tasks]);
+  const focusMinutes = tasks.reduce((sum, t) => sum + (t.pomodoroMinutes ?? 0), 0);
 
   return (
     <aside className="flex h-full min-w-0 flex-col border-r border-orange-100/60 pr-4">
@@ -48,6 +54,18 @@ export default function DesktopSidebar() {
           );
         })}
       </nav>
+
+      <div className="mb-3 mt-4 space-y-2 rounded-2xl border border-stone-200/80 bg-stone-50/80 p-3">
+        <p className="text-xs font-medium text-stone-500">今日状态</p>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-stone-500">连续学习</span>
+          <span className="font-medium text-orange-600">{stats.completed > 0 ? "1 天" : "0 天"}</span>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-stone-500">专注时间</span>
+          <span className="font-medium text-emerald-600">{focusMinutes} 分钟</span>
+        </div>
+      </div>
 
       <div className="mt-auto border-t border-orange-100/60 px-1 pt-3">
         <AuthStatusBadge
