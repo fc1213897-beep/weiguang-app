@@ -19,7 +19,7 @@ export default function AppShell() {
       <MotionStyles />
       <main
         className={[
-          "wg-page-in min-h-screen bg-[#FFF7ED] p-4 sm:p-6",
+          "wg-page-in min-h-screen p-3 sm:p-5",
           MOBILE_MAIN_PB,
           "lg:p-6 lg:pb-6 xl:p-8",
         ].join(" ")}
@@ -61,7 +61,7 @@ export default function AppShell() {
         </div>
 
         {/* 手机 */}
-        <div className="mx-auto w-full min-w-0 max-w-7xl lg:hidden">
+        <div className="mx-auto w-full min-w-0 max-w-7xl space-y-3 lg:hidden">
           <MobileAuthPanel />
           <MobileTaskView />
           <MobileCompanionView />

@@ -33,7 +33,7 @@ export default function AIChat({ className, hideHeader = false }: Props) {
   return (
     <div
       className={[
-        "flex w-full min-w-0 max-w-full flex-col rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/60 to-[#FFFBF5] p-3 sm:p-4",
+        "flex w-full min-w-0 max-w-full flex-col rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/40 to-white p-3 sm:p-4",
         className ?? "mt-4 sm:mt-6",
       ].join(" ")}
     >
@@ -49,7 +49,7 @@ export default function AIChat({ className, hideHeader = false }: Props) {
       <div
         ref={listRef}
         className={[
-          "mb-3 min-h-[6rem] space-y-2.5 overflow-y-auto overflow-x-hidden rounded-xl bg-white/70 p-2.5 sm:p-3",
+          "mb-3 min-h-[7rem] space-y-2.5 overflow-y-auto overflow-x-hidden rounded-xl border border-orange-100/60 bg-white/85 p-2.5 sm:p-3",
           "max-h-[min(11rem,34dvh)] sm:max-h-52",
           "lg:min-h-[18rem] lg:max-h-none lg:flex-1",
         ].join(" ")}
@@ -101,7 +101,7 @@ export default function AIChat({ className, hideHeader = false }: Props) {
 
       <div className="flex shrink-0 flex-col gap-2 lg:gap-2.5 xl:flex-row xl:items-center">
         <input
-          className="w-full min-w-0 flex-1 rounded-xl border border-orange-100 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-300 disabled:opacity-60 sm:text-base"
+          className="w-full min-w-0 flex-1 rounded-xl border border-orange-200/90 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 disabled:opacity-60 sm:text-base"
           placeholder="例如：今天有点累…"
           value={input}
           onChange={(e) => setInput(e.target.value)}

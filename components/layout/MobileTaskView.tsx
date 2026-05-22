@@ -27,8 +27,9 @@ export default function MobileTaskView() {
   return (
     <>
       <div className={[panelClass, "min-w-0"].join(" ")}>
-        <header className="border-b border-orange-50 pb-3">
-          <h2 className="text-lg font-bold text-stone-800">
+        <header className="border-b border-orange-100/70 pb-3">
+          <p className="text-xs font-medium tracking-wide text-orange-500">TODAY</p>
+          <h2 className="mt-1 text-lg font-bold text-stone-800">
             {getPlanTitle(selectedDate)}
           </h2>
           <p className="mt-0.5 text-xs text-stone-500">

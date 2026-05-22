@@ -27,7 +27,7 @@ export default function MobileTabNav() {
 
   const nav = (
     <nav
-      className="fixed bottom-0 left-0 right-0 w-full border-t border-orange-100/80 bg-white/95 shadow-[0_-4px_24px_-8px_rgba(251,146,60,0.15)] backdrop-blur-md lg:hidden"
+      className="fixed bottom-0 left-0 right-0 w-full border-t border-orange-100/80 bg-white/92 shadow-[0_-8px_28px_-14px_rgba(251,146,60,0.25)] backdrop-blur-md lg:hidden"
       style={{
         zIndex: Z_MOBILE_TAB,
         paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))",
@@ -47,7 +47,7 @@ export default function MobileTabNav() {
                 "touch-manipulation",
                 isActive
                   ? "font-semibold text-orange-500"
-                  : "text-gray-400 active:text-gray-500",
+                  : "text-stone-400 active:text-stone-500",
               ].join(" ")}
               aria-current={isActive ? "page" : undefined}
             >

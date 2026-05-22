@@ -15,7 +15,7 @@ export default function MobileCompanionView() {
     <div className={[panelClass, "flex min-w-0 flex-col gap-3"].join(" ")}>
       <CompanionRail variant="mobile" />
       <div className="min-w-0 border-t border-orange-100/60 pt-3">
-        <p className="mb-2 text-sm font-semibold text-stone-700">和小光聊聊</p>
+        <p className="mb-2 text-sm font-semibold text-stone-700">小光在线 · 随时陪你</p>
         <ChatPanel showHeader={false} />
       </div>
     </div>
