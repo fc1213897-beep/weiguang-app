@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import WebScanLogin from "@/components/auth/WebScanLogin";
+import WechatScanLogin from "@/components/auth/WechatScanLogin";
 
-/** 账号登录卡片：Magic Link，用于设置页或手机折叠区 */
+/** 账号登录：网页扫码（手机+电脑）或邮箱 Magic Link */
 export default function AuthCard() {
   const {
     status,
@@ -17,24 +19,20 @@ export default function AuthCard() {
     signInWithMagicLink,
     signOut,
     resetEmailSent,
+    setAuthError,
   } = useAuth();
 
   const [inputEmail, setInputEmail] = useState("");
-
-  async function handleSendLink() {
-    await signInWithMagicLink(inputEmail);
-  }
+  const [showWxMp, setShowWxMp] = useState(false);
 
   return (
     <section className="rounded-2xl border border-orange-100/80 bg-gradient-to-b from-white to-orange-50/40 p-5 shadow-sm">
       <h3 className="text-base font-semibold text-stone-800">账号与同步</h3>
       <p className="mt-1 text-xs text-stone-500">
-        登录后可在手机与电脑同步学习计划（云端同步即将上线）
+        登录后可在手机与电脑使用同一账号（任务云同步逐步开放）
       </p>
 
-      {isLoading && (
-        <p className="mt-4 text-sm text-stone-500">正在检查登录状态…</p>
-      )}
+      {isLoading && <p className="mt-4 text-sm text-stone-500">正在检查登录状态…</p>}
 
       {!isLoading && isAuthenticated && email && (
         <div className="mt-4 space-y-3">
@@ -42,12 +40,7 @@ export default function AuthCard() {
             <span className="text-stone-500">已登录 · </span>
             <span className="font-medium break-all">{email}</span>
           </div>
-          <Button
-            variant="soft"
-            fullWidth
-            disabled={authActionLoading}
-            onClick={() => signOut()}
-          >
+          <Button variant="soft" fullWidth disabled={authActionLoading} onClick={() => signOut()}>
             {authActionLoading ? "退出中…" : "退出登录"}
           </Button>
         </div>
@@ -60,10 +53,21 @@ export default function AuthCard() {
             ，数据仅保存在本浏览器
           </div>
 
+          <WebScanLogin onError={setAuthError} onSuccess={() => setAuthError(null)} />
+
+          <div className="relative py-1">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-stone-200" />
+            </div>
+            <p className="relative mx-auto w-fit bg-white/80 px-2 text-xs text-stone-400">
+              或使用邮箱（手机/电脑均可）
+            </p>
+          </div>
+
           {emailSent ? (
             <div className="space-y-2">
               <p className="rounded-xl bg-green-50/90 px-3 py-2.5 text-sm text-green-800">
-                登录链接已发送到邮箱，请查收邮件（含垃圾箱）并点击链接完成登录。
+                登录链接已发送到邮箱。在手机或电脑邮箱里点开链接即可完成登录。
               </p>
               <button
                 type="button"
@@ -89,11 +93,25 @@ export default function AuthCard() {
               <Button
                 fullWidth
                 disabled={authActionLoading}
-                onClick={handleSendLink}
+                onClick={() => signInWithMagicLink(inputEmail)}
               >
-                {authActionLoading ? "发送中…" : "发送 Magic Link 登录链接"}
+                {authActionLoading ? "发送中…" : "发送邮箱登录链接"}
               </Button>
             </>
+          )}
+
+          <button
+            type="button"
+            className="w-full text-center text-xs text-stone-400 hover:text-stone-600"
+            onClick={() => setShowWxMp((v) => !v)}
+          >
+            {showWxMp ? "收起微信小程序登录" : "展开微信小程序登录（可选）"}
+          </button>
+          {showWxMp && (
+            <WechatScanLogin
+              onError={setAuthError}
+              onSuccess={() => setAuthError(null)}
+            />
           )}
         </div>
       )}

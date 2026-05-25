@@ -153,5 +153,6 @@ export function useAuth() {
     signInWithMagicLink,
     signOut,
     resetEmailSent: () => setEmailSent(false),
+    setAuthError,
   };
 }

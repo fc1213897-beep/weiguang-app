@@ -27,6 +27,3 @@ export function getSupabaseClient(): SupabaseClient {
   }
   return browserClient;
 }
-
-/** 默认导出的 Supabase 客户端 */
-export const supabase = getSupabaseClient();
