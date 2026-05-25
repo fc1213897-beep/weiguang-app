@@ -7,9 +7,16 @@ import { useChatStore } from "@/store/chatStore";
 type Props = {
   className?: string;
   hideHeader?: boolean;
+  /** drawer：浮动面板内全高度自适应，避免输入区被裁切 */
+  variant?: "default" | "drawer";
 };
 
-export default function AIChat({ className, hideHeader = false }: Props) {
+export default function AIChat({
+  className,
+  hideHeader = false,
+  variant = "default",
+}: Props) {
+  const isDrawer = variant === "drawer";
   const messages = useChatStore((s) => s.messages);
   const input = useChatStore((s) => s.input);
   const isSending = useChatStore((s) => s.isSending);
@@ -33,8 +40,11 @@ export default function AIChat({ className, hideHeader = false }: Props) {
   return (
     <div
       className={[
-        "flex w-full min-w-0 max-w-full flex-col rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/40 to-white p-3 sm:p-4",
-        className ?? "mt-4 sm:mt-6",
+        "flex w-full min-w-0 max-w-full flex-col",
+        isDrawer
+          ? "min-h-0 flex-1 bg-transparent p-0"
+          : "rounded-2xl border border-orange-100/80 bg-gradient-to-b from-orange-50/40 to-white p-3 sm:p-4",
+        className ?? (isDrawer ? "" : "mt-4 sm:mt-6"),
       ].join(" ")}
     >
       {!hideHeader && (
@@ -49,9 +59,14 @@ export default function AIChat({ className, hideHeader = false }: Props) {
       <div
         ref={listRef}
         className={[
-          "mb-3 min-h-[7rem] space-y-2.5 overflow-y-auto overflow-x-hidden rounded-xl border border-orange-100/60 bg-white/85 p-2.5 sm:p-3",
-          "max-h-[min(11rem,34dvh)] sm:max-h-52",
-          "lg:min-h-[18rem] lg:max-h-none lg:flex-1",
+          "space-y-2.5 overflow-y-auto overflow-x-hidden",
+          isDrawer
+            ? "min-h-0 flex-1 rounded-xl border border-orange-100/60 bg-white/90 p-3"
+            : [
+                "mb-3 min-h-[7rem] rounded-xl border border-orange-100/60 bg-white/85 p-2.5 sm:p-3",
+                "max-h-[min(11rem,34dvh)] sm:max-h-52",
+                "lg:min-h-[18rem] lg:max-h-none lg:flex-1",
+              ].join(" "),
         ].join(" ")}
       >
         {messages.map((msg) => (
@@ -99,7 +114,12 @@ export default function AIChat({ className, hideHeader = false }: Props) {
         )}
       </div>
 
-      <div className="flex shrink-0 flex-col gap-2 lg:gap-2.5 xl:flex-row xl:items-center">
+      <div
+        className={[
+          "flex shrink-0 flex-col gap-2",
+          isDrawer ? "mt-3 border-t border-orange-100/70 pt-3" : "lg:gap-2.5 xl:flex-row xl:items-center",
+        ].join(" ")}
+      >
         <input
           className="w-full min-w-0 flex-1 rounded-xl border border-orange-200/90 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 disabled:opacity-60 sm:text-base"
           placeholder="例如：今天有点累…"

@@ -22,8 +22,13 @@ export function MotionStyles() {
         from { opacity: 0; transform: translateY(12px) scale(0.98); }
         to { opacity: 1; transform: translateY(0) scale(1); }
       }
+      @keyframes wg-fab-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.55; }
+        50% { transform: scale(1.18); opacity: 0.2; }
+      }
       .wg-page-in { animation: wg-page-in 0.6s ease-out both; }
       .wg-modal-in { animation: wg-modal-in 0.5s ease-out both; }
+      .wg-fab-pulse { animation: wg-fab-pulse 2.8s ease-in-out infinite; }
       .wg-character-breathe {
         display: inline-block;
         animation: wg-breathe 4s ease-in-out infinite;
@@ -50,7 +55,7 @@ export function MotionStyles() {
         }
       }
       @media (prefers-reduced-motion: reduce) {
-        .wg-page-in, .wg-modal-in, .wg-character-breathe, .wg-msg-fade-in, .wg-thinking-dot {
+        .wg-page-in, .wg-modal-in, .wg-fab-pulse, .wg-character-breathe, .wg-msg-fade-in, .wg-thinking-dot {
           animation: none !important;
         }
         .wg-panel-card, .wg-inner-card { transition: none; }

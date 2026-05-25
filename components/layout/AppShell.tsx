@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import MobileAuthPanel from "@/components/auth/MobileAuthPanel";
 import CharacterModal from "@/components/companion/CharacterModal";
-import ChatPanel from "@/components/chat/ChatPanel";
+import FloatingChatEntry from "@/components/chat/FloatingChatEntry";
 import DesktopSidebar from "@/components/layout/DesktopSidebar";
 import DesktopWorkbench from "@/components/layout/DesktopWorkbench";
 import MobileCompanionView from "@/components/layout/MobileCompanionView";
@@ -15,7 +15,14 @@ import { MotionStyles } from "@/components/ui/motion-styles";
 import { DESKTOP_GRID_CLASS, MOBILE_MAIN_PB } from "@/lib/layout";
 import { panelClass } from "@/lib/tokens";
 
-type RouteId = "home" | "today" | "tasks" | "chat" | "stats" | "settings";
+type RouteId =
+  | "home"
+  | "today"
+  | "tasks"
+  | "chat"
+  | "journey"
+  | "stats"
+  | "settings";
 
 /** 三栏工作台（桌面）+ 手机端多视图 */
 export default function AppShell({ route = "home" }: { route?: RouteId }) {
@@ -62,14 +69,14 @@ export default function AppShell({ route = "home" }: { route?: RouteId }) {
             <div className="mb-4 flex items-center justify-between border-b border-orange-100/70 pb-3">
               <div>
                 <p className="text-xs tracking-wide text-stone-400">
-                  WEIGUANG WORKSPACE
+                  微光 · 成长空间
                 </p>
                 <p className="text-sm font-medium text-stone-700">
-                  今日也在稳步前进
+                  人生不是冲刺，而是慢慢亮起来的路
                 </p>
               </div>
-              <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-700">
-                在线
+              <div className="rounded-full bg-amber-50 px-3 py-1 text-xs text-amber-800">
+                温柔在线
               </div>
             </div>
 
@@ -83,15 +90,9 @@ export default function AppShell({ route = "home" }: { route?: RouteId }) {
             )}
           </section>
 
-          <aside
-            className={[
-              panelClass,
-              "flex min-h-0 min-w-0 flex-col lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:w-full lg:p-5",
-            ].join(" ")}
-          >
-            <ChatPanel />
-          </aside>
         </div>
+
+        <FloatingChatEntry />
 
         {/* 手机 */}
         <div className="mx-auto w-full min-w-0 max-w-7xl space-y-3 lg:hidden">

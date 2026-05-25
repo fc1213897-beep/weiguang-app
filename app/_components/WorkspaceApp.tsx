@@ -7,7 +7,9 @@ import { useChatSync } from "@/hooks/useChatSync";
 import { useTodoHydration } from "@/hooks/useTodoHydration";
 import { useTodoSync } from "@/hooks/useTodoSync";
 
-type Props = { route: "home" | "today" | "tasks" | "chat" | "stats" | "settings" };
+type Props = {
+  route: "home" | "today" | "tasks" | "chat" | "journey" | "stats" | "settings";
+};
 
 export default function WorkspaceApp({ route }: Props) {
   useAuth();

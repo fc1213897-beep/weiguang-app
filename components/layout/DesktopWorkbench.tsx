@@ -1,5 +1,6 @@
 "use client";
 
+import JourneyView from "@/components/journey/JourneyView";
 import DesktopCompanionView from "@/components/todo/views/DesktopCompanionView";
 import HomeDashboardView from "@/components/todo/views/HomeDashboardView";
 import DesktopStatsView from "@/components/todo/views/DesktopStatsView";
@@ -16,6 +17,8 @@ export default function DesktopWorkbench({ route }: { route?: string }) {
   switch (current) {
     case "home":
       return <HomeDashboardView />;
+    case "journey":
+      return <JourneyView />;
     case "chat":
       return <DesktopCompanionView />;
     case "today":
