@@ -65,6 +65,7 @@
   flex: 1;
   min-height: 0;
   padding: 0 28rpx;
+  padding-bottom: calc(112rpx + var(--tab-bar-clearance) + env(safe-area-inset-bottom));
   box-sizing: border-box;
 }
 
@@ -131,14 +132,20 @@
   height: 24rpx;
 }
 
+/* 固定在 tabBar 上方，避免输入区被遮挡 */
 .input-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tab-bar-clearance) + env(safe-area-inset-bottom));
+  z-index: 100;
   display: flex;
   align-items: center;
   gap: 16rpx;
-  padding: 16rpx 28rpx calc(120rpx + env(safe-area-inset-bottom));
+  padding: 16rpx 28rpx;
   background: rgba(255, 255, 255, 0.95);
   border-top: 1rpx solid rgba(254, 215, 170, 0.5);
-  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .chat-input {

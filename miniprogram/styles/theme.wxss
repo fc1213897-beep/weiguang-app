@@ -1,4 +1,10 @@
 /* 微光小程序 · 全局视觉 */
+
+/* 自定义 tabBar 占位（圆角条 + 底边距，不含 safe-area） */
+page {
+  --tab-bar-clearance: 180rpx;
+}
+
 .page-wrap {
   min-height: 100vh;
   box-sizing: border-box;
