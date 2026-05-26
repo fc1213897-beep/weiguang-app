@@ -56,7 +56,12 @@ function ensureLogin() {
               resolve(getSession());
               return;
             }
-            reject(new Error(body.error || `登录失败(${res.statusCode})`));
+            let msg = body.error || `登录失败(${res.statusCode})`;
+            if (res.statusCode === 404) {
+              msg =
+                "服务器未更新：缺少登录接口。请上传含 api/auth/wx/mp-login 的代码并 npm run build 后重启";
+            }
+            reject(new Error(msg));
           },
           fail(err) {
             reject(

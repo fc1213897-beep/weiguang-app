@@ -1,5 +1,6 @@
 const auth = require("../../utils/auth.js");
 const { request } = require("../../utils/request.js");
+const { setTabSelected } = require("../../utils/tab.js");
 
 Page({
   data: {
@@ -7,17 +8,32 @@ Page({
     input: "",
     sending: false,
     scrollIntoView: "",
+    loggedIn: false,
+    loginError: "",
   },
 
   onShow() {
-    auth
+    setTabSelected(this, 1);
+    this.bootstrap();
+  },
+
+  onRetryLogin() {
+    auth.clearSession();
+    this.setData({ loginError: "" });
+    this.bootstrap();
+  },
+
+  bootstrap() {
+    return auth
       .ensureLogin()
-      .then(() => this.loadMessages())
+      .then(() => {
+        this.setData({ loggedIn: true, loginError: "" });
+        return this.loadMessages();
+      })
       .catch((err) => {
-        wx.showToast({
-          title: err.message || "登录失败",
-          icon: "none",
-          duration: 3000,
+        this.setData({
+          loggedIn: false,
+          loginError: err.message || "登录失败",
         });
       });
   },
@@ -44,7 +60,7 @@ Page({
 
   onSend() {
     const text = (this.data.input || "").trim();
-    if (!text || this.data.sending) return;
+    if (!text || this.data.sending || !this.data.loggedIn) return;
 
     const tempUser = {
       id: `temp-${Date.now()}`,
@@ -70,21 +86,18 @@ Page({
           throw new Error(body.error || "发送失败");
         }
 
-        const assistant = body.assistant_message;
-        const userMsg = body.user_message;
-
         const messages = this.data.messages
           .filter((m) => m.id !== tempUser.id)
           .concat([
             {
-              id: userMsg.id,
+              id: body.user_message.id,
               role: "user",
-              content: userMsg.content,
+              content: body.user_message.content,
             },
             {
-              id: assistant.id,
+              id: body.assistant_message.id,
               role: "assistant",
-              content: assistant.content,
+              content: body.assistant_message.content,
             },
           ]);
 
@@ -105,7 +118,7 @@ Page({
 
   scrollToBottom() {
     const len = this.data.messages.length;
-    if (len === 0) return;
-    this.setData({ scrollIntoView: `msg-${len - 1}` });
+    const target = len > 0 ? `msg-${len - 1}` : "scroll-bottom";
+    this.setData({ scrollIntoView: target });
   },
 });

@@ -1,6 +1,7 @@
 const auth = require("../../utils/auth.js");
 const { request } = require("../../utils/request.js");
 const dateUtil = require("../../utils/date.js");
+const { setTabSelected } = require("../../utils/tab.js");
 
 Page({
   data: {
@@ -13,6 +14,8 @@ Page({
     newTitle: "",
     loading: true,
     adding: false,
+    loggedIn: false,
+    loginError: "",
   },
 
   onLoad() {
@@ -25,30 +28,39 @@ Page({
   },
 
   onShow() {
+    setTabSelected(this, 0);
     this.bootstrap();
   },
 
   onPullDownRefresh() {
-    this.loadTasks().finally(() => wx.stopPullDownRefresh());
+    this.bootstrap().finally(() => wx.stopPullDownRefresh());
+  },
+
+  onRetryLogin() {
+    auth.clearSession();
+    this.setData({ loginError: "" });
+    this.bootstrap();
   },
 
   bootstrap() {
-    auth
+    this.setData({ loading: true, loginError: "" });
+    return auth
       .ensureLogin()
-      .then(() => this.loadTasks())
+      .then(() => {
+        this.setData({ loggedIn: true, loginError: "" });
+        return this.loadTasks();
+      })
       .catch((err) => {
-        this.setData({ loading: false });
-        wx.showToast({
-          title: err.message || "登录失败",
-          icon: "none",
-          duration: 3000,
+        this.setData({
+          loading: false,
+          loggedIn: false,
+          loginError: err.message || "登录失败",
         });
       });
   },
 
   loadTasks() {
     const { selectedDate } = this.data;
-    this.setData({ loading: true });
 
     return request({
       url: `/api/mp/tasks?task_date=${selectedDate}`,
@@ -71,13 +83,11 @@ Page({
   },
 
   onPrevDay() {
-    const next = dateUtil.addDays(this.data.selectedDate, -1);
-    this.updateDate(next);
+    this.updateDate(dateUtil.addDays(this.data.selectedDate, -1));
   },
 
   onNextDay() {
-    const next = dateUtil.addDays(this.data.selectedDate, 1);
-    this.updateDate(next);
+    this.updateDate(dateUtil.addDays(this.data.selectedDate, 1));
   },
 
   updateDate(dateStr) {
@@ -87,7 +97,10 @@ Page({
       dateLabel: dateUtil.formatDisplayDate(dateStr),
       isToday: dateStr === today,
     });
-    this.loadTasks();
+    if (this.data.loggedIn) {
+      this.setData({ loading: true });
+      this.loadTasks();
+    }
   },
 
   onTitleInput(e) {
@@ -96,7 +109,7 @@ Page({
 
   onAddTask() {
     const title = (this.data.newTitle || "").trim();
-    if (!title || this.data.adding) return;
+    if (!title || this.data.adding || !this.data.loggedIn) return;
 
     this.setData({ adding: true });
 
@@ -131,7 +144,7 @@ Page({
   onToggleTask(e) {
     const id = e.currentTarget.dataset.id;
     const completed = e.currentTarget.dataset.completed;
-    if (!id) return;
+    if (!id || !this.data.loggedIn) return;
 
     request({
       url: `/api/mp/tasks/${id}`,

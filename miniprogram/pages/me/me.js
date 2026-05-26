@@ -1,4 +1,5 @@
 const auth = require("../../utils/auth.js");
+const { setTabSelected } = require("../../utils/tab.js");
 
 Page({
   data: {
@@ -6,6 +7,7 @@ Page({
   },
 
   onShow() {
+    setTabSelected(this, 2);
     auth
       .ensureLogin()
       .then((session) => {
@@ -26,14 +28,16 @@ Page({
         if (!res.confirm) return;
         auth.clearSession();
         wx.showToast({ title: "已退出", icon: "success" });
-        auth
-          .ensureLogin()
-          .then((session) => {
-            const email =
-              (session && session.user && session.user.email) || "";
-            this.setData({ email });
-          })
-          .catch(() => {});
+        setTimeout(() => {
+          auth
+            .ensureLogin()
+            .then((session) => {
+              const email =
+                (session && session.user && session.user.email) || "";
+              this.setData({ email });
+            })
+            .catch(() => {});
+        }, 500);
       },
     });
   },

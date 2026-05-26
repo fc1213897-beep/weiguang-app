@@ -1,6 +1,6 @@
 <view class="page">
   <view class="card">
-    <text class="title">微光 · 扫码登录</text>
+    <text class="title">💻 微光 · 扫码登录</text>
     <text class="desc">确认后，电脑网页将自动完成登录</text>
 
     <view class="scene-box" wx:if="{{scene}}">

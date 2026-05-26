@@ -1,45 +1,86 @@
-<view class="page">
-  <view class="header card">
-    <text class="label">TODAY</text>
-    <view class="date-row">
-      <text class="date-btn" bindtap="onPrevDay">‹</text>
-      <text class="date-text">{{dateLabel}}{{isToday ? ' · 今天' : ''}}</text>
-      <text class="date-btn" bindtap="onNextDay">›</text>
+<view class="page-wrap">
+  <!-- 登录失败提示条 -->
+  <view class="error-banner" wx:if="{{loginError}}">
+    <text class="error-text">{{loginError}}</text>
+    <text class="error-retry" bindtap="onRetryLogin">重试</text>
+  </view>
+
+  <view class="hero card-soft">
+    <view class="hero-top">
+      <text class="section-title">TODAY</text>
+      <text class="hero-badge" wx:if="{{isToday}}">今天</text>
     </view>
-    <text class="stats">已完成 {{doneCount}} · 未完成 {{todoCount}}</text>
+    <view class="date-row">
+      <view class="date-nav" bindtap="onPrevDay">
+        <text class="nav-arrow">‹</text>
+      </view>
+      <text class="date-main">{{dateLabel}}</text>
+      <view class="date-nav" bindtap="onNextDay">
+        <text class="nav-arrow">›</text>
+      </view>
+    </view>
+    <view class="progress-row">
+      <view class="progress-item done">
+        <text class="progress-num">{{doneCount}}</text>
+        <text class="progress-label">已完成</text>
+      </view>
+      <view class="progress-divider"></view>
+      <view class="progress-item todo">
+        <text class="progress-num">{{todoCount}}</text>
+        <text class="progress-label">未完成</text>
+      </view>
+    </view>
   </view>
 
-  <view class="card add-row">
-    <input
-      class="add-input"
-      placeholder="添加一个最小目标…"
-      value="{{newTitle}}"
-      bindinput="onTitleInput"
-      confirm-type="done"
-      bindconfirm="onAddTask"
-    />
-    <button class="btn-add" size="mini" bindtap="onAddTask" loading="{{adding}}">添加</button>
+  <view class="add-card card-soft">
+    <text class="add-hint">先定一个小目标，开始就很棒</text>
+    <view class="add-row">
+      <input
+        class="add-input"
+        placeholder="例如：背 10 个单词"
+        placeholder-class="placeholder"
+        value="{{newTitle}}"
+        bindinput="onTitleInput"
+        confirm-type="done"
+        bindconfirm="onAddTask"
+      />
+      <button
+        class="btn-add btn-primary"
+        bindtap="onAddTask"
+        loading="{{adding}}"
+        disabled="{{adding || !loggedIn}}"
+      >
+        添加
+      </button>
+    </view>
   </view>
 
-  <view class="card list-card" wx:if="{{!loading && tasks.length === 0}}">
-    <text class="empty">还没有任务，先添加一个最小目标吧 ✨</text>
+  <view class="empty card-soft" wx:if="{{!loading && loggedIn && tasks.length === 0}}">
+    <text class="empty-emoji">🌙</text>
+    <text class="empty-title">还没有任务</text>
+    <text class="empty-desc">在上方输入一件最小的事，今天就够棒了</text>
   </view>
 
   <view class="task-list" wx:if="{{tasks.length > 0}}">
     <view
-      class="task-item card {{item.completed ? 'done' : ''}}"
+      class="task-card card-soft {{item.completed ? 'is-done' : ''}}"
       wx:for="{{tasks}}"
       wx:key="id"
       data-id="{{item.id}}"
       data-completed="{{item.completed}}"
       bindtap="onToggleTask"
     >
-      <text class="check">{{item.completed ? '✓' : '○'}}</text>
+      <view class="checkbox {{item.completed ? 'checked' : ''}}">
+        <text wx:if="{{item.completed}}" class="check-mark">✓</text>
+      </view>
       <text class="task-title">{{item.title}}</text>
     </view>
   </view>
 
-  <view class="loading" wx:if="{{loading}}">
-    <text>加载中…</text>
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="loading-dot"></view>
+    <text class="loading-text">加载中…</text>
   </view>
+
+  <view class="page-bottom-spacer"></view>
 </view>
