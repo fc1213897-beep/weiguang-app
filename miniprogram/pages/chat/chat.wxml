@@ -1,0 +1,45 @@
+<view class="page">
+  <scroll-view
+    class="messages"
+    scroll-y
+    scroll-into-view="{{scrollIntoView}}"
+    scroll-with-animation
+  >
+    <view
+      class="msg-row {{item.role === 'user' ? 'user' : 'assistant'}}"
+      wx:for="{{messages}}"
+      wx:key="id"
+      id="msg-{{index}}"
+    >
+      <view class="bubble">
+        <text class="bubble-text">{{item.content}}</text>
+      </view>
+    </view>
+    <view class="msg-row assistant" wx:if="{{sending}}">
+      <view class="bubble typing">
+        <text class="bubble-text">小光正在想…</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="input-bar">
+    <input
+      class="chat-input"
+      placeholder="和小光说说…"
+      value="{{input}}"
+      bindinput="onInput"
+      confirm-type="send"
+      bindconfirm="onSend"
+      disabled="{{sending}}"
+    />
+    <button
+      class="btn-send"
+      size="mini"
+      bindtap="onSend"
+      loading="{{sending}}"
+      disabled="{{sending}}"
+    >
+      发送
+    </button>
+  </view>
+</view>

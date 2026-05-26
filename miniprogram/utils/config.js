@@ -1,9 +1,9 @@
 /**
- * 本地 Next.js 后端地址
- * - 微信开发者工具：可用 http://localhost:3000（勾选「不校验合法域名」）
- * - 真机调试：改成电脑局域网 IP，如 http://192.168.1.100:3000
+ * Next.js 后端地址（与网页访问一致：http://www.weiguanglife.top:3000）
+ * - 须与 .env.local 中 NEXT_PUBLIC_APP_URL 保持一致
+ * - 微信正式版要求 HTTPS 且无端口，上线前建议 Nginx 反代到 443
  */
-const API_BASE = "http://localhost:3000";
+const API_BASE = "http://www.weiguanglife.top:3000";
 
 module.exports = {
   apiBase: API_BASE,

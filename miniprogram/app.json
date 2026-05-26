@@ -1,10 +1,41 @@
 {
-  "pages": ["pages/login/login"],
+  "pages": [
+    "pages/tasks/tasks",
+    "pages/chat/chat",
+    "pages/me/me",
+    "pages/login/login"
+  ],
   "window": {
     "navigationBarTitleText": "微光",
     "navigationBarBackgroundColor": "#fff7ed",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#fff7ed"
+  },
+  "tabBar": {
+    "color": "#78716c",
+    "selectedColor": "#c2410c",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/tasks/tasks",
+        "text": "今日任务",
+        "iconPath": "images/tab-task.png",
+        "selectedIconPath": "images/tab-task-active.png"
+      },
+      {
+        "pagePath": "pages/chat/chat",
+        "text": "小光",
+        "iconPath": "images/tab-chat.png",
+        "selectedIconPath": "images/tab-chat-active.png"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "我的",
+        "iconPath": "images/tab-me.png",
+        "selectedIconPath": "images/tab-me-active.png"
+      }
+    ]
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json"

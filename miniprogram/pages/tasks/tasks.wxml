@@ -1,0 +1,45 @@
+<view class="page">
+  <view class="header card">
+    <text class="label">TODAY</text>
+    <view class="date-row">
+      <text class="date-btn" bindtap="onPrevDay">‹</text>
+      <text class="date-text">{{dateLabel}}{{isToday ? ' · 今天' : ''}}</text>
+      <text class="date-btn" bindtap="onNextDay">›</text>
+    </view>
+    <text class="stats">已完成 {{doneCount}} · 未完成 {{todoCount}}</text>
+  </view>
+
+  <view class="card add-row">
+    <input
+      class="add-input"
+      placeholder="添加一个最小目标…"
+      value="{{newTitle}}"
+      bindinput="onTitleInput"
+      confirm-type="done"
+      bindconfirm="onAddTask"
+    />
+    <button class="btn-add" size="mini" bindtap="onAddTask" loading="{{adding}}">添加</button>
+  </view>
+
+  <view class="card list-card" wx:if="{{!loading && tasks.length === 0}}">
+    <text class="empty">还没有任务，先添加一个最小目标吧 ✨</text>
+  </view>
+
+  <view class="task-list" wx:if="{{tasks.length > 0}}">
+    <view
+      class="task-item card {{item.completed ? 'done' : ''}}"
+      wx:for="{{tasks}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      data-completed="{{item.completed}}"
+      bindtap="onToggleTask"
+    >
+      <text class="check">{{item.completed ? '✓' : '○'}}</text>
+      <text class="task-title">{{item.title}}</text>
+    </view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中…</text>
+  </view>
+</view>

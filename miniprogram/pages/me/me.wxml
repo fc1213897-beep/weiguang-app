@@ -1,0 +1,21 @@
+<view class="page">
+  <view class="card profile">
+    <text class="avatar">✨</text>
+    <text class="name">微光用户</text>
+    <text class="email" wx:if="{{email}}">{{email}}</text>
+    <text class="email muted" wx:else>微信已登录，与 PC 数据同步</text>
+  </view>
+
+  <view class="card menu">
+    <navigator url="/pages/login/login" class="menu-item">
+      <text>帮电脑扫码登录</text>
+      <text class="arrow">›</text>
+    </navigator>
+    <view class="menu-item" bindtap="onLogout">
+      <text class="danger">退出登录</text>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+
+  <text class="hint">PC 打开 weiguanglife.top 可查看成长空间、统计等完整功能</text>
+</view>

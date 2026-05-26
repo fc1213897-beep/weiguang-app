@@ -11,7 +11,7 @@
     <view class="scene-box warn" wx:else>
       <text class="warn-title">当前没有 scene（正常情况）</text>
       <text class="warn-line">你是直接「编译」打开的本页，不是扫电脑上的小程序码，所以没有场景值。</text>
-      <text class="warn-line warn-step">① 电脑浏览器打开 localhost:3000/settings</text>
+      <text class="warn-line warn-step">① 电脑浏览器打开 设置页 → 微信扫码登录</text>
       <text class="warn-line warn-step">② 点「微信扫码登录」出现小程序码</text>
       <text class="warn-line warn-step">③ 用微信扫该码进入本页（不要点普通编译）</text>
       <text class="warn-line warn-step">④ 或见下方「开发调试」粘贴电脑上的 scene</text>
