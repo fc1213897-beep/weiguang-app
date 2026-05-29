@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireMpAuth } from "@/lib/mp-auth";
-import type { CreateTaskInput, TaskRow } from "@/types/database";
-
-function mapRow(row: Record<string, unknown>): TaskRow {
-  return row as unknown as TaskRow;
-}
+import {
+  createTaskForMp,
+  listTasksForMp,
+} from "@/lib/mp-tasks-server";
+import type { CreateTaskInput } from "@/types/database";
 
 /** GET /api/mp/tasks?task_date=YYYY-MM-DD */
 export async function GET(request: Request) {
@@ -15,27 +15,9 @@ export async function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const taskDate = searchParams.get("task_date")?.trim();
-
-    let query = auth.supabase
-      .from("tasks")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (taskDate) {
-      query = query.eq("task_date", taskDate);
-    }
-
-    const { data, error } = await query;
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({
-      tasks: (data ?? []).map((row) =>
-        mapRow(row as Record<string, unknown>)
-      ),
-    });
+    const taskDate = searchParams.get("task_date")?.trim() || undefined;
+    const tasks = await listTasksForMp(auth.user.id, taskDate);
+    return NextResponse.json({ tasks });
   } catch (e) {
     const message = e instanceof Error ? e.message : "获取任务失败";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -61,27 +43,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "缺少 task_date" }, { status: 400 });
     }
 
-    const { data, error } = await auth.supabase
-      .from("tasks")
-      .insert({
-        user_id: auth.user.id,
-        title,
-        task_date,
-        completed: body.completed ?? false,
-        task_type: body.task_type ?? "other",
-        priority: body.priority ?? "medium",
-        pomodoro_minutes: body.pomodoro_minutes ?? 0,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({
-      task: mapRow(data as Record<string, unknown>),
+    const task = await createTaskForMp(auth.user.id, {
+      title,
+      task_date,
+      completed: body.completed,
+      task_type: body.task_type,
+      priority: body.priority,
+      pomodoro_minutes: body.pomodoro_minutes,
     });
+
+    return NextResponse.json({ task });
   } catch (e) {
     const message = e instanceof Error ? e.message : "创建任务失败";
     return NextResponse.json({ error: message }, { status: 500 });

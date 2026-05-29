@@ -3,6 +3,7 @@
 import JourneyView from "@/components/journey/JourneyView";
 import DesktopCompanionView from "@/components/todo/views/DesktopCompanionView";
 import HomeDashboardView from "@/components/todo/views/HomeDashboardView";
+import DesktopLedgerView from "@/components/todo/views/DesktopLedgerView";
 import DesktopStatsView from "@/components/todo/views/DesktopStatsView";
 import SettingsPlaceholder from "@/components/todo/views/SettingsPlaceholder";
 import TaskManageView from "@/components/todo/views/TaskManageView";
@@ -29,6 +30,8 @@ export default function DesktopWorkbench({ route }: { route?: string }) {
       return <DesktopCompanionView />;
     case "stats":
       return <DesktopStatsView />;
+    case "ledger":
+      return <DesktopLedgerView />;
     case "settings":
       return <SettingsPlaceholder />;
     default:

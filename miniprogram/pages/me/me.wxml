@@ -8,7 +8,7 @@
   </view>
 
   <view class="menu-card card-soft">
-    <navigator url="/pages/login/login" class="menu-row">
+    <navigator url="/pages/login/login?hint=pc" class="menu-row">
       <view class="menu-left">
         <text class="menu-icon">💻</text>
         <text class="menu-label">帮电脑扫码登录</text>
@@ -27,7 +27,7 @@
 
   <view class="tip-card card-soft">
     <text class="tip-title">💡 和 PC 搭配使用</text>
-    <text class="tip-line">手机：记任务、跟小光聊天</text>
+    <text class="tip-line">手机：记任务、记账、跟小光聊天</text>
     <text class="tip-line">电脑：打开 weiguanglife.top 看统计与成长空间</text>
   </view>
 

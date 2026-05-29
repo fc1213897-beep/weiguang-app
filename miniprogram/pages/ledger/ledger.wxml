@@ -1,0 +1,217 @@
+<view class="ledger-page">
+  <view class="error-banner" wx:if="{{loginError}}">
+    <text class="error-text">{{loginError}}</text>
+    <text class="error-retry" bindtap="onRetryLogin">重试</text>
+  </view>
+
+  <!-- 日期切换 -->
+  <view class="hero-card card-elevated">
+    <view class="hero-eyebrow">
+      <text class="eyebrow-label">LEDGER</text>
+      <text class="eyebrow-badge" wx:if="{{isToday}}">今天</text>
+    </view>
+
+    <view class="date-switcher">
+      <view
+        class="date-nav-btn {{dateNavAnim === 'left' ? 'nav-bump' : ''}}"
+        hover-class="date-nav-pressed"
+        bindtap="onPrevDay"
+      >
+        <text class="date-nav-icon">‹</text>
+      </view>
+      <view class="date-center {{dateSlide ? 'date-slide-anim' : ''}}">
+        <text class="date-display">{{dateLabel}}</text>
+        <text class="date-sub">{{isToday ? '记一笔，心里更踏实' : dateWeekday}}</text>
+      </view>
+      <view
+        class="date-nav-btn {{dateNavAnim === 'right' ? 'nav-bump' : ''}}"
+        hover-class="date-nav-pressed"
+        bindtap="onNextDay"
+      >
+        <text class="date-nav-icon">›</text>
+      </view>
+    </view>
+
+    <view class="summary-row">
+      <view class="summary-item">
+        <text class="summary-num expense-color">¥{{expenseTotal}}</text>
+        <text class="summary-label">支出</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-item">
+        <text class="summary-num income-color">¥{{incomeTotal}}</text>
+        <text class="summary-label">收入</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-item">
+        <text class="summary-num">{{count}}</text>
+        <text class="summary-label">笔数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 今日建议 -->
+  <view class="insight-card card-elevated" wx:if="{{loggedIn}}">
+    <view class="insight-head">
+      <text class="insight-icon">✨</text>
+      <text class="insight-title">小光今日建议</text>
+    </view>
+    <text class="insight-text" wx:if="{{!insightLoading && insightText}}">{{insightText}}</text>
+    <text class="insight-text insight-loading" wx:if="{{insightLoading}}">小光在想…</text>
+    <text class="insight-text insight-placeholder" wx:if="{{!insightLoading && !insightText}}">记一笔或完成待办后，会有温柔建议哦</text>
+  </view>
+
+  <!-- 流水列表 -->
+  <view class="list-header" wx:if="{{expenses.length > 0}}">
+    <text class="list-title">当日流水</text>
+    <text class="list-toggle" bindtap="onToggleList">{{listExpanded ? '收起' : '展开全部'}}</text>
+  </view>
+
+  <view class="expense-list" wx:if="{{expenses.length > 0}}">
+    <view
+      class="expense-card card-elevated"
+      wx:for="{{expenses}}"
+      wx:key="id"
+      wx:if="{{listExpanded || index < 5}}"
+    >
+      <view class="expense-left">
+        <text class="expense-icon">{{item.categoryIcon}}</text>
+        <view class="expense-info">
+          <text class="expense-label">{{item.note || item.categoryLabel}}</text>
+          <text class="expense-meta">{{item.categoryLabel}} · {{item.source === 'chat' ? '小光记入' : '手动'}}</text>
+        </view>
+      </view>
+      <view class="expense-right">
+        <text class="expense-amount {{item.amountClass}}">{{item.displayAmount}}</text>
+        <view
+          class="btn-delete"
+          data-id="{{item.id}}"
+          data-label="{{item.note || item.categoryLabel}}"
+          catchtap="onDeleteExpense"
+        >删除</view>
+      </view>
+    </view>
+  </view>
+
+  <view
+    class="empty-card card-elevated"
+    wx:if="{{!loading && loggedIn && expenses.length === 0}}"
+    hover-class="empty-pressed"
+    bindtap="openExpenseModal"
+  >
+    <text class="empty-emoji">💰</text>
+    <text class="empty-title">今天还没记账</text>
+    <text class="empty-desc">点这里记第一笔，或跟小光说「午饭 35」</text>
+    <text class="empty-cta">＋ 记一笔</text>
+  </view>
+
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="loading-dot"></view>
+    <text class="loading-text">加载中…</text>
+  </view>
+
+  <view class="page-bottom-spacer"></view>
+
+  <view
+    class="fab {{fabPressed ? 'fab-pressed' : ''}}"
+    wx:if="{{loggedIn}}"
+    hover-class="fab-hover"
+    bindtap="openExpenseModal"
+    bindtouchstart="onFabTouchStart"
+    bindtouchend="onFabTouchEnd"
+  >
+    <text class="fab-icon">＋</text>
+    <text class="fab-label">记一笔</text>
+  </view>
+</view>
+
+<!-- 记一笔弹层 -->
+<root-portal wx:if="{{expenseModalOpen}}">
+  <view
+    class="plan-modal-mask {{expenseModalAnim ? 'mask-show' : ''}}"
+    catchtap="closeExpenseModal"
+    catchtouchmove="preventMove"
+  >
+    <view
+      class="plan-modal-sheet {{expenseModalAnim ? 'sheet-show' : ''}}"
+      catchtap="stopBubble"
+      catchtouchmove="preventMove"
+    >
+      <view class="plan-modal-header">
+        <view>
+          <text class="plan-modal-title">记一笔</text>
+          <text class="plan-modal-sub">不用记太细，有个数就好</text>
+        </view>
+        <view class="plan-modal-close" hover-class="close-pressed" bindtap="closeExpenseModal">✕</view>
+      </view>
+
+      <scroll-view class="plan-modal-body" scroll-y enhanced show-scrollbar="{{false}}">
+        <view class="field-block">
+          <text class="field-label">类型</text>
+          <view class="chip-row">
+            <view
+              class="chip {{expenseDraft.entry_type === 'expense' ? 'chip-active' : ''}}"
+              data-type="expense"
+              hover-class="chip-pressed"
+              bindtap="onPickEntryType"
+            >支出</view>
+            <view
+              class="chip {{expenseDraft.entry_type === 'income' ? 'chip-active' : ''}}"
+              data-type="income"
+              hover-class="chip-pressed"
+              bindtap="onPickEntryType"
+            >收入</view>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <text class="field-label">金额（元）</text>
+          <input
+            class="field-input"
+            type="digit"
+            placeholder="例如：35"
+            placeholder-class="placeholder"
+            value="{{expenseDraft.amount}}"
+            bindinput="onAmountInput"
+          />
+        </view>
+
+        <view class="field-block">
+          <text class="field-label">分类</text>
+          <view class="chip-row">
+            <view
+              wx:for="{{activeCategories}}"
+              wx:key="id"
+              class="chip {{expenseDraft.category === item.id ? 'chip-active' : ''}}"
+              data-id="{{item.id}}"
+              hover-class="chip-pressed"
+              bindtap="onPickCategory"
+            >{{item.icon}} {{item.label}}</view>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <text class="field-label">备注（可选）</text>
+          <input
+            class="field-input"
+            placeholder="例如：午饭、地铁"
+            placeholder-class="placeholder"
+            value="{{expenseDraft.note}}"
+            bindinput="onNoteInput"
+          />
+        </view>
+      </scroll-view>
+
+      <view class="plan-modal-footer">
+        <view
+          class="btn-submit-plan {{adding ? 'btn-disabled' : ''}}"
+          hover-class="{{adding ? '' : 'submit-pressed'}}"
+          bindtap="onSubmitExpense"
+        >
+          <text wx:if="{{adding}}">保存中…</text>
+          <text wx:else>记下这一笔 ✨</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</root-portal>

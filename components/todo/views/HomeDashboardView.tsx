@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import TimeGreeting from "@/components/companion/TimeGreeting";
+import ExpenseSummaryHero from "@/components/stats/ExpenseSummaryHero";
+import { useAuth } from "@/hooks/useAuth";
+import { useExpenseStats } from "@/hooks/useExpenseStats";
 import {
   buildActivityTimeline,
   getAiDailySuggestions,
@@ -19,6 +22,8 @@ import { useTodoStore } from "@/store/todoStore";
 export default function HomeDashboardView() {
   const tasks = useTodoStore((s) => s.tasks);
   const messages = useChatStore((s) => s.messages);
+  const { isAuthenticated } = useAuth();
+  const expenseStats = useExpenseStats();
 
   const metrics = useMemo(() => getWeekMetrics(tasks), [tasks]);
   const topTasks = useMemo(() => getTopPriorityTasks(tasks, 5), [tasks]);
@@ -85,8 +90,18 @@ export default function HomeDashboardView() {
           >
             看看人生地图 →
           </Link>
+          <Link
+            href="/ledger"
+            className="rounded-full border border-rose-200/80 bg-white/70 px-4 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-50"
+          >
+            💰 记账本
+          </Link>
         </div>
       </section>
+
+      {isAuthenticated && (
+        <ExpenseSummaryHero stats={expenseStats} />
+      )}
 
       {/* 今日重点任务（3–5） */}
       <section className="rounded-3xl border border-orange-100/50 bg-white/85 p-5 backdrop-blur-sm">

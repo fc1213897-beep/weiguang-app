@@ -124,6 +124,14 @@
   word-break: break-word;
 }
 
+.expense-hint {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #ea580c;
+  opacity: 0.85;
+}
+
 .typing .bubble-text {
   color: #a8a29e;
 }

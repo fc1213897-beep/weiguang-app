@@ -9,6 +9,7 @@
       bindtap="switchTab"
     >
       <view class="tab-icon-wrap">
+        <view class="tab-glow" wx:if="{{selected === index}}"></view>
         <text class="tab-icon">{{item.icon}}</text>
       </view>
       <text class="tab-text">{{item.text}}</text>

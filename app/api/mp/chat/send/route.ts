@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
 import { fetchXiaoguangReply, type ChatHistoryItem } from "@/lib/chat-ai";
+import {
+  buildExpenseAiMessage,
+  buildExpenseConfirmReply,
+  tryRecordExpenseFromChat,
+} from "@/lib/chat-expense";
 import { getGentleFallbackReply } from "@/lib/fallback-reply";
 import { requireMpAuth } from "@/lib/mp-auth";
+import { createExpenseForMp } from "@/lib/mp-expenses-server";
 import {
   getOrCreateDefaultSessionForMp,
   insertChatMessageForMp,
   listChatMessagesForMp,
 } from "@/lib/mp-chat-server";
+import type { ExpenseRow } from "@/types/database";
 
 /** POST /api/mp/chat/send — 发送消息并同步云端 */
 export async function POST(request: Request) {
@@ -44,11 +51,24 @@ export async function POST(request: Request) {
       clientSeqBase
     );
 
+    let expenseRecorded: ExpenseRow | null = null;
+    expenseRecorded = await tryRecordExpenseFromChat(message, (input) =>
+      createExpenseForMp(auth.user.id, input)
+    );
+
+    const aiMessage = expenseRecorded
+      ? buildExpenseAiMessage(message, expenseRecorded)
+      : message;
+
     let reply: string;
     try {
-      reply = await fetchXiaoguangReply(message, history);
+      reply = await fetchXiaoguangReply(aiMessage, history);
     } catch {
-      reply = getGentleFallbackReply(message, session.reply_index ?? 0);
+      if (expenseRecorded) {
+        reply = buildExpenseConfirmReply(expenseRecorded);
+      } else {
+        reply = getGentleFallbackReply(message, session.reply_index ?? 0);
+      }
     }
 
     const assistantRow = await insertChatMessageForMp(
@@ -62,6 +82,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       reply,
+      expense_recorded: expenseRecorded,
       user_message: {
         id: userRow.id,
         role: userRow.role,
@@ -73,6 +94,7 @@ export async function POST(request: Request) {
         role: assistantRow.role,
         content: assistantRow.content,
         created_at: assistantRow.created_at,
+        expense_recorded: !!expenseRecorded,
       },
     });
   } catch (e) {

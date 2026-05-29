@@ -30,8 +30,8 @@
     }
   },
   "compileType": "miniprogram",
-  "libVersion": "3.5.5",
-  "appid": "wxff782abee04ac456",
+  "libVersion": "3.16.0",
+  "appid": "wx3a960e108120a74a",
   "projectname": "weiguang-mp-login",
   "condition": {},
   "simulatorPluginLibVersion": {},

@@ -1,16 +1,18 @@
-const { apiBase } = require("../../utils/config.js");
+const auth = require("../../utils/auth.js");
 
 Page({
   data: {
+    /** mp：小程序一键登录；scan：PC 扫码授权 */
+    mode: "mp",
     scene: "",
     devSceneInput: "",
-    loading: false,
-    authorized: false,
+    scanLoading: false,
+    scanAuthorized: false,
+    mpLoading: false,
+    mpError: "",
+    showPcHelp: false,
   },
 
-  /**
-   * 扫 PC 端无限制小程序码进入时，scene 在 options.scene（不是 URL 的 ?scene=）
-   */
   onLoad(options) {
     let scene = "";
 
@@ -22,29 +24,68 @@ Page({
       }
     }
 
-    this.setData({ scene });
+    if (scene) {
+      this.setData({ mode: "scan", scene });
+      return;
+    }
+
+    if (auth.hasValidSession()) {
+      wx.switchTab({ url: "/pages/tasks/tasks" });
+      return;
+    }
+
+    this.setData({
+      mode: "mp",
+      showPcHelp: options.hint === "pc",
+    });
+  },
+
+  onShowPcHelp() {
+    this.setData({ showPcHelp: true });
   },
 
   onDevSceneInput(e) {
     this.setData({ devSceneInput: (e.detail && e.detail.value) || "" });
   },
 
-  /** 开发调试：手动填入电脑端 qrcode 接口返回的 scene */
   applyDevScene() {
     const raw = (this.data.devSceneInput || "").trim();
     if (!raw) {
       wx.showToast({ title: "请先粘贴 scene", icon: "none" });
       return;
     }
-    this.setData({ scene: raw });
-    wx.showToast({ title: "已填入 scene", icon: "success" });
+    this.setData({ mode: "scan", scene: raw });
+    wx.showToast({ title: "已切换扫码模式", icon: "success" });
   },
 
-  /** 绿色按钮：wx.login → 通知 Next.js 写入 openid */
-  handleWxLogin() {
-    const { scene, loading, authorized } = this.data;
+  /** 小程序一键登录 */
+  onMpLogin() {
+    if (this.data.mpLoading) return;
 
-    if (authorized) {
+    this.setData({ mpLoading: true, mpError: "" });
+
+    auth
+      .loginWithMp()
+      .then(() => {
+        this.setData({ mpLoading: false });
+        wx.showToast({ title: "登录成功", icon: "success" });
+        setTimeout(() => {
+          wx.switchTab({ url: "/pages/tasks/tasks" });
+        }, 400);
+      })
+      .catch((err) => {
+        this.setData({
+          mpLoading: false,
+          mpError: err.message || "登录失败",
+        });
+      });
+  },
+
+  /** PC 扫码：wx.login → wx-callback */
+  handleScanLogin() {
+    const { scene, scanLoading, scanAuthorized } = this.data;
+
+    if (scanAuthorized) {
       wx.showToast({ title: "已授权", icon: "none" });
       return;
     }
@@ -54,30 +95,29 @@ Page({
       return;
     }
 
-    if (loading) return;
+    if (scanLoading) return;
 
-    this.setData({ loading: true });
+    this.setData({ scanLoading: true });
+
+    const { getApiBase } = require("../../utils/config.js");
 
     wx.login({
       success: (loginRes) => {
         if (!loginRes.code) {
-          this.setData({ loading: false });
+          this.setData({ scanLoading: false });
           wx.showToast({ title: "wx.login 失败", icon: "none" });
           return;
         }
 
         wx.request({
-          url: `${apiBase}/api/auth/wx-callback`,
+          url: `${getApiBase()}/api/auth/wx-callback`,
           method: "POST",
           header: { "Content-Type": "application/json" },
-          data: {
-            code: loginRes.code,
-            scene,
-          },
+          data: { code: loginRes.code, scene },
           success: (res) => {
             const body = res.data || {};
             if (res.statusCode >= 200 && res.statusCode < 300 && body.ok) {
-              this.setData({ authorized: true, loading: false });
+              this.setData({ scanAuthorized: true, scanLoading: false });
               wx.showToast({
                 title: "授权成功",
                 icon: "success",
@@ -86,7 +126,7 @@ Page({
               return;
             }
 
-            this.setData({ loading: false });
+            this.setData({ scanLoading: false });
             wx.showToast({
               title: body.error || `授权失败(${res.statusCode})`,
               icon: "none",
@@ -94,11 +134,9 @@ Page({
             });
           },
           fail: (err) => {
-            this.setData({ loading: false });
+            this.setData({ scanLoading: false });
             wx.showToast({
-              title:
-                (err && err.errMsg) ||
-                "网络失败，请确认 Next.js 已启动且勾选了不校验域名",
+              title: (err && err.errMsg) || "网络失败",
               icon: "none",
               duration: 3000,
             });
@@ -106,7 +144,7 @@ Page({
         });
       },
       fail: () => {
-        this.setData({ loading: false });
+        this.setData({ scanLoading: false });
         wx.showToast({ title: "wx.login 调用失败", icon: "none" });
       },
     });

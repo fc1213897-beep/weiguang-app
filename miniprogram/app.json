@@ -1,9 +1,10 @@
 {
   "pages": [
+    "pages/login/login",
     "pages/tasks/tasks",
+    "pages/ledger/ledger",
     "pages/chat/chat",
-    "pages/me/me",
-    "pages/login/login"
+    "pages/me/me"
   ],
   "window": {
     "navigationBarTitleText": "微光",
@@ -23,6 +24,12 @@
         "text": "今日任务",
         "iconPath": "images/tab-task.png",
         "selectedIconPath": "images/tab-task-active.png"
+      },
+      {
+        "pagePath": "pages/ledger/ledger",
+        "text": "记账",
+        "iconPath": "images/tab-ledger.png",
+        "selectedIconPath": "images/tab-ledger-active.png"
       },
       {
         "pagePath": "pages/chat/chat",

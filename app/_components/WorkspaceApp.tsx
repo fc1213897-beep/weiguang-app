@@ -8,7 +8,15 @@ import { useTodoHydration } from "@/hooks/useTodoHydration";
 import { useTodoSync } from "@/hooks/useTodoSync";
 
 type Props = {
-  route: "home" | "today" | "tasks" | "chat" | "journey" | "stats" | "settings";
+  route:
+    | "home"
+    | "today"
+    | "tasks"
+    | "chat"
+    | "journey"
+    | "stats"
+    | "ledger"
+    | "settings";
 };
 
 export default function WorkspaceApp({ route }: Props) {

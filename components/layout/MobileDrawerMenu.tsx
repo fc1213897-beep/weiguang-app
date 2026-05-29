@@ -17,6 +17,7 @@ const PAGE_LINKS = [
   { href: "/home", label: "成长空间", icon: "🏠" },
   { href: "/journey", label: "微光旅程", icon: "🗺️" },
   { href: "/today", label: "Today", icon: "📋" },
+  { href: "/ledger", label: "记账本", icon: "💰" },
   { href: "/stats", label: "成长统计", icon: "📊" },
 ];
 

@@ -1,43 +1,70 @@
-<view class="page">
-  <view class="card">
-    <text class="title">💻 微光 · 扫码登录</text>
-    <text class="desc">确认后，电脑网页将自动完成登录</text>
-
-    <view class="scene-box" wx:if="{{scene}}">
-      <text class="scene-label">场景值 scene</text>
-      <text class="scene-value">{{scene}}</text>
+<view class="login-page">
+  <!-- 小程序一键登录 -->
+  <block wx:if="{{mode === 'mp'}}">
+    <view class="hero card-soft">
+      <text class="hero-emoji">✨</text>
+      <text class="hero-title">微光</text>
+      <text class="hero-sub">温柔陪伴你的学习搭子</text>
     </view>
 
-    <view class="scene-box warn" wx:else>
-      <text class="warn-title">当前没有 scene（正常情况）</text>
-      <text class="warn-line">你是直接「编译」打开的本页，不是扫电脑上的小程序码，所以没有场景值。</text>
-      <text class="warn-line warn-step">① 电脑浏览器打开 设置页 → 微信扫码登录</text>
-      <text class="warn-line warn-step">② 点「微信扫码登录」出现小程序码</text>
-      <text class="warn-line warn-step">③ 用微信扫该码进入本页（不要点普通编译）</text>
-      <text class="warn-line warn-step">④ 或见下方「开发调试」粘贴电脑上的 scene</text>
+    <view class="card-soft main-card">
+      <text class="card-title">微信一键登录</text>
+      <text class="card-desc">登录后任务与小光对话将保存到云端，可与电脑网页同步</text>
+
+      <view class="error-banner" wx:if="{{mpError}}">
+        <text class="error-text">{{mpError}}</text>
+      </view>
+
+      <button
+        class="btn-mp btn-primary"
+        bindtap="onMpLogin"
+        loading="{{mpLoading}}"
+        disabled="{{mpLoading}}"
+      >
+        微信一键登录
+      </button>
+
+      <view class="link-row" bindtap="onShowPcHelp" wx:if="{{!showPcHelp}}">
+        <text class="link-text">需要帮电脑网页登录？</text>
+      </view>
     </view>
 
-    <!-- 开发调试：电脑已出码但未扫码时，可粘贴 scene 测试 -->
-    <view class="dev-box" wx:if="{{!scene && !authorized}}">
-      <text class="dev-title">开发调试（可选）</text>
+    <view class="card-soft help-card" wx:if="{{showPcHelp}}">
+      <text class="help-title">电脑网页扫码登录</text>
+      <text class="help-line">① 电脑打开设置页 → 微信扫码登录</text>
+      <text class="help-line">② 用微信扫电脑上的小程序码进入本页</text>
+      <text class="help-line">③ 或开发调试：粘贴 scene 后切换扫码模式</text>
       <input
         class="dev-input"
-        placeholder="粘贴电脑网页上的 scene"
+        placeholder="粘贴电脑上的 scene（可选）"
         value="{{devSceneInput}}"
         bindinput="onDevSceneInput"
       />
-      <button class="btn-dev" size="mini" bindtap="applyDevScene">填入 scene</button>
+      <button class="btn-ghost-mini" size="mini" bindtap="applyDevScene">填入 scene</button>
     </view>
+  </block>
 
-    <button
-      class="btn-login {{authorized ? 'done' : ''}}"
-      bindtap="handleWxLogin"
-      loading="{{loading}}"
-      disabled="{{loading || !scene}}"
-    >
-      {{authorized ? '已授权成功' : '允许登录'}}
-    </button>
+  <!-- PC 扫码授权（带 scene 进入） -->
+  <block wx:else>
+    <view class="card-soft main-card">
+      <text class="card-title">💻 帮电脑完成登录</text>
+      <text class="card-desc">确认后，电脑网页将自动完成登录</text>
 
-    <text class="hint" wx:if="{{authorized}}">请回到电脑浏览器查看登录状态</text>
-  </view>
+      <view class="scene-box">
+        <text class="scene-label">场景值 scene</text>
+        <text class="scene-value">{{scene}}</text>
+      </view>
+
+      <button
+        class="btn-scan {{scanAuthorized ? 'done' : ''}}"
+        bindtap="handleScanLogin"
+        loading="{{scanLoading}}"
+        disabled="{{scanLoading || !scene || scanAuthorized}}"
+      >
+        {{scanAuthorized ? '已授权成功' : '允许登录'}}
+      </button>
+
+      <text class="hint-ok" wx:if="{{scanAuthorized}}">请回到电脑浏览器查看登录状态</text>
+    </view>
+  </block>
 </view>

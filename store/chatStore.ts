@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { getGentleFallbackReply } from "@/lib/fallback-reply";
+import { notifyExpenseChanged } from "@/lib/expense-events";
 import {
   insertMessage as insertCloudMessage,
   updateSessionReplyIndex,
@@ -46,7 +47,7 @@ async function fetchAIReply(
   userText: string,
   historyMessages: ChatMessage[],
   replyIndex: number
-): Promise<string> {
+): Promise<{ reply: string; expenseRecorded: boolean }> {
   const history = historyMessages
     .filter((m) => m.role === "user" || m.role === "assistant")
     .map((m) => ({ role: m.role, content: m.text }));
@@ -55,13 +56,27 @@ async function fetchAIReply(
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userText, history }),
+      body: JSON.stringify({
+        message: userText,
+        history,
+        reply_index: replyIndex,
+      }),
     });
-    const data = (await res.json()) as { reply?: string; error?: string };
+    const data = (await res.json()) as {
+      reply?: string;
+      error?: string;
+      expense_recorded?: { amount?: number } | null;
+    };
     if (!res.ok || !data.reply?.trim()) throw new Error("chat_failed");
-    return data.reply.trim();
+    return {
+      reply: data.reply.trim(),
+      expenseRecorded: !!data.expense_recorded,
+    };
   } catch {
-    return getGentleFallbackReply(userText, replyIndex);
+    return {
+      reply: getGentleFallbackReply(userText, replyIndex),
+      expenseRecorded: false,
+    };
   }
 }
 
@@ -115,7 +130,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
     }
 
-    const assistantText = await fetchAIReply(
+    const { reply: assistantText, expenseRecorded } = await fetchAIReply(
       value,
       historyBeforeSend,
       replyIndex
@@ -126,6 +141,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       id: assistantId,
       role: "assistant",
       text: assistantText,
+      expenseRecorded,
     };
 
     const newReplyIndex = get().replyIndex + 1;
@@ -137,6 +153,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
       isSending: false,
       fadeInAssistantId: assistantId,
     }));
+
+    if (expenseRecorded) {
+      notifyExpenseChanged();
+    }
 
     const after = get();
     if (after.syncEnabled && after.cloudSessionId) {

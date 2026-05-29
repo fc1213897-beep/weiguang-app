@@ -25,9 +25,18 @@ function formatDisplayDate(dateStr) {
   return `${parts[1]}月${parts[2]}日`;
 }
 
+/** 星期几 */
+function formatWeekday(dateStr) {
+  const parts = dateStr.split("-").map(Number);
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
+  const names = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  return names[d.getDay()];
+}
+
 module.exports = {
   formatDateString,
   getTodayDateString,
   addDays,
   formatDisplayDate,
+  formatWeekday,
 };

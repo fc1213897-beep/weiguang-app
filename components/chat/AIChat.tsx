@@ -91,6 +91,11 @@ export default function AIChat({
                 </span>
               )}
               {msg.text}
+              {msg.role === "assistant" && msg.expenseRecorded && (
+                <span className="mt-1.5 block text-[11px] font-medium text-orange-600/90">
+                  💰 已记入今日账本
+                </span>
+              )}
             </div>
           </div>
         ))}
@@ -122,7 +127,7 @@ export default function AIChat({
       >
         <input
           className="w-full min-w-0 flex-1 rounded-xl border border-orange-200/90 bg-white px-3 py-2.5 text-sm outline-none placeholder:text-stone-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 disabled:opacity-60 sm:text-base"
-          placeholder="例如：今天有点累…"
+          placeholder="可以说心情，或「午饭 35」记账…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}

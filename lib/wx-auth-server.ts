@@ -3,17 +3,76 @@ import { wxOpenidToEmail } from "@/lib/wx-login";
 import type { WxLoginSessionRow } from "@/types/wx-login";
 import type { Session, User } from "@supabase/supabase-js";
 
-/** 按邮箱查找用户（分页遍历） */
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function matchUserEmail(user: User, targetEmail: string): boolean {
+  if (!user.email) return false;
+  return normalizeEmail(user.email) === normalizeEmail(targetEmail);
+}
+
+/** Admin API filter 查邮箱（避免 listUsers 分页漏查） */
+async function findUserByEmailWithFilter(email: string): Promise<User | null> {
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim().replace(/\/$/, "");
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!baseUrl || !serviceKey) return null;
+
+  const res = await fetch(
+    `${baseUrl}/auth/v1/admin/users?filter=${encodeURIComponent(email)}&page=1&per_page=10`,
+    {
+      headers: {
+        Authorization: `Bearer ${serviceKey}`,
+        apikey: serviceKey,
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) return null;
+
+  const body = (await res.json()) as { users?: User[] };
+  return body.users?.find((u) => matchUserEmail(u, email)) ?? null;
+}
+
+/** RPC 直连 auth.users（需先执行 supabase/sql/auth_lookup_rpc.sql） */
+async function findUserByEmailWithRpc(email: string): Promise<User | null> {
+  const admin = getSupabaseAdminClient();
+  const { data: userId, error } = await admin.rpc("get_auth_user_id_by_email", {
+    p_email: email,
+  });
+
+  if (error || !userId) return null;
+
+  const { data, error: getError } = await admin.auth.admin.getUserById(
+    userId as string
+  );
+  if (getError || !data.user) return null;
+  return data.user;
+}
+
+/** 按邮箱查找用户（filter → RPC → 分页兜底） */
 async function findUserByEmail(email: string): Promise<User | null> {
   const admin = getSupabaseAdminClient();
+
+  const fromFilter = await findUserByEmailWithFilter(email);
+  if (fromFilter) return fromFilter;
+
+  try {
+    const fromRpc = await findUserByEmailWithRpc(email);
+    if (fromRpc) return fromRpc;
+  } catch {
+    // RPC 未建时忽略
+  }
+
   let page = 1;
   const perPage = 200;
 
-  while (page <= 20) {
+  while (page <= 50) {
     const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
     if (error) throw new Error(error.message);
 
-    const found = data.users.find((u) => u.email === email);
+    const found = data.users.find((u) => matchUserEmail(u, email));
     if (found) return found;
 
     if (data.users.length < perPage) break;
@@ -51,6 +110,9 @@ export async function ensureWxAuthUser(openid: string): Promise<User> {
     ) {
       const again = await findUserByEmail(email);
       if (again) return again;
+      throw new Error(
+        "该微信账号在系统中已存在但无法自动关联，请在 Supabase → Authentication 删除对应 wx.*@weiguang.internal 用户后重试"
+      );
     }
     throw new Error(createError.message);
   }

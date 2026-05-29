@@ -1,6 +1,7 @@
-const { apiBase } = require("./config.js");
+const { getApiBase, formatRequestFail } = require("./config.js");
 
 const SESSION_KEY = "wg_session";
+const LOGIN_PAGE = "/pages/login/login";
 
 function getSession() {
   try {
@@ -8,6 +9,11 @@ function getSession() {
   } catch {
     return null;
   }
+}
+
+function hasValidSession() {
+  const session = getSession();
+  return !!(session && session.access_token);
 }
 
 function saveSession(data) {
@@ -23,15 +29,15 @@ function clearSession() {
   wx.removeStorageSync(SESSION_KEY);
 }
 
-/**
- * 确保已登录：本地有 token 则直接返回，否则 wx.login → mp-login
- */
-function ensureLogin() {
-  const existing = getSession();
-  if (existing && existing.access_token) {
-    return Promise.resolve(existing);
-  }
+/** 跳转登录页（未登录时 Tab 页调用） */
+function redirectToLogin() {
+  wx.reLaunch({ url: LOGIN_PAGE });
+}
 
+/**
+ * wx.login → mp-login，用于登录页一键登录或静默续期
+ */
+function loginWithMp() {
   return new Promise((resolve, reject) => {
     wx.login({
       success(loginRes) {
@@ -41,7 +47,7 @@ function ensureLogin() {
         }
 
         wx.request({
-          url: `${apiBase}/api/auth/wx/mp-login`,
+          url: `${getApiBase()}/api/auth/wx/mp-login`,
           method: "POST",
           header: { "Content-Type": "application/json" },
           data: { code: loginRes.code },
@@ -64,9 +70,7 @@ function ensureLogin() {
             reject(new Error(msg));
           },
           fail(err) {
-            reject(
-              new Error((err && err.errMsg) || "网络失败，请检查服务器与域名")
-            );
+            reject(new Error(formatRequestFail(err)));
           },
         });
       },
@@ -77,9 +81,34 @@ function ensureLogin() {
   });
 }
 
+/**
+ * Tab 页守卫：无本地 Session 则跳转登录页
+ */
+function guardLogin() {
+  if (hasValidSession()) {
+    return Promise.resolve(getSession());
+  }
+  redirectToLogin();
+  return Promise.reject(new Error("请先登录"));
+}
+
+/**
+ * 确保已登录：有 Session 直接返回，否则静默 mp-login（兼容旧逻辑）
+ */
+function ensureLogin() {
+  if (hasValidSession()) {
+    return Promise.resolve(getSession());
+  }
+  return loginWithMp();
+}
+
 module.exports = {
   getSession,
+  hasValidSession,
   saveSession,
   clearSession,
+  redirectToLogin,
+  loginWithMp,
+  guardLogin,
   ensureLogin,
 };

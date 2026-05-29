@@ -95,3 +95,69 @@ export type InsertMessageInput = {
   content: string;
   client_seq: number;
 };
+
+/** 收支类型 */
+export type DbEntryType = "expense" | "income";
+
+/** 记账来源 */
+export type DbExpenseSource = "manual" | "chat";
+
+/** 支出分类 */
+export type DbExpenseCategory =
+  | "food"
+  | "transport"
+  | "study"
+  | "daily"
+  | "entertain"
+  | "other";
+
+/** 收入分类 */
+export type DbIncomeCategory = "salary" | "side" | "other";
+
+/** expenses 表完整行 */
+export type ExpenseRow = {
+  id: string;
+  user_id: string;
+  amount: number;
+  entry_type: DbEntryType;
+  category: string;
+  note: string;
+  /** 归属日期 YYYY-MM-DD */
+  entry_date: string;
+  source: DbExpenseSource;
+  created_at: string;
+  updated_at: string;
+};
+
+/** 新建记账入参 */
+export type CreateExpenseInput = {
+  amount: number;
+  entry_type?: DbEntryType;
+  category?: string;
+  note?: string;
+  entry_date: string;
+  source?: DbExpenseSource;
+};
+
+/** 更新记账入参 */
+export type UpdateExpenseInput = Partial<
+  Pick<
+    ExpenseRow,
+    "amount" | "entry_type" | "category" | "note" | "entry_date"
+  >
+>;
+
+/** 记账汇总 */
+export type ExpenseSummary = {
+  expenseTotal: number;
+  incomeTotal: number;
+  count: number;
+};
+
+/** 列表筛选 */
+export type ListExpensesFilter = {
+  entry_date?: string;
+  month?: string;
+  from?: string;
+  to?: string;
+};

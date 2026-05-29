@@ -8,6 +8,11 @@ Component({
         icon: "📋",
       },
       {
+        pagePath: "/pages/ledger/ledger",
+        text: "记账",
+        icon: "💰",
+      },
+      {
         pagePath: "/pages/chat/chat",
         text: "小光",
         icon: "✨",

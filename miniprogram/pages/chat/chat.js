@@ -13,27 +13,27 @@ Page({
   },
 
   onShow() {
-    setTabSelected(this, 1);
+    setTabSelected(this, 2);
     this.bootstrap();
   },
 
   onRetryLogin() {
     auth.clearSession();
-    this.setData({ loginError: "" });
-    this.bootstrap();
+    auth.redirectToLogin();
   },
 
   bootstrap() {
     return auth
-      .ensureLogin()
+      .guardLogin()
       .then(() => {
         this.setData({ loggedIn: true, loginError: "" });
         return this.loadMessages();
       })
       .catch((err) => {
+        if (err.message === "请先登录") return;
         this.setData({
           loggedIn: false,
-          loginError: err.message || "登录失败",
+          loginError: err.message || "加载失败",
         });
       });
   },
@@ -98,11 +98,20 @@ Page({
               id: body.assistant_message.id,
               role: "assistant",
               content: body.assistant_message.content,
+              expense_recorded: !!body.expense_recorded,
             },
           ]);
 
         this.setData({ messages, sending: false });
         this.scrollToBottom();
+
+        if (body.expense_recorded) {
+          const amount = Number(body.expense_recorded.amount || 0).toFixed(2);
+          wx.showToast({
+            title: `已记下 ${amount} 元`,
+            icon: "none",
+          });
+        }
       })
       .catch((err) => {
         const messages = this.data.messages.filter(

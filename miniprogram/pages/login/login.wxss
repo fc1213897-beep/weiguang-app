@@ -1,87 +1,130 @@
-.page {
+@import "../../styles/theme.wxss";
+
+.login-page {
   min-height: 100vh;
-  padding: 48rpx 32rpx;
+  padding: 48rpx 32rpx calc(48rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: linear-gradient(165deg, #fff7ed 0%, #fffbeb 40%, #ffffff 100%);
 }
 
-.card {
-  padding: 48rpx 40rpx;
-  border-radius: 24rpx;
-  background: #fff;
-  box-shadow: 0 8rpx 32rpx rgba(251, 146, 60, 0.12);
+.hero {
+  text-align: center;
+  padding: 56rpx 32rpx 48rpx;
+  margin-bottom: 32rpx;
 }
 
-.title {
+.hero-emoji {
+  font-size: 88rpx;
   display: block;
-  font-size: 40rpx;
+}
+
+.hero-title {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #292524;
+}
+
+.hero-sub {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 28rpx;
+  color: #78716c;
+}
+
+.main-card {
+  padding: 40rpx 36rpx;
+}
+
+.help-card {
+  margin-top: 24rpx;
+  padding: 32rpx 36rpx;
+}
+
+.card-title {
+  display: block;
+  font-size: 34rpx;
   font-weight: 600;
   color: #292524;
 }
 
-.desc {
+.card-desc {
   display: block;
   margin-top: 16rpx;
   font-size: 26rpx;
+  line-height: 1.55;
   color: #78716c;
 }
 
-.scene-box {
-  margin-top: 40rpx;
-  padding: 24rpx;
+.error-banner {
+  margin-top: 24rpx;
+  padding: 20rpx 24rpx;
+  background: #fef2f2;
   border-radius: 16rpx;
-  background: #fafaf9;
+  border: 1rpx solid #fecaca;
 }
 
-.scene-box.warn {
-  background: #fef3c7;
-  color: #92400e;
-  font-size: 26rpx;
-}
-
-.warn-title {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 12rpx;
-}
-
-.warn-line {
-  display: block;
-  line-height: 1.5;
-  margin-top: 8rpx;
-}
-
-.warn-step {
-  padding-left: 8rpx;
-}
-
-.dev-box {
-  margin-top: 32rpx;
-  padding: 24rpx;
-  border-radius: 16rpx;
-  border: 1rpx dashed #d6d3d1;
-  background: #fafaf9;
-}
-
-.dev-title {
-  display: block;
+.error-text {
   font-size: 24rpx;
-  color: #78716c;
+  color: #b91c1c;
+  line-height: 1.5;
+}
+
+.btn-mp {
+  margin-top: 40rpx;
+  width: 100% !important;
+  height: 96rpx !important;
+  line-height: 96rpx !important;
+  font-size: 32rpx !important;
+}
+
+.link-row {
+  margin-top: 32rpx;
+  text-align: center;
+}
+
+.link-text {
+  font-size: 26rpx;
+  color: #ea580c;
+}
+
+.help-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #44403c;
   margin-bottom: 16rpx;
 }
 
+.help-line {
+  display: block;
+  font-size: 24rpx;
+  color: #78716c;
+  line-height: 1.55;
+  margin-top: 8rpx;
+}
+
 .dev-input {
+  margin-top: 24rpx;
   padding: 16rpx 20rpx;
-  background: #fff;
+  background: #fafaf9;
   border-radius: 12rpx;
   font-size: 24rpx;
   border: 1rpx solid #e7e5e4;
 }
 
-.btn-dev {
+.btn-ghost-mini {
   margin-top: 16rpx;
-  background: #fff7ed;
-  color: #c2410c;
+  background: #fff7ed !important;
+  color: #c2410c !important;
+}
+
+.scene-box {
+  margin-top: 32rpx;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  background: #fafaf9;
 }
 
 .scene-label {
@@ -98,8 +141,8 @@
   word-break: break-all;
 }
 
-.btn-login {
-  margin-top: 48rpx;
+.btn-scan {
+  margin-top: 40rpx;
   width: 100%;
   height: 88rpx;
   line-height: 88rpx;
@@ -107,24 +150,24 @@
   font-size: 32rpx;
   font-weight: 500;
   color: #fff;
-  background: #22c55e;
+  background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
   border: none;
 }
 
-.btn-login.done {
+.btn-scan.done {
   background: #86efac;
   color: #166534;
 }
 
-.btn-login[disabled] {
+.btn-scan[disabled] {
   background: #d6d3d1;
   color: #fff;
 }
 
-.hint {
+.hint-ok {
   display: block;
   margin-top: 24rpx;
   text-align: center;
   font-size: 24rpx;
-  color: #22c55e;
+  color: #16a34a;
 }

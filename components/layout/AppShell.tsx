@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import MobileAuthPanel from "@/components/auth/MobileAuthPanel";
 import CharacterModal from "@/components/companion/CharacterModal";
 import FloatingChatEntry from "@/components/chat/FloatingChatEntry";
+import FloatingExpenseEntry from "@/components/expense/FloatingExpenseEntry";
 import DesktopSidebar from "@/components/layout/DesktopSidebar";
 import DesktopWorkbench from "@/components/layout/DesktopWorkbench";
 import MobileCompanionView from "@/components/layout/MobileCompanionView";
@@ -22,6 +23,7 @@ type RouteId =
   | "chat"
   | "journey"
   | "stats"
+  | "ledger"
   | "settings";
 
 /** 三栏工作台（桌面）+ 手机端多视图 */
@@ -93,6 +95,7 @@ export default function AppShell({ route = "home" }: { route?: RouteId }) {
         </div>
 
         <FloatingChatEntry />
+        <FloatingExpenseEntry />
 
         {/* 手机 */}
         <div className="mx-auto w-full min-w-0 max-w-7xl space-y-3 lg:hidden">

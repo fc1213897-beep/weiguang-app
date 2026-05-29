@@ -1,4 +1,4 @@
-const { apiBase } = require("./config.js");
+const { getApiBase, formatRequestFail } = require("./config.js");
 const auth = require("./auth.js");
 
 /**
@@ -8,7 +8,7 @@ function request(options) {
   const session = auth.getSession();
   const url = options.url.startsWith("http")
     ? options.url
-    : `${apiBase}${options.url}`;
+    : `${getApiBase()}${options.url}`;
 
   return new Promise((resolve, reject) => {
     wx.request({
@@ -24,13 +24,14 @@ function request(options) {
       success(res) {
         if (res.statusCode === 401) {
           auth.clearSession();
-          reject(new Error("登录已失效，请重新打开小程序"));
+          auth.redirectToLogin();
+          reject(new Error("登录已失效，请重新登录"));
           return;
         }
         resolve(res);
       },
       fail(err) {
-        reject(new Error((err && err.errMsg) || "网络请求失败"));
+        reject(new Error(formatRequestFail(err)));
       },
     });
   });

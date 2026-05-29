@@ -1,79 +1,146 @@
-<view class="page-wrap">
-  <!-- 登录失败提示条 -->
+<view class="tasks-page">
   <view class="error-banner" wx:if="{{loginError}}">
     <text class="error-text">{{loginError}}</text>
     <text class="error-retry" bindtap="onRetryLogin">重试</text>
   </view>
 
-  <view class="hero card-soft">
-    <view class="hero-top">
-      <text class="section-title">TODAY</text>
-      <text class="hero-badge" wx:if="{{isToday}}">今天</text>
+  <!-- 顶部日期 + 进度环 -->
+  <view class="hero-card card-elevated">
+    <view class="hero-eyebrow">
+      <text class="eyebrow-label">TODAY</text>
+      <text class="eyebrow-badge" wx:if="{{isToday}}">今天</text>
     </view>
-    <view class="date-row">
-      <view class="date-nav" bindtap="onPrevDay">
-        <text class="nav-arrow">‹</text>
-      </view>
-      <text class="date-main">{{dateLabel}}</text>
-      <view class="date-nav" bindtap="onNextDay">
-        <text class="nav-arrow">›</text>
-      </view>
-    </view>
-    <view class="progress-row">
-      <view class="progress-item done">
-        <text class="progress-num">{{doneCount}}</text>
-        <text class="progress-label">已完成</text>
-      </view>
-      <view class="progress-divider"></view>
-      <view class="progress-item todo">
-        <text class="progress-num">{{todoCount}}</text>
-        <text class="progress-label">未完成</text>
-      </view>
-    </view>
-  </view>
 
-  <view class="add-card card-soft">
-    <text class="add-hint">先定一个小目标，开始就很棒</text>
-    <view class="add-row">
-      <input
-        class="add-input"
-        placeholder="例如：背 10 个单词"
-        placeholder-class="placeholder"
-        value="{{newTitle}}"
-        bindinput="onTitleInput"
-        confirm-type="done"
-        bindconfirm="onAddTask"
-      />
-      <button
-        class="btn-add btn-primary"
-        bindtap="onAddTask"
-        loading="{{adding}}"
-        disabled="{{adding || !loggedIn}}"
+    <view class="date-switcher">
+      <view
+        class="date-nav-btn {{dateNavAnim === 'left' ? 'nav-bump' : ''}}"
+        hover-class="date-nav-pressed"
+        hover-stay-time="80"
+        bindtap="onPrevDay"
       >
-        添加
-      </button>
+        <text class="date-nav-icon">‹</text>
+      </view>
+      <view class="date-center {{dateSlide ? 'date-slide-anim' : ''}}">
+        <text class="date-display">{{dateLabel}}</text>
+        <text class="date-sub">{{isToday ? '就是今天呀' : dateWeekday}}</text>
+      </view>
+      <view
+        class="date-nav-btn {{dateNavAnim === 'right' ? 'nav-bump' : ''}}"
+        hover-class="date-nav-pressed"
+        hover-stay-time="80"
+        bindtap="onNextDay"
+      >
+        <text class="date-nav-icon">›</text>
+      </view>
+    </view>
+
+    <view class="stats-row">
+      <view class="progress-ring-wrap">
+        <view class="progress-ring" style="{{progressRingStyle}}">
+          <view class="progress-ring-hole">
+            <text class="ring-percent">{{progressPercent}}</text>
+            <text class="ring-unit">%</text>
+          </view>
+        </view>
+        <text class="ring-caption">今日完成度</text>
+      </view>
+      <view class="stats-cards">
+        <view class="stat-card stat-done">
+          <text class="stat-num">{{doneCount}}</text>
+          <text class="stat-label">已完成</text>
+        </view>
+        <view class="stat-card stat-todo">
+          <text class="stat-num">{{todoCount}}</text>
+          <text class="stat-label">未完成</text>
+        </view>
+      </view>
     </view>
   </view>
 
-  <view class="empty card-soft" wx:if="{{!loading && loggedIn && tasks.length === 0}}">
-    <text class="empty-emoji">🌙</text>
-    <text class="empty-title">还没有任务</text>
-    <text class="empty-desc">在上方输入一件最小的事，今天就够棒了</text>
+  <!-- 今日建议条（联动记账） -->
+  <view class="insight-strip card-elevated" wx:if="{{loggedIn}}" bindtap="onGoLedger">
+    <view class="insight-strip-left">
+      <text class="insight-strip-icon">✨</text>
+      <text class="insight-strip-text" wx:if="{{!insightLoading && insightText}}">{{insightText}}</text>
+      <text class="insight-strip-text insight-strip-loading" wx:if="{{insightLoading}}">小光在想…</text>
+      <text class="insight-strip-text insight-strip-placeholder" wx:if="{{!insightLoading && !insightText}}">完成待办或记一笔，会有温柔建议</text>
+    </view>
+    <text class="insight-strip-link">去记账 ›</text>
+  </view>
+
+  <!-- 小光快捷行（与 FAB 对齐，减少杂乱） -->
+  <view class="quick-bar card-elevated" wx:if="{{loggedIn}}">
+    <view
+      class="quick-suggest"
+      hover-class="quick-pressed"
+      bindtap="onQuickXiaoguang"
+    >
+      <text class="quick-suggest-icon">✨</text>
+      <view class="quick-suggest-text">
+        <text class="quick-suggest-title">小光建议</text>
+        <text class="quick-suggest-sub">一键添加最小目标</text>
+      </view>
+    </view>
+    <scroll-view class="quick-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="quick-chips-inline">
+        <view
+          class="quick-chip"
+          wx:for="{{quickPresets}}"
+          wx:key="text"
+          data-index="{{index}}"
+          hover-class="chip-pressed"
+          bindtap="onQuickPreset"
+        >
+          {{item.text}}
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 空状态：治愈小芽 + 引导点击 -->
+  <view
+    class="empty-card card-elevated empty-tap"
+    wx:if="{{!loading && loggedIn && tasks.length === 0}}"
+    hover-class="empty-pressed"
+    bindtap="openPlanModal"
+  >
+    <view class="sprout-wrap">
+      <view class="sprout-pot"></view>
+      <view class="sprout-stem"></view>
+      <view class="sprout-leaf sprout-leaf-l"></view>
+      <view class="sprout-leaf sprout-leaf-r"></view>
+    </view>
+    <text class="empty-title">今天还是一张白纸</text>
+    <text class="empty-desc">点这里，种下第一个小目标吧</text>
+    <text class="empty-cta">＋ 新建今日计划</text>
   </view>
 
   <view class="task-list" wx:if="{{tasks.length > 0}}">
     <view
-      class="task-card card-soft {{item.completed ? 'is-done' : ''}}"
+      class="task-card card-elevated {{item.completed ? 'is-done' : ''}}"
       wx:for="{{tasks}}"
       wx:key="id"
-      data-id="{{item.id}}"
-      data-completed="{{item.completed}}"
-      bindtap="onToggleTask"
     >
-      <view class="checkbox {{item.completed ? 'checked' : ''}}">
+      <view
+        class="checkbox {{item.completed ? 'checked' : ''}}"
+        data-id="{{item.id}}"
+        data-completed="{{item.completed}}"
+        catchtap="onToggleTask"
+      >
         <text wx:if="{{item.completed}}" class="check-mark">✓</text>
       </view>
-      <text class="task-title">{{item.title}}</text>
+      <view class="task-body">
+        <text class="task-title">{{item.title}}</text>
+        <text class="task-meta">{{item.metaLine}}</text>
+      </view>
+      <view
+        class="btn-delete"
+        data-id="{{item.id}}"
+        data-title="{{item.title}}"
+        catchtap="onDeleteTask"
+      >
+        删除
+      </view>
     </view>
   </view>
 
@@ -83,4 +150,132 @@
   </view>
 
   <view class="page-bottom-spacer"></view>
+
+  <!-- 悬浮新建按钮 -->
+  <view
+    class="fab {{fabPressed ? 'fab-pressed' : ''}}"
+    wx:if="{{loggedIn}}"
+    hover-class="fab-hover"
+    bindtap="openPlanModal"
+    bindtouchstart="onFabTouchStart"
+    bindtouchend="onFabTouchEnd"
+  >
+    <text class="fab-icon">＋</text>
+    <text class="fab-label">新建</text>
+  </view>
 </view>
+
+<!-- 小光庆祝动效 -->
+<view class="celebrate-overlay" wx:if="{{celebrateShow}}" catchtouchmove="preventMove">
+  <view class="celebrate-card">
+    <text class="celebrate-emoji celebrate-wave">👋</text>
+    <text class="celebrate-title">太棒啦！</text>
+    <text class="celebrate-sub">小光为你记下了这一刻 ✨</text>
+  </view>
+</view>
+
+<!-- 新建计划弹层（root-portal 确保盖过 TabBar） -->
+<root-portal wx:if="{{planModalOpen}}">
+  <view
+    class="plan-modal-mask {{planModalAnim ? 'mask-show' : ''}}"
+    catchtap="closePlanModal"
+    catchtouchmove="preventMove"
+  >
+    <view
+      class="plan-modal-sheet {{planModalAnim ? 'sheet-show' : ''}}"
+      catchtap="stopBubble"
+      catchtouchmove="preventMove"
+    >
+      <view class="plan-modal-header">
+        <view>
+          <text class="plan-modal-title">新建今日计划</text>
+          <text class="plan-modal-sub">慢慢填，不用一次做完美</text>
+        </view>
+        <view class="plan-modal-close" hover-class="close-pressed" bindtap="closePlanModal">✕</view>
+      </view>
+
+      <scroll-view class="plan-modal-body" scroll-y enhanced show-scrollbar="{{false}}">
+        <view class="plan-form {{planFlash ? 'plan-form-flash' : ''}}">
+          <view class="suggest-box">
+            <view class="suggest-head">
+              <text class="suggest-label">✨ 小光建议</text>
+              <text class="suggest-refresh" bindtap="onRefreshSuggestion">换一条</text>
+            </view>
+            <text class="suggest-text">{{suggestionText}}</text>
+            <view class="btn-adopt" hover-class="chip-pressed" bindtap="onApplySuggestion">采用建议</view>
+          </view>
+
+          <view class="field-block">
+            <text class="field-label">计划名称</text>
+            <input
+              class="field-input"
+              placeholder="例如：复习线性代数第一章"
+              placeholder-class="placeholder"
+              value="{{planDraft.text}}"
+              bindinput="onPlanTextInput"
+            />
+          </view>
+
+          <view class="field-block">
+            <text class="field-label">任务类型</text>
+            <view class="chip-row">
+              <view
+                wx:for="{{categories}}"
+                wx:key="id"
+                class="chip {{planDraft.category === item.id ? 'chip-active' : ''}}"
+                data-id="{{item.id}}"
+                hover-class="chip-pressed"
+                bindtap="onPickCategory"
+              >
+                {{item.icon}} {{item.label}}
+              </view>
+            </view>
+          </view>
+
+          <view class="field-block">
+            <text class="field-label">优先级</text>
+            <view class="chip-row priority-row">
+              <view
+                wx:for="{{priorities}}"
+                wx:key="id"
+                class="chip chip-priority {{planDraft.priority === item.id ? 'chip-active-priority' : ''}}"
+                data-id="{{item.id}}"
+                hover-class="chip-pressed"
+                bindtap="onPickPriority"
+              >
+                {{item.label}}
+              </view>
+            </view>
+          </view>
+
+          <view class="field-block">
+            <text class="field-label">番茄钟时长</text>
+            <view class="chip-row">
+              <view
+                wx:for="{{pomodoroOptions}}"
+                wx:key="minutes"
+                class="chip {{planDraft.pomodoroMinutes === item.minutes ? 'chip-active' : ''}}"
+                data-minutes="{{item.minutes}}"
+                hover-class="chip-pressed"
+                bindtap="onPickPomodoro"
+              >
+                {{item.label}}
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="plan-modal-footer">
+        <view
+          class="btn-submit-plan {{adding ? 'btn-disabled' : ''}}"
+          hover-class="{{adding ? '' : 'submit-pressed'}}"
+          bindtap="onSubmitPlan"
+        >
+          <text wx:if="{{adding}}">添加中…</text>
+          <text wx:else>放进今日计划 ✨</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</root-portal>

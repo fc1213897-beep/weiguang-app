@@ -4,6 +4,9 @@ import AuthStatusBadge from "@/components/auth/AuthStatusBadge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+import { useExpenseStats } from "@/hooks/useExpenseStats";
+import { useAuth } from "@/hooks/useAuth";
+import { formatAmount } from "@/lib/expense-plan";
 import { getWeekMetrics } from "@/lib/growth-utils";
 import { getTodayDateString } from "@/lib/task-utils";
 import { useTodoStore } from "@/store/todoStore";
@@ -14,12 +17,15 @@ const NAV_ITEMS = [
   { id: "today", label: "Today", icon: "📋", href: "/today" },
   { id: "tasks", label: "任务", icon: "🗂️", href: "/tasks" },
   { id: "chat", label: "小光", icon: "✨", href: "/chat" },
+  { id: "ledger", label: "记账", icon: "💰", href: "/ledger" },
   { id: "stats", label: "成长统计", icon: "📊", href: "/stats" },
   { id: "settings", label: "设置", icon: "⚙️", href: "/settings" },
 ] as const;
 
 export default function DesktopSidebar() {
   const pathname = usePathname();
+  const { isAuthenticated } = useAuth();
+  const expenseStats = useExpenseStats();
   const tasks = useTodoStore((s) => s.tasks);
   const metrics = useMemo(() => getWeekMetrics(tasks), [tasks]);
   const today = getTodayDateString();
@@ -72,6 +78,29 @@ export default function DesktopSidebar() {
             {todayFocus} 分钟
           </span>
         </div>
+        {isAuthenticated && !expenseStats.loading && (
+          <>
+            <div className="my-2 border-t border-stone-200/80" />
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-stone-500">本月支出</span>
+              <span className="font-semibold text-rose-600">
+                ¥{formatAmount(expenseStats.expenseTotal)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-stone-500">本月收入</span>
+              <span className="font-semibold text-emerald-600">
+                ¥{formatAmount(expenseStats.incomeTotal)}
+              </span>
+            </div>
+            <Link
+              href="/ledger"
+              className="mt-2 block rounded-xl bg-orange-500 py-2 text-center text-xs font-medium text-white transition hover:bg-orange-600"
+            >
+              ＋ 记一笔
+            </Link>
+          </>
+        )}
       </div>
 
       <div className="mt-auto border-t border-orange-100/60 px-1 pt-3">
