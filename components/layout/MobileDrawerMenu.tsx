@@ -3,27 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import AuthCard from "@/components/auth/AuthCard";
-import type { MobileTabId } from "@/types/ui";
-import { useUIStore } from "@/store/uiStore";
-
-const MENU_ITEMS: { id: MobileTabId; label: string }[] = [
-  { id: "tasks", label: "任务" },
-  { id: "companion", label: "陪伴" },
-  { id: "chat", label: "聊天" },
-];
 
 const PAGE_LINKS = [
   { href: "/home", label: "成长空间", icon: "🏠" },
   { href: "/journey", label: "微光旅程", icon: "🗺️" },
   { href: "/today", label: "Today", icon: "📋" },
-  { href: "/ledger", label: "记账本", icon: "💰" },
   { href: "/stats", label: "成长统计", icon: "📊" },
+  { href: "/settings", label: "账号与设置", icon: "⚙️" },
 ];
 
+/** 手机端：侧滑菜单（二级页面入口） */
 export default function MobileDrawerMenu() {
   const [open, setOpen] = useState(false);
-  const setMobileTab = useUIStore((s) => s.setMobileTab);
   const pathname = usePathname();
 
   return (
@@ -56,7 +47,7 @@ export default function MobileDrawerMenu() {
               </button>
             </div>
 
-            <p className="mb-2 text-xs text-stone-400">页面</p>
+            <p className="mb-2 text-xs text-stone-400">更多页面</p>
             <div className="space-y-2">
               {PAGE_LINKS.map((item) => (
                 <Link
@@ -76,26 +67,9 @@ export default function MobileDrawerMenu() {
               ))}
             </div>
 
-            <p className="mb-2 mt-4 text-xs text-stone-400">模块</p>
-            <div className="space-y-2">
-              {MENU_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    setMobileTab(item.id);
-                    setOpen(false);
-                  }}
-                  className="w-full rounded-xl border border-stone-200 px-3 py-2 text-left text-sm text-stone-700"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-5 border-t border-stone-100 pt-4">
-              <AuthCard />
-            </div>
+            <p className="mt-5 text-xs leading-relaxed text-stone-400">
+              任务、记账、聊天、我的请使用底部 Tab 切换
+            </p>
           </aside>
         </div>
       )}

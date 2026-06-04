@@ -10,7 +10,7 @@ const inputClass =
   "mt-1.5 w-full rounded-xl border border-orange-100 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-orange-300 focus:ring-2 focus:ring-orange-100";
 
 /** 备案期间：账号 + 密码，无需邮箱 */
-export default function PasswordAuthForm() {
+export default function PasswordAuthForm({ compact = false }: { compact?: boolean }) {
   const {
     authActionLoading,
     signInWithAccount,
@@ -32,7 +32,13 @@ export default function PasswordAuthForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-orange-100/80 bg-white/70 p-3">
+    <div
+      className={
+        compact
+          ? "space-y-3"
+          : "rounded-2xl border border-orange-100/80 bg-white/70 p-3"
+      }
+    >
       <div className="flex gap-2">
         <button
           type="button"

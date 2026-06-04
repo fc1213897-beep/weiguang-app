@@ -1,20 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import MobileAuthPanel from "@/components/auth/MobileAuthPanel";
+import MobileHeaderAuth from "@/components/auth/MobileHeaderAuth";
+import MobileAuthSheet from "@/components/auth/MobileAuthSheet";
 import CharacterModal from "@/components/companion/CharacterModal";
 import FloatingChatEntry from "@/components/chat/FloatingChatEntry";
 import FloatingExpenseEntry from "@/components/expense/FloatingExpenseEntry";
 import DesktopSidebar from "@/components/layout/DesktopSidebar";
 import DesktopWorkbench from "@/components/layout/DesktopWorkbench";
-import MobileCompanionView from "@/components/layout/MobileCompanionView";
-import MobileDrawerMenu from "@/components/layout/MobileDrawerMenu";
 import MobileChatView from "@/components/layout/MobileChatView";
+import MobileDrawerMenu from "@/components/layout/MobileDrawerMenu";
+import MobileLedgerView from "@/components/layout/MobileLedgerView";
+import MobileMeView from "@/components/layout/MobileMeView";
+import MobileRouteView from "@/components/layout/MobileRouteView";
 import MobileTabNav from "@/components/layout/MobileTabNav";
 import MobileTaskView from "@/components/layout/MobileTaskView";
 import { MotionStyles } from "@/components/ui/motion-styles";
 import { DESKTOP_GRID_CLASS, MOBILE_MAIN_PB } from "@/lib/layout";
 import { panelClass } from "@/lib/tokens";
+import { useUIStore } from "@/store/uiStore";
+import type { MobileTabId } from "@/types/ui";
 
 type RouteId =
   | "home"
@@ -26,14 +31,33 @@ type RouteId =
   | "ledger"
   | "settings";
 
+/** 手机端走 Tab 主流程的路由 */
+const MOBILE_TAB_ROUTES: RouteId[] = ["tasks", "today", "ledger", "chat"];
+
+const ROUTE_TO_TAB: Partial<Record<RouteId, MobileTabId>> = {
+  tasks: "tasks",
+  today: "tasks",
+  ledger: "ledger",
+  chat: "chat",
+  settings: "me",
+};
+
 /** 三栏工作台（桌面）+ 手机端多视图 */
 export default function AppShell({ route = "home" }: { route?: RouteId }) {
   const [loading, setLoading] = useState(true);
+  const setMobileTab = useUIStore((s) => s.setMobileTab);
 
   useEffect(() => {
     const t = window.setTimeout(() => setLoading(false), 380);
     return () => window.clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    const tab = ROUTE_TO_TAB[route];
+    if (tab) setMobileTab(tab);
+  }, [route, setMobileTab]);
+
+  const showMobileTabs = MOBILE_TAB_ROUTES.includes(route);
 
   return (
     <>
@@ -91,30 +115,42 @@ export default function AppShell({ route = "home" }: { route?: RouteId }) {
               <DesktopWorkbench route={route} />
             )}
           </section>
-
         </div>
 
-        <FloatingChatEntry />
-        <FloatingExpenseEntry />
+        {/* 浮动入口：仅桌面 */}
+        <div className="hidden lg:contents">
+          <FloatingChatEntry />
+          <FloatingExpenseEntry />
+        </div>
 
         {/* 手机 */}
         <div className="mx-auto w-full min-w-0 max-w-7xl space-y-3 lg:hidden">
-          <div className="flex items-center justify-between rounded-2xl border border-orange-100/70 bg-white/92 px-3 py-2">
-            <div>
+          <div className="flex items-center justify-between gap-2 rounded-2xl border border-orange-100/70 bg-white/92 px-3 py-2">
+            <div className="min-w-0">
               <h1 className="text-base font-semibold text-stone-800">微光</h1>
-              <p className="text-xs text-stone-500">温柔陪伴你的学习系统</p>
+              <p className="truncate text-xs text-stone-500">温柔陪伴你的学习系统</p>
             </div>
-            <MobileDrawerMenu />
+            <div className="flex shrink-0 items-center gap-2">
+              <MobileHeaderAuth />
+              <MobileDrawerMenu />
+            </div>
           </div>
 
-          <MobileAuthPanel />
-          <MobileTaskView />
-          <MobileCompanionView />
-          <MobileChatView />
+          {showMobileTabs ? (
+            <>
+              <MobileTaskView />
+              <MobileLedgerView />
+              <MobileChatView />
+              <MobileMeView />
+            </>
+          ) : (
+            <MobileRouteView route={route} />
+          )}
         </div>
       </main>
 
-      <MobileTabNav />
+      {showMobileTabs ? <MobileTabNav /> : null}
+      <MobileAuthSheet />
       <CharacterModal />
     </>
   );
