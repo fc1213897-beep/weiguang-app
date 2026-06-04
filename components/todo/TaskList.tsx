@@ -15,18 +15,20 @@ export default function TaskList() {
 
   if (tasksForSelectedDate.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-orange-200/80 bg-orange-50/30 p-6 text-center sm:p-10">
-        <p className="text-3xl" aria-hidden>🗒️</p>
-        <p className="mt-2 text-sm font-medium text-stone-700 sm:text-base">当前还没有任务</p>
-        <p className="mt-1 text-xs text-stone-500 sm:text-sm">
-          {isToday ? "先添加一个最小目标，开始就很棒。" : "这一天还没有安排，可以补充一个小计划。"}
+      <div className="rounded-xl border border-dashed border-orange-200/70 bg-orange-50/20 px-4 py-5 text-center lg:rounded-2xl lg:p-10">
+        <p className="text-2xl lg:text-3xl" aria-hidden>
+          🗒️
+        </p>
+        <p className="mt-1.5 text-sm font-medium text-stone-700">还没有任务</p>
+        <p className="mt-0.5 text-xs text-stone-500">
+          {isToday ? "下方点「添加」即可" : "这一天还没有安排"}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-2 lg:space-y-4">
       {tasksForSelectedDate.map((item) => (
         <TaskCard
           key={item.id}

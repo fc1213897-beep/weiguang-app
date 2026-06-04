@@ -7,8 +7,13 @@ import {
 import { useUIStore } from "@/store/uiStore";
 import { useTodoStore } from "@/store/todoStore";
 
-/** 首页轻量创建入口 */
-export default function PlanQuickEntry() {
+type Props = {
+  /** 手机任务页：单行小入口，不抢执行区 */
+  compact?: boolean;
+};
+
+/** 轻量创建入口 */
+export default function PlanQuickEntry({ compact = false }: Props) {
   const setCreatePlanOpen = useUIStore((s) => s.setCreatePlanOpen);
   const addTaskFromDraft = useTodoStore((s) => s.addTaskFromDraft);
 
@@ -16,6 +21,50 @@ export default function PlanQuickEntry() {
     addTaskFromDraft(getRandomXiaoguangSuggestion(), {
       useSelectedDate: true,
     });
+  }
+
+  if (compact) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCreatePlanOpen(true)}
+            className="shrink-0 rounded-lg border border-orange-200 bg-white px-3 py-1.5 text-xs font-medium text-orange-700 active:bg-orange-50"
+          >
+            ＋ 添加
+          </button>
+          <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+            {QUICK_PLAN_PRESETS.map((preset) => (
+              <button
+                key={preset.text}
+                type="button"
+                onClick={() =>
+                  addTaskFromDraft(
+                    { ...preset, date: "", note: "" },
+                    { useSelectedDate: true }
+                  )
+                }
+                className="rounded-full bg-stone-50 px-2 py-0.5 text-[11px] text-stone-600 ring-1 ring-stone-200/80 active:bg-orange-50 active:text-orange-700"
+              >
+                {preset.text.includes("单词")
+                  ? "背单词"
+                  : preset.text.includes("视频")
+                    ? "看视频"
+                    : "写题"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleXiaoguangQuick}
+          className="text-[11px] text-stone-400 active:text-orange-600"
+        >
+          ✨ 小光帮你想一个
+        </button>
+      </div>
+    );
   }
 
   return (
