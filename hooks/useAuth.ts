@@ -129,29 +129,35 @@ export function useAuth() {
     setAuthError(null);
 
     const normalized = username.trim().toLowerCase();
+
+    try {
+      const res = await fetch("/api/auth/account/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: normalized, password }),
+      });
+      const payload = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setAuthActionLoading(false);
+        setAuthError(payload.error ?? "注册失败");
+        return false;
+      }
+    } catch {
+      setAuthActionLoading(false);
+      setAuthError("网络错误，请稍后重试");
+      return false;
+    }
+
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signInWithPassword({
       email: usernameToAuthEmail(normalized),
       password,
-      options: {
-        data: {
-          username: normalized,
-          provider: "account",
-        },
-      },
     });
 
     setAuthActionLoading(false);
 
     if (error) {
       setAuthError(mapAuthErrorMessage(error.message));
-      return false;
-    }
-
-    if (!data.session) {
-      setAuthError(
-        "注册失败：请在 Supabase 配置 GOTRUE_MAILER_AUTOCONFIRM=true 后重试"
-      );
       return false;
     }
 

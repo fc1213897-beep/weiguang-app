@@ -15,7 +15,10 @@ export function mapAuthErrorMessage(message: string): string {
     return "账号格式不正确";
   }
   if (lower.includes("email not confirmed")) {
-    return "账号尚未激活，请在 Supabase 开启 GOTRUE_MAILER_AUTOCONFIRM=true 后重新注册";
+    return "账号尚未激活，请重新注册或联系管理员";
+  }
+  if (lower.includes("error sending confirmation email")) {
+    return "注册失败，请稍后重试";
   }
   if (lower.includes("signup is disabled")) {
     return "当前未开放注册，请联系管理员";
