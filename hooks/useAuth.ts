@@ -3,6 +3,12 @@
 import { useEffect } from "react";
 import { create } from "zustand";
 import type { Session, User } from "@supabase/supabase-js";
+import {
+  formatDisplayAccount,
+  usernameToAuthEmail,
+  validateUsername,
+} from "@/lib/account-auth";
+import { mapAuthErrorMessage } from "@/lib/auth-errors";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 export type AuthStatus = "loading" | "guest" | "authenticated";
@@ -11,11 +17,9 @@ type AuthState = {
   status: AuthStatus;
   user: User | null;
   session: Session | null;
-  emailSent: boolean;
   authError: string | null;
   authActionLoading: boolean;
   setFromSession: (session: Session | null) => void;
-  setEmailSent: (sent: boolean) => void;
   setAuthError: (msg: string | null) => void;
   setAuthActionLoading: (loading: boolean) => void;
 };
@@ -24,7 +28,6 @@ const useAuthStore = create<AuthState>((set) => ({
   status: "loading",
   user: null,
   session: null,
-  emailSent: false,
   authError: null,
   authActionLoading: false,
   setFromSession: (session) =>
@@ -33,7 +36,6 @@ const useAuthStore = create<AuthState>((set) => ({
       user: session?.user ?? null,
       status: session?.user ? "authenticated" : "guest",
     }),
-  setEmailSent: (emailSent) => set({ emailSent }),
   setAuthError: (authError) => set({ authError }),
   setAuthActionLoading: (authActionLoading) => set({ authActionLoading }),
 }));
@@ -61,29 +63,20 @@ function startAuthListener() {
   supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
     setFromSession(session);
     if (session) {
-      useAuthStore.getState().setEmailSent(false);
       useAuthStore.getState().setAuthError(null);
     }
   });
 }
 
-function getAuthRedirectUrl() {
-  if (typeof window === "undefined") return "";
-  return `${window.location.origin}/auth/callback`;
-}
-
 /**
- * 微光登录：Magic Link + Session 状态
- * 不接 Todo / Chat 云同步
+ * 微光登录：账号 + 密码（临时主方案，不依赖邮箱与备案）
  */
 export function useAuth() {
   const status = useAuthStore((s) => s.status);
   const user = useAuthStore((s) => s.user);
   const session = useAuthStore((s) => s.session);
-  const emailSent = useAuthStore((s) => s.emailSent);
   const authError = useAuthStore((s) => s.authError);
   const authActionLoading = useAuthStore((s) => s.authActionLoading);
-  const setEmailSent = useAuthStore((s) => s.setEmailSent);
   const setAuthError = useAuthStore((s) => s.setAuthError);
   const setAuthActionLoading = useAuthStore((s) => s.setAuthActionLoading);
 
@@ -91,33 +84,77 @@ export function useAuth() {
     startAuthListener();
   }, []);
 
-  async function signInWithMagicLink(email: string) {
-    const trimmed = email.trim();
-    if (!trimmed) {
-      setAuthError("请输入邮箱");
+  async function signInWithAccount(username: string, password: string) {
+    const nameError = validateUsername(username);
+    if (nameError) {
+      setAuthError(nameError);
+      return false;
+    }
+    if (!password) {
+      setAuthError("请输入密码");
       return false;
     }
 
     setAuthActionLoading(true);
     setAuthError(null);
-    setEmailSent(false);
 
     const supabase = getSupabaseClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email: trimmed,
+    const { error } = await supabase.auth.signInWithPassword({
+      email: usernameToAuthEmail(username),
+      password,
+    });
+
+    setAuthActionLoading(false);
+
+    if (error) {
+      setAuthError(mapAuthErrorMessage(error.message));
+      return false;
+    }
+
+    return true;
+  }
+
+  async function signUpWithAccount(username: string, password: string) {
+    const nameError = validateUsername(username);
+    if (nameError) {
+      setAuthError(nameError);
+      return false;
+    }
+    if (password.length < 6) {
+      setAuthError("密码至少 6 位");
+      return false;
+    }
+
+    setAuthActionLoading(true);
+    setAuthError(null);
+
+    const normalized = username.trim().toLowerCase();
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase.auth.signUp({
+      email: usernameToAuthEmail(normalized),
+      password,
       options: {
-        emailRedirectTo: getAuthRedirectUrl(),
+        data: {
+          username: normalized,
+          provider: "account",
+        },
       },
     });
 
     setAuthActionLoading(false);
 
     if (error) {
-      setAuthError(error.message);
+      setAuthError(mapAuthErrorMessage(error.message));
       return false;
     }
 
-    setEmailSent(true);
+    if (!data.session) {
+      setAuthError(
+        "注册失败：请在 Supabase 配置 GOTRUE_MAILER_AUTOCONFIRM=true 后重试"
+      );
+      return false;
+    }
+
     return true;
   }
 
@@ -133,26 +170,24 @@ export function useAuth() {
       return false;
     }
 
-    setEmailSent(false);
     return true;
   }
 
-  const email = user?.email ?? null;
+  const displayAccount = formatDisplayAccount(user);
 
   return {
     status,
     user,
     session,
-    email,
-    emailSent,
+    displayAccount,
     authError,
     authActionLoading,
     isGuest: status === "guest",
     isAuthenticated: status === "authenticated",
     isLoading: status === "loading",
-    signInWithMagicLink,
+    signInWithAccount,
+    signUpWithAccount,
     signOut,
-    resetEmailSent: () => setEmailSent(false),
     setAuthError,
   };
 }
