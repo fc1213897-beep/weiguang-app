@@ -17,9 +17,9 @@ export const Z_FLOATING_CHAT_PANEL = 95;
 export const Z_MODAL = 100;
 export const Z_WELCOME_MODAL = 110;
 
-/** 手机端 main 底部 padding（Tailwind 类名） */
+/** 手机端 main 底部 padding（Tab 高度约 3rem + 安全区） */
 export const MOBILE_MAIN_PB =
-  "max-lg:pb-[max(6rem,calc(4.5rem+env(safe-area-inset-bottom)))]";
+  "max-lg:pb-[max(5rem,calc(3.5rem+env(safe-area-inset-bottom)))]";
 
 /** 桌面两栏：左菜单 | 主内容区（AI 为右下角浮动入口） */
 export const DESKTOP_GRID_CLASS =

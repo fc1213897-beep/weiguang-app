@@ -3,7 +3,6 @@
 import PlanCreateModal from "@/components/todo/PlanCreateModal";
 import PlanQuickEntry from "@/components/todo/PlanQuickEntry";
 import TaskList from "@/components/todo/TaskList";
-import TaskStats from "@/components/todo/TaskStats";
 import TodoCalendar from "@/components/todo/TodoCalendar";
 import {
   formatSelectedDateDisplay,
@@ -15,7 +14,7 @@ import { useTodoSelectors } from "@/hooks/useTodoSelectors";
 import { useTodoStore } from "@/store/todoStore";
 import { useUIStore } from "@/store/uiStore";
 
-/** 手机端：轻量今日任务 */
+/** 手机端：今日任务（首页主内容，尽量短） */
 export default function MobileTaskView() {
   const mobileTab = useUIStore((s) => s.mobileTab);
   const { selectedDate, datesWithTasks } = useTodoSelectors();
@@ -27,25 +26,25 @@ export default function MobileTaskView() {
   return (
     <>
       <div className={[panelClass, "min-w-0"].join(" ")}>
-        <header className="border-b border-orange-100/70 pb-3">
-          <p className="text-xs font-medium tracking-wide text-orange-500">TODAY</p>
-          <h2 className="mt-1 text-lg font-bold text-stone-800">
-            {getPlanTitle(selectedDate)}
-          </h2>
-          <p className="mt-0.5 text-xs text-stone-500">
-            {formatSelectedDateDisplay(selectedDate)}
-            {isToday ? " · 今天" : ""}
-          </p>
+        <header className="flex items-end justify-between gap-2 border-b border-orange-100/60 pb-2.5">
+          <div className="min-w-0">
+            <h2 className="truncate text-lg font-bold text-stone-800">
+              {getPlanTitle(selectedDate)}
+            </h2>
+            <p className="text-xs text-stone-500">
+              {formatSelectedDateDisplay(selectedDate)}
+              {isToday ? " · 今天" : ""}
+            </p>
+          </div>
         </header>
 
-        <div className="mt-4 space-y-4">
+        <div className="mt-3 space-y-3">
           <TodoCalendar
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
             datesWithTasks={datesWithTasks}
             defaultExpanded={false}
           />
-          <TaskStats variant="companion" />
           <PlanQuickEntry />
           <TaskList />
         </div>

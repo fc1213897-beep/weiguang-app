@@ -9,8 +9,7 @@ import type { MobileTabId } from "@/types/ui";
 
 const TABS: { id: MobileTabId; label: string; icon: string }[] = [
   { id: "tasks", label: "任务", icon: "📋" },
-  { id: "ledger", label: "记账", icon: "💰" },
-  { id: "chat", label: "聊天", icon: "💬" },
+  { id: "chat", label: "小光", icon: "💬" },
   { id: "me", label: "我的", icon: "👤" },
 ];
 
@@ -36,14 +35,14 @@ export default function MobileTabNav() {
     <>
       {toast ? <Toast message={`已切换到${toast}`} /> : null}
       <nav
-        className="fixed bottom-0 left-0 right-0 w-full border-t border-orange-100/80 bg-white/92 shadow-[0_-8px_28px_-14px_rgba(251,146,60,0.25)] backdrop-blur-md lg:hidden"
+        className="fixed bottom-0 left-0 right-0 w-full border-t border-orange-100/80 bg-white/95 shadow-[0_-4px_20px_-8px_rgba(0,0,0,0.08)] lg:hidden"
         style={{
           zIndex: Z_MOBILE_TAB,
           paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))",
         }}
         aria-label="模块切换"
       >
-        <div className="mx-auto flex h-14 max-w-6xl items-stretch">
+        <div className="mx-auto flex h-12 max-w-6xl items-stretch">
           {TABS.map((tab) => {
             const isActive = mobileTab === tab.id;
             return (
@@ -55,12 +54,12 @@ export default function MobileTabNav() {
                   "flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors",
                   "touch-manipulation",
                   isActive
-                    ? "font-semibold text-orange-500"
+                    ? "font-semibold text-orange-600"
                     : "text-stone-400 active:text-stone-500",
                 ].join(" ")}
                 aria-current={isActive ? "page" : undefined}
               >
-                <span className="text-lg" aria-hidden>
+                <span className="text-base" aria-hidden>
                   {tab.icon}
                 </span>
                 <span className="text-[11px]">{tab.label}</span>

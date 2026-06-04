@@ -1,4 +1,4 @@
-export type MobileTabId = "tasks" | "ledger" | "chat" | "me";
+export type MobileTabId = "tasks" | "chat" | "me";
 
 /** 桌面端左侧菜单 */
 export type DesktopNavId =

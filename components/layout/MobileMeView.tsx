@@ -8,10 +8,10 @@ import { panelClass } from "@/lib/tokens";
 import { useUIStore } from "@/store/uiStore";
 
 const LINKS = [
+  { href: "/ledger", label: "记账本", icon: "💰" },
+  { href: "/stats", label: "成长统计", icon: "📊" },
   { href: "/home", label: "成长空间", icon: "🏠" },
   { href: "/journey", label: "微光旅程", icon: "🗺️" },
-  { href: "/today", label: "Today", icon: "📋" },
-  { href: "/stats", label: "成长统计", icon: "📊" },
   { href: "/settings", label: "账号与设置", icon: "⚙️" },
 ] as const;
 
@@ -24,19 +24,18 @@ export default function MobileMeView() {
   if (mobileTab !== "me") return null;
 
   return (
-    <div className={[panelClass, "min-w-0 space-y-4"].join(" ")}>
-      <header className="border-b border-orange-100/70 pb-3">
-        <p className="text-xs font-medium text-stone-400">ME</p>
-        <h2 className="mt-1 text-lg font-bold text-stone-800">我的</h2>
+    <div className={[panelClass, "min-w-0 space-y-3"].join(" ")}>
+      <header className="border-b border-orange-100/60 pb-2">
+        <h2 className="text-lg font-bold text-stone-800">我的</h2>
       </header>
 
-      <div className="rounded-2xl border border-orange-100/80 bg-gradient-to-b from-white to-orange-50/40 p-4">
+      <div className="rounded-xl border border-orange-100/80 bg-orange-50/30 px-3 py-3">
         <AuthStatusBadge onOpenLogin={() => setAuthSheetOpen(true)} />
         {!isAuthenticated && (
           <button
             type="button"
             onClick={() => setAuthSheetOpen(true)}
-            className="mt-3 w-full rounded-xl bg-orange-500 py-2.5 text-sm font-medium text-white"
+            className="mt-2 w-full rounded-lg bg-orange-500 py-2 text-sm font-medium text-white"
           >
             登录 / 注册
           </button>
@@ -45,7 +44,7 @@ export default function MobileMeView() {
           <Button
             variant="soft"
             fullWidth
-            className="mt-3"
+            className="mt-2"
             disabled={authActionLoading}
             onClick={() => signOut()}
           >
@@ -54,12 +53,12 @@ export default function MobileMeView() {
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {LINKS.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className="flex items-center justify-between rounded-xl border border-stone-200/80 bg-white px-3 py-3 text-sm text-stone-700"
+            className="flex items-center justify-between rounded-lg border border-stone-200/70 bg-white px-3 py-2.5 text-sm text-stone-700 active:bg-stone-50"
           >
             <span className="flex items-center gap-2">
               <span aria-hidden>{item.icon}</span>
