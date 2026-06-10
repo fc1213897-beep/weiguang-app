@@ -1,5 +1,5 @@
-import WorkspaceApp from "@/app/_components/WorkspaceApp";
+import { redirect } from "next/navigation";
 
-export default function StatsPage() {
-  return <WorkspaceApp route="stats" />;
+export default function StatsRedirectPage() {
+  redirect("/growth?tab=stats");
 }

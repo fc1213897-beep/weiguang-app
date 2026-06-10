@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import ChatPanel from "@/components/chat/ChatPanel";
 import { Z_FLOATING_CHAT, Z_FLOATING_CHAT_PANEL } from "@/lib/layout";
+import { useUIStore } from "@/store/uiStore";
 
-/** AI 浮动入口：醒目光点按钮 + 完整高度 Drawer */
+/** AI 浮动入口：醒目光点按钮 + 完整高度 Drawer（桌面端） */
 export default function FloatingChatEntry() {
-  const [open, setOpen] = useState(false);
+  const open = useUIStore((s) => s.companionOpen);
+  const setCompanionOpen = useUIStore((s) => s.setCompanionOpen);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -19,14 +21,14 @@ export default function FloatingChatEntry() {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") setCompanionOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [open, setCompanionOpen]);
 
   const ui = (
     <>
@@ -34,10 +36,10 @@ export default function FloatingChatEntry() {
       {!open && (
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={() => setCompanionOpen(true)}
           style={{ zIndex: Z_FLOATING_CHAT }}
           className={[
-            "fixed bottom-6 right-5 flex items-center gap-2.5 rounded-full",
+            "fixed bottom-6 right-5 hidden items-center gap-2.5 rounded-full lg:flex",
             "border-2 border-amber-300/90 bg-gradient-to-r from-amber-100 via-orange-50 to-amber-200",
             "px-4 py-3 shadow-[0_10px_36px_-4px_rgba(251,191,36,0.65),0_4px_14px_rgba(251,146,60,0.35)]",
             "backdrop-blur-md transition hover:scale-[1.03] active:scale-[0.98]",
@@ -65,7 +67,7 @@ export default function FloatingChatEntry() {
         <div
           className="fixed inset-0 bg-stone-900/25 backdrop-blur-[3px]"
           style={{ zIndex: Z_FLOATING_CHAT_PANEL }}
-          onClick={() => setOpen(false)}
+          onClick={() => setCompanionOpen(false)}
           role="presentation"
         >
           <aside
@@ -99,7 +101,7 @@ export default function FloatingChatEntry() {
               </div>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => setCompanionOpen(false)}
                 className="shrink-0 rounded-xl border border-stone-200/80 bg-white px-3 py-1.5 text-sm text-stone-600 transition hover:bg-stone-50"
                 aria-label="收起"
               >

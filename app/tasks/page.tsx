@@ -1,5 +1,5 @@
-import WorkspaceApp from "@/app/_components/WorkspaceApp";
+import { redirect } from "next/navigation";
 
-export default function TasksPage() {
-  return <WorkspaceApp route="tasks" />;
+export default function TasksRedirectPage() {
+  redirect("/today?mode=manage");
 }

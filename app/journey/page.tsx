@@ -1,5 +1,5 @@
-import WorkspaceApp from "@/app/_components/WorkspaceApp";
+import { redirect } from "next/navigation";
 
-export default function JourneyPage() {
-  return <WorkspaceApp route="journey" />;
+export default function JourneyRedirectPage() {
+  redirect("/growth?tab=journey");
 }

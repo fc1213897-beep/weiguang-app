@@ -1,54 +1,50 @@
 "use client";
 
 import type { ReactNode } from "react";
-import JourneyView from "@/components/journey/JourneyView";
-import HomeDashboardView from "@/components/todo/views/HomeDashboardView";
+import GrowthHubView from "@/components/growth/GrowthHubView";
+import type { AppRouteId } from "@/components/layout/AppShell";
 import DesktopLedgerView from "@/components/todo/views/DesktopLedgerView";
-import DesktopStatsView from "@/components/todo/views/DesktopStatsView";
-import SettingsPlaceholder from "@/components/todo/views/SettingsPlaceholder";
-import TodayPlanView from "@/components/todo/views/TodayPlanView";
+import MeView from "@/components/todo/views/MeView";
+import TodayHubView from "@/components/todo/views/TodayHubView";
 import { panelClass } from "@/lib/tokens";
-
-type RouteId =
-  | "home"
-  | "today"
-  | "tasks"
-  | "chat"
-  | "journey"
-  | "stats"
-  | "ledger"
-  | "settings";
+import { Suspense } from "react";
 
 type Props = {
-  route: RouteId;
+  route: AppRouteId;
 };
 
-/** 手机端：独立子页面（非 Tab 主流程） */
-export default function MobileRouteView({ route }: Props) {
-  let content: ReactNode = null;
-
+function RouteContent({ route }: Props) {
   switch (route) {
+    case "growth":
     case "home":
-      content = <HomeDashboardView />;
-      break;
     case "journey":
-      content = <JourneyView />;
-      break;
-    case "today":
-      content = <TodayPlanView />;
-      break;
     case "stats":
-      content = <DesktopStatsView />;
-      break;
+      return <GrowthHubView />;
     case "ledger":
-      content = <DesktopLedgerView />;
-      break;
+      return <DesktopLedgerView />;
+    case "me":
     case "settings":
-      content = <SettingsPlaceholder />;
-      break;
+      return <MeView />;
+    case "today":
+    case "tasks":
+    case "chat":
+      return <TodayHubView />;
     default:
       return null;
   }
+}
+
+/** 手机端：独立子页面（非 Tab 主流程） */
+export default function MobileRouteView({ route }: Props) {
+  let content: ReactNode = (
+    <Suspense
+      fallback={
+        <div className="h-24 animate-pulse rounded-2xl bg-stone-100" />
+      }
+    >
+      <RouteContent route={route} />
+    </Suspense>
+  );
 
   return <div className={[panelClass, "min-w-0"].join(" ")}>{content}</div>;
 }

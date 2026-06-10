@@ -12,25 +12,34 @@ import {
 import { useTodoSelectors } from "@/hooks/useTodoSelectors";
 import { useTodoStore } from "@/store/todoStore";
 
+type Props = { embedded?: boolean };
+
 /** 桌面端：今日计划 — 列表为主，创建区次要 */
-export default function TodayPlanView() {
+export default function TodayPlanView({ embedded = false }: Props) {
   const { selectedDate, datesWithTasks } = useTodoSelectors();
   const setSelectedDate = useTodoStore((s) => s.setSelectedDate);
   const isToday = selectedDate === getTodayDateString();
 
   return (
     <div className="min-w-0">
-      <header className="border-b border-orange-50 pb-4">
-        <h2 className="text-xl font-bold text-stone-800 lg:text-2xl">
-          {getPlanTitle(selectedDate)}
-        </h2>
-        <p className="mt-1 text-sm text-stone-500">
-          {formatSelectedDateDisplay(selectedDate)}
-          {isToday ? " · 今天" : ""}
-        </p>
-      </header>
+      {!embedded && (
+        <header className="border-b border-orange-50 pb-4">
+          <h2 className="text-xl font-bold text-stone-800 lg:text-2xl">
+            {getPlanTitle(selectedDate)}
+          </h2>
+          <p className="mt-1 text-sm text-stone-500">
+            {formatSelectedDateDisplay(selectedDate)}
+            {isToday ? " · 今天" : ""}
+          </p>
+        </header>
+      )}
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <div
+        className={[
+          "grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]",
+          embedded ? "" : "mt-5",
+        ].join(" ")}
+      >
         <div className="min-w-0 space-y-5">
           <TodoCalendar
             selectedDate={selectedDate}

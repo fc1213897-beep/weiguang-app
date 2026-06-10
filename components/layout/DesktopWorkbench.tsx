@@ -1,13 +1,10 @@
 "use client";
 
-import JourneyView from "@/components/journey/JourneyView";
-import DesktopCompanionView from "@/components/todo/views/DesktopCompanionView";
-import HomeDashboardView from "@/components/todo/views/HomeDashboardView";
+import { Suspense } from "react";
+import GrowthHubView from "@/components/growth/GrowthHubView";
 import DesktopLedgerView from "@/components/todo/views/DesktopLedgerView";
-import DesktopStatsView from "@/components/todo/views/DesktopStatsView";
-import SettingsPlaceholder from "@/components/todo/views/SettingsPlaceholder";
-import TaskManageView from "@/components/todo/views/TaskManageView";
-import TodayPlanView from "@/components/todo/views/TodayPlanView";
+import MeView from "@/components/todo/views/MeView";
+import TodayHubView from "@/components/todo/views/TodayHubView";
 import { useUIStore } from "@/store/uiStore";
 
 /** 桌面端中间主内容区 */
@@ -16,25 +13,33 @@ export default function DesktopWorkbench({ route }: { route?: string }) {
   const current = route ?? desktopNav;
 
   switch (current) {
-    case "home":
-      return <HomeDashboardView />;
-    case "journey":
-      return <JourneyView />;
-    case "chat":
-      return <DesktopCompanionView />;
     case "today":
-      return <TodayPlanView />;
     case "tasks":
-      return <TaskManageView />;
-    case "companion":
-      return <DesktopCompanionView />;
+    case "chat":
+      return (
+        <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-stone-100" />}>
+          <TodayHubView />
+        </Suspense>
+      );
+    case "growth":
+    case "home":
+    case "journey":
     case "stats":
-      return <DesktopStatsView />;
+      return (
+        <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-stone-100" />}>
+          <GrowthHubView />
+        </Suspense>
+      );
     case "ledger":
       return <DesktopLedgerView />;
+    case "me":
     case "settings":
-      return <SettingsPlaceholder />;
+      return (
+        <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-stone-100" />}>
+          <MeView />
+        </Suspense>
+      );
     default:
-      return <TodayPlanView />;
+      return <TodayHubView />;
   }
 }

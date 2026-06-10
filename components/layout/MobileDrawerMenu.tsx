@@ -4,12 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+/** 侧滑菜单：仅保留成长、记账（其余在「我的」Tab） */
 const PAGE_LINKS = [
+  { href: "/growth", label: "成长", icon: "🌱" },
   { href: "/ledger", label: "记账本", icon: "💰" },
-  { href: "/stats", label: "成长统计", icon: "📊" },
-  { href: "/home", label: "成长空间", icon: "🏠" },
-  { href: "/journey", label: "微光旅程", icon: "🗺️" },
-  { href: "/settings", label: "账号与设置", icon: "⚙️" },
 ];
 
 /** 手机端：侧滑菜单（二级页面） */
@@ -51,7 +49,7 @@ export default function MobileDrawerMenu() {
                   onClick={() => setOpen(false)}
                   className={[
                     "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm",
-                    pathname === item.href
+                    pathname === item.href || pathname.startsWith(item.href + "?")
                       ? "bg-orange-50 font-medium text-orange-800"
                       : "text-stone-700 active:bg-stone-50",
                   ].join(" ")}

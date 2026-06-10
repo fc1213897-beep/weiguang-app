@@ -87,7 +87,7 @@ export default function CountdownHero() {
           </h3>
         </div>
         <Link
-          href="/settings"
+          href="/me?section=exam"
           className="shrink-0 text-xs text-indigo-600 hover:underline"
         >
           备考计划 →

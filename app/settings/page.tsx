@@ -1,5 +1,5 @@
-import WorkspaceApp from "@/app/_components/WorkspaceApp";
+import { redirect } from "next/navigation";
 
-export default function SettingsPage() {
-  return <WorkspaceApp route="settings" />;
+export default function SettingsRedirectPage() {
+  redirect("/me");
 }

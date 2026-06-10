@@ -8,11 +8,9 @@ import { panelClass } from "@/lib/tokens";
 import { useUIStore } from "@/store/uiStore";
 
 const LINKS = [
+  { href: "/growth", label: "成长", icon: "🌱" },
   { href: "/ledger", label: "记账本", icon: "💰" },
-  { href: "/stats", label: "成长统计", icon: "📊" },
-  { href: "/home", label: "成长空间", icon: "🏠" },
-  { href: "/journey", label: "微光旅程", icon: "🗺️" },
-  { href: "/settings", label: "账号与设置", icon: "⚙️" },
+  { href: "/me", label: "备考计划与账号", icon: "📅" },
 ] as const;
 
 /** 手机端：我的 Tab */

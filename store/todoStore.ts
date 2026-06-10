@@ -7,11 +7,15 @@ import {
 } from "@/lib/supabase/tasks";
 import { taskItemToCreateInput, taskRowToTaskItem } from "@/lib/task-cloud-map";
 import type { PlanDraft, TaskItem } from "@/types/task";
+import { getTaskCompleteLine } from "@/lib/companion-feedback";
+import { loadFromStorage, STORAGE_KEYS } from "@/lib/storage";
 import {
   generateTaskId,
   getTodayDateString,
   isValidDateString,
 } from "@/lib/task-utils";
+import { useUIStore } from "@/store/uiStore";
+import type { CountdownSettings } from "@/types/countdown";
 
 type TodoState = {
   selectedDate: string;
@@ -172,6 +176,20 @@ export const useTodoStore = create<TodoState>((set, get) => ({
       void updateCloudTask(id, { completed: nextDone }).then((res) => {
         if (res.error) console.error("[todo sync] updateTask", res.error);
       });
+    }
+
+    if (nextDone) {
+      const updatedTasks = get().tasks;
+      const countdownSettings = loadFromStorage<CountdownSettings>(
+        STORAGE_KEYS.countdown,
+        { targets: [] }
+      );
+      const line = getTaskCompleteLine(
+        { ...item, done: true },
+        updatedTasks,
+        countdownSettings
+      );
+      useUIStore.getState().showCompanionToast(line);
     }
   },
 

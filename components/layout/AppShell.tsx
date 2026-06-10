@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import MobileHeaderAuth from "@/components/auth/MobileHeaderAuth";
 import MobileAuthSheet from "@/components/auth/MobileAuthSheet";
+import FloatingChatEntry from "@/components/chat/FloatingChatEntry";
+import CompanionToast from "@/components/companion/CompanionToast";
 import CharacterModal from "@/components/companion/CharacterModal";
 import DesktopSidebar from "@/components/layout/DesktopSidebar";
 import DesktopWorkbench from "@/components/layout/DesktopWorkbench";
@@ -19,31 +20,35 @@ import { panelClass } from "@/lib/tokens";
 import { useUIStore } from "@/store/uiStore";
 import type { MobileTabId } from "@/types/ui";
 
-type RouteId =
-  | "home"
+export type AppRouteId =
   | "today"
-  | "tasks"
-  | "chat"
-  | "journey"
-  | "stats"
+  | "growth"
   | "ledger"
+  | "chat"
+  | "me"
+  /** 旧路由兼容 */
+  | "home"
+  | "journey"
+  | "tasks"
+  | "stats"
   | "settings";
 
-/** 手机端 Tab 主流程（首页 = 任务） */
-const MOBILE_TAB_ROUTES: RouteId[] = ["tasks", "today", "chat"];
+/** 手机端 Tab 主流程 */
+const MOBILE_TAB_ROUTES: AppRouteId[] = ["today", "tasks", "chat"];
 
-const ROUTE_TO_TAB: Partial<Record<RouteId, MobileTabId>> = {
-  tasks: "tasks",
+const ROUTE_TO_TAB: Partial<Record<AppRouteId, MobileTabId>> = {
   today: "tasks",
+  tasks: "tasks",
   chat: "chat",
+  me: "me",
   settings: "me",
 };
 
 /** 三栏工作台（桌面）+ 手机端多视图 */
-export default function AppShell({ route = "home" }: { route?: RouteId }) {
+export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
   const setMobileTab = useUIStore((s) => s.setMobileTab);
+  const setCompanionOpen = useUIStore((s) => s.setCompanionOpen);
 
   useEffect(() => {
     const t = window.setTimeout(() => setLoading(false), 380);
@@ -55,14 +60,14 @@ export default function AppShell({ route = "home" }: { route?: RouteId }) {
     if (tab) setMobileTab(tab);
   }, [route, setMobileTab]);
 
-  /** 手机打开 /home 时转到任务页，避免成长空间过长 */
+  /** 桌面访问 /chat 时自动打开小光浮动层 */
   useEffect(() => {
-    if (route !== "home") return;
-    const mq = window.matchMedia("(max-width: 1023px)");
+    if (route !== "chat") return;
+    const mq = window.matchMedia("(min-width: 1024px)");
     if (mq.matches) {
-      router.replace("/tasks");
+      setCompanionOpen(true);
     }
-  }, [route, router]);
+  }, [route, setCompanionOpen]);
 
   const showMobileTabs = MOBILE_TAB_ROUTES.includes(route);
 
@@ -102,7 +107,7 @@ export default function AppShell({ route = "home" }: { route?: RouteId }) {
             <div className="mb-4 flex items-center justify-between border-b border-orange-100/70 pb-3">
               <div>
                 <p className="text-xs tracking-wide text-stone-400">
-                  微光 · 成长空间
+                  微光 · 成长工作台
                 </p>
                 <p className="text-sm font-medium text-stone-700">
                   人生不是冲刺，而是慢慢亮起来的路
@@ -124,7 +129,7 @@ export default function AppShell({ route = "home" }: { route?: RouteId }) {
           </section>
         </div>
 
-        {/* 手机：无浮动按钮，靠 Tab + 侧栏菜单 */}
+        {/* 手机 */}
         <div className="mx-auto w-full min-w-0 max-w-7xl space-y-2 lg:hidden">
           <div className="flex items-center justify-between gap-2 px-1 py-1">
             <h1 className="text-lg font-bold text-orange-600">微光</h1>
@@ -149,6 +154,8 @@ export default function AppShell({ route = "home" }: { route?: RouteId }) {
       {showMobileTabs ? <MobileTabNav /> : null}
       <MobileAuthSheet />
       <CharacterModal />
+      <FloatingChatEntry />
+      <CompanionToast />
     </>
   );
 }

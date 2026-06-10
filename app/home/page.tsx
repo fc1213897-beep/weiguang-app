@@ -1,5 +1,5 @@
-import WorkspaceApp from "@/app/_components/WorkspaceApp";
+import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  return <WorkspaceApp route="home" />;
+export default function HomeRedirectPage() {
+  redirect("/growth");
 }

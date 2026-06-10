@@ -98,7 +98,7 @@ export default function HomeDashboardView() {
             去 Today 慢慢做
           </Link>
           <Link
-            href="/journey"
+            href="/growth?tab=journey"
             className="rounded-full border border-orange-200/80 bg-white/70 px-4 py-2 text-xs font-medium text-orange-700 transition hover:bg-orange-50"
           >
             看看人生地图 →

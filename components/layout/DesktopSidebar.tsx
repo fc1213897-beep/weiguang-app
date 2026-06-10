@@ -12,15 +12,18 @@ import { getTodayDateString } from "@/lib/task-utils";
 import { useTodoStore } from "@/store/todoStore";
 
 const NAV_ITEMS = [
-  { id: "home", label: "成长空间", icon: "🏠", href: "/home" },
-  { id: "journey", label: "微光旅程", icon: "🗺️", href: "/journey" },
-  { id: "today", label: "Today", icon: "📋", href: "/today" },
-  { id: "tasks", label: "任务", icon: "🗂️", href: "/tasks" },
-  { id: "chat", label: "小光", icon: "✨", href: "/chat" },
+  { id: "today", label: "今日", icon: "📋", href: "/today" },
+  { id: "growth", label: "成长", icon: "🌱", href: "/growth" },
   { id: "ledger", label: "记账", icon: "💰", href: "/ledger" },
-  { id: "stats", label: "成长统计", icon: "📊", href: "/stats" },
-  { id: "settings", label: "设置", icon: "⚙️", href: "/settings" },
+  { id: "chat", label: "小光", icon: "✨", href: "/chat" },
+  { id: "me", label: "我的", icon: "👤", href: "/me" },
 ] as const;
+
+function isNavActive(pathname: string, href: string): boolean {
+  if (href === "/today") return pathname === "/today";
+  if (href === "/growth") return pathname === "/growth";
+  return pathname === href;
+}
 
 export default function DesktopSidebar() {
   const pathname = usePathname();
@@ -44,7 +47,7 @@ export default function DesktopSidebar() {
 
       <nav className="mt-6 flex flex-1 flex-col gap-1" aria-label="主菜单">
         {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href;
+          const active = isNavActive(pathname, item.href);
           return (
             <Link
               key={item.id}

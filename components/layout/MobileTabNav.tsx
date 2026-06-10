@@ -8,7 +8,7 @@ import { useUIStore } from "@/store/uiStore";
 import type { MobileTabId } from "@/types/ui";
 
 const TABS: { id: MobileTabId; label: string; icon: string }[] = [
-  { id: "tasks", label: "任务", icon: "📋" },
+  { id: "tasks", label: "今日", icon: "📋" },
   { id: "chat", label: "小光", icon: "💬" },
   { id: "me", label: "我的", icon: "👤" },
 ];
