@@ -30,6 +30,8 @@ type TodoState = {
   mergeTasksForDate: (date: string, items: TaskItem[]) => void;
   addTask: () => boolean;
   addTaskFromDraft: (draft: PlanDraft, options?: { useSelectedDate?: boolean }) => boolean;
+  /** 批量写入计划任务（倒计时生成等） */
+  addTasksFromDrafts: (drafts: PlanDraft[]) => number;
   toggleTask: (id: string) => void;
   editTask: (id: string, text: string) => void;
   deleteTask: (id: string) => void;
@@ -112,6 +114,49 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     const ok = get().addTaskFromDraft(planDraft);
     if (ok) get().resetPlanDraft();
     return ok;
+  },
+
+  addTasksFromDrafts: (drafts) => {
+    let count = 0;
+    for (const draft of drafts) {
+      const value = draft.text.trim();
+      if (!value || !draft.date) continue;
+      const { syncEnabled } = get();
+
+      const optimistic: TaskItem = {
+        id: generateTaskId(),
+        text: value,
+        done: false,
+        date: draft.date,
+        category: draft.category,
+        priority: draft.priority,
+        pomodoroMinutes: draft.pomodoroMinutes,
+        note: draft.note?.trim() ?? "",
+      };
+
+      set({ tasks: [...get().tasks, optimistic] });
+      count++;
+
+      if (syncEnabled) {
+        void (async () => {
+          const res = await createCloudTask(taskItemToCreateInput(optimistic));
+          if (res.data) {
+            const saved = taskRowToTaskItem(res.data);
+            set((s) => ({
+              tasks: s.tasks.map((t) =>
+                t.id === optimistic.id ? saved : t
+              ),
+            }));
+          } else {
+            set((s) => ({
+              tasks: s.tasks.filter((t) => t.id !== optimistic.id),
+            }));
+            console.error("[todo sync] createTask batch", res.error);
+          }
+        })();
+      }
+    }
+    return count;
   },
 
   toggleTask: (id) => {

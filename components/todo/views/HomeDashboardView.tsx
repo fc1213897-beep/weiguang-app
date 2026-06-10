@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
+import CountdownHero from "@/components/countdown/CountdownHero";
 import TimeGreeting from "@/components/companion/TimeGreeting";
+import {
+  getCountdownCompanionContext,
+} from "@/lib/countdown/countdown-companion";
+import { useCountdownStore } from "@/store/countdownStore";
 import ExpenseSummaryHero from "@/components/stats/ExpenseSummaryHero";
 import { useAuth } from "@/hooks/useAuth";
 import { useExpenseStats } from "@/hooks/useExpenseStats";
@@ -21,6 +26,7 @@ import { useTodoStore } from "@/store/todoStore";
 
 export default function HomeDashboardView() {
   const tasks = useTodoStore((s) => s.tasks);
+  const countdownSettings = useCountdownStore((s) => s.settings);
   const messages = useChatStore((s) => s.messages);
   const { isAuthenticated } = useAuth();
   const expenseStats = useExpenseStats();
@@ -28,7 +34,14 @@ export default function HomeDashboardView() {
   const metrics = useMemo(() => getWeekMetrics(tasks), [tasks]);
   const topTasks = useMemo(() => getTopPriorityTasks(tasks, 5), [tasks]);
   const timeline = useMemo(() => buildActivityTimeline(tasks), [tasks]);
-  const suggestions = useMemo(() => getAiDailySuggestions(tasks), [tasks]);
+  const countdownCtx = useMemo(
+    () => getCountdownCompanionContext(tasks, countdownSettings),
+    [tasks, countdownSettings]
+  );
+  const suggestions = useMemo(
+    () => getAiDailySuggestions(tasks, countdownCtx),
+    [tasks, countdownCtx]
+  );
   const stage = useMemo(
     () => getJourneyStage(metrics.totalCompleted),
     [metrics.totalCompleted]
@@ -37,8 +50,8 @@ export default function HomeDashboardView() {
   const assistantMsgs = messages.filter((m) => m.role === "assistant");
   const lastAI = assistantMsgs[assistantMsgs.length - 1]?.text;
   const companionLine = useMemo(
-    () => getXiaoguangLine(tasks, lastAI),
-    [tasks, lastAI]
+    () => getXiaoguangLine(tasks, lastAI, countdownCtx),
+    [tasks, lastAI, countdownCtx]
   );
   const mood = useMemo(() => getTodayMoodLabel(tasks), [tasks]);
 
@@ -98,6 +111,8 @@ export default function HomeDashboardView() {
           </Link>
         </div>
       </section>
+
+      <CountdownHero />
 
       {isAuthenticated && (
         <ExpenseSummaryHero stats={expenseStats} />

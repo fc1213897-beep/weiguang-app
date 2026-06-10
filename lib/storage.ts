@@ -2,6 +2,7 @@
 export const STORAGE_KEYS = {
   tasks: "weiguang-tasks",
   aiChat: "weiguang-ai-chat",
+  countdown: "weiguang-countdown",
 } as const;
 
 export type { TaskItem } from "@/types/task";

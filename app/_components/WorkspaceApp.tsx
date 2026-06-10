@@ -4,6 +4,7 @@ import AppShell from "@/components/layout/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatHydration } from "@/hooks/useChatHydration";
 import { useChatSync } from "@/hooks/useChatSync";
+import { useCountdownHydration } from "@/hooks/useCountdownHydration";
 import { useTodoHydration } from "@/hooks/useTodoHydration";
 import { useTodoSync } from "@/hooks/useTodoSync";
 
@@ -23,6 +24,7 @@ export default function WorkspaceApp({ route }: Props) {
   useAuth();
   useTodoHydration();
   useTodoSync();
+  useCountdownHydration();
   useChatHydration();
   useChatSync();
 

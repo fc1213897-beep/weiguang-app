@@ -1,0 +1,60 @@
+[
+  {
+    "id": "kaoyan_standard",
+    "label": "考研标准套餐",
+    "description": "词汇三轮 + 政治章节 + 每日数学真题",
+    "icon": "📚",
+    "defaultPlans": [
+      {
+        "label": "英语词汇",
+        "strategyId": "kaoyan_vocab",
+        "enabled": true,
+        "priority": "high",
+        "params": {
+          "dataSourceId": "kaoyan_top3000",
+          "rounds": 3
+        }
+      },
+      {
+        "label": "政治复习",
+        "strategyId": "even_chapters",
+        "enabled": true,
+        "priority": "medium",
+        "params": {
+          "chapterCount": 14,
+          "prefix": "复习政治",
+          "chapterLabel": "章"
+        }
+      },
+      {
+        "label": "数学真题",
+        "strategyId": "daily_quota",
+        "enabled": true,
+        "priority": "low",
+        "params": {
+          "dailyCount": 3,
+          "unit": "道",
+          "prefix": "刷数学真题"
+        }
+      }
+    ]
+  },
+  {
+    "id": "kaoyan_vocab_only",
+    "label": "仅英语词汇三轮",
+    "description": "考研英语高频词，三轮复习 + 词频优化",
+    "icon": "🔤",
+    "defaultPlans": [
+      {
+        "label": "英语词汇",
+        "strategyId": "kaoyan_vocab",
+        "enabled": true,
+        "priority": "high",
+        "params": {
+          "dataSourceId": "kaoyan_top3000",
+          "rounds": 3
+        }
+      }
+    ]
+  }
+]

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { isCountdownAutoTask } from "@/lib/countdown/note-utils";
 import {
   getCategoryMeta,
   getPriorityLabel,
@@ -236,6 +237,11 @@ export default function TaskCard({
                     {pomodoroMinutes > 0 && (
                       <span className="rounded-full bg-orange-50/90 px-2 py-0.5 text-[11px] text-orange-600 ring-1 ring-orange-100">
                         🍅 {pomodoroMinutes} 分钟
+                      </span>
+                    )}
+                    {isCountdownAutoTask(note) && (
+                      <span className="rounded-full bg-indigo-50/90 px-2 py-0.5 text-[11px] text-indigo-600 ring-1 ring-indigo-100">
+                        备考
                       </span>
                     )}
                   </span>

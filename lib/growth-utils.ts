@@ -1,3 +1,7 @@
+import {
+  getCountdownCompanionLine,
+  type CountdownCompanionContext,
+} from "@/lib/countdown/countdown-companion";
 import { getTimePeriod } from "@/lib/time-greeting";
 import {
   addDaysToDateString,
@@ -150,17 +154,32 @@ export function buildActivityTimeline(tasks: TaskItem[]): {
   });
 }
 
-/** 小光陪伴语（完成任务 / 连续成长 / 低落） */
+/** 小光陪伴语（完成任务 / 连续成长 / 低落 / 备考语境） */
 export function getXiaoguangLine(
   tasks: TaskItem[],
-  lastAssistant?: string
+  lastAssistant?: string,
+  countdown?: CountdownCompanionContext | null
 ): string {
+  const cdLine = countdown ? getCountdownCompanionLine(countdown) : null;
   const { streak, todayStats } = getWeekMetrics(tasks);
   const idle = daysSinceLastCompletion(tasks);
 
   if (idle >= 7) {
     return "今天的小路还暗着也没关系。等你慢慢回来，小光还会在这里 ✨";
   }
+
+  if (cdLine) {
+    const allCountdownDone =
+      (countdown?.todayCountdownTotal ?? 0) > 0 &&
+      countdown?.todayCountdownDone === countdown?.todayCountdownTotal;
+    const nearExam =
+      countdown?.daysLeft != null && countdown.daysLeft <= 30;
+    const countdownIdle = (countdown?.idleDays ?? 0) >= 3;
+    if (allCountdownDone || nearExam || countdownIdle || todayStats.completed === 0) {
+      return cdLine;
+    }
+  }
+
   if (todayStats.completed > 0) {
     const lines = [
       "嘿，今天的小路亮起来了一点 ✨",
@@ -175,14 +194,26 @@ export function getXiaoguangLine(
   if (streak >= 3) {
     return "路一直都在，我们按自己的节奏慢慢走。";
   }
+  if (cdLine) return cdLine;
   return lastAssistant ?? "今天先完成一个最小任务就很好。";
 }
 
 /** AI 今日建议（本地生成，不调用 API） */
-export function getAiDailySuggestions(tasks: TaskItem[]): string[] {
+export function getAiDailySuggestions(
+  tasks: TaskItem[],
+  countdown?: CountdownCompanionContext | null
+): string[] {
   const { todayStats, streak, weekRate } = getWeekMetrics(tasks);
   const period = getTimePeriod();
   const suggestions: string[] = [];
+
+  if (
+    countdown &&
+    countdown.todayCountdownTotal > 0 &&
+    countdown.todayCountdownDone === 0
+  ) {
+    suggestions.push("今天还有备考安排，挑一件最小的开始就好。");
+  }
 
   if (todayStats.pending > 3) {
     suggestions.push("今天任务有点多，先挑一件最重要的小事先做就好。");
