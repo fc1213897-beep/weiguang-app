@@ -10,6 +10,7 @@ import type { PlanDraft, TaskItem } from "@/types/task";
 import { getTaskCompleteLine } from "@/lib/companion-feedback";
 import { loadFromStorage, STORAGE_KEYS } from "@/lib/storage";
 import {
+  computeTaskStats,
   generateTaskId,
   getTodayDateString,
   isValidDateString,
@@ -184,11 +185,18 @@ export const useTodoStore = create<TodoState>((set, get) => ({
         STORAGE_KEYS.countdown,
         { targets: [] }
       );
-      const line = getTaskCompleteLine(
+      let line = getTaskCompleteLine(
         { ...item, done: true },
         updatedTasks,
         countdownSettings
       );
+      const today = getTodayDateString();
+      const todayStats = computeTaskStats(
+        updatedTasks.filter((t) => t.date === today)
+      );
+      if (todayStats.total > 0 && todayStats.pending === 0) {
+        line = "今天的任务都完成啦！给自己一点小小的奖励吧 ✨";
+      }
       useUIStore.getState().showCompanionToast(line);
     }
   },

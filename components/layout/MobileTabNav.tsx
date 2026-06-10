@@ -2,13 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import Toast from "@/components/ui/Toast";
+import { usePathname, useRouter } from "next/navigation";
 import { Z_MOBILE_TAB } from "@/lib/layout";
 import { useUIStore } from "@/store/uiStore";
 import type { MobileTabId } from "@/types/ui";
 
+const TAB_HREF: Record<MobileTabId, string> = {
+  tasks: "/today",
+  chat: "/chat",
+  me: "/me",
+};
+
+const PATH_TO_TAB: Record<string, MobileTabId> = {
+  "/today": "tasks",
+  "/tasks": "tasks",
+  "/chat": "chat",
+  "/me": "me",
+  "/settings": "me",
+};
+
 const TABS: { id: MobileTabId; label: string; icon: string }[] = [
-  { id: "tasks", label: "今日", icon: "📋" },
+  { id: "tasks", label: "今日任务", icon: "📋" },
   { id: "chat", label: "小光", icon: "💬" },
   { id: "me", label: "我的", icon: "👤" },
 ];
@@ -17,23 +31,28 @@ const TABS: { id: MobileTabId; label: string; icon: string }[] = [
 export default function MobileTabNav() {
   const mobileTab = useUIStore((s) => s.mobileTab);
   const setMobileTab = useUIStore((s) => s.setMobileTab);
+  const router = useRouter();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const [toast, setToast] = useState("");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  /** 地址栏与 Tab 同步，保证打开页面落在正确 Tab */
+  useEffect(() => {
+    const tab = PATH_TO_TAB[pathname];
+    if (tab) setMobileTab(tab);
+  }, [pathname, setMobileTab]);
+
   function handleTabChange(tab: MobileTabId) {
     setMobileTab(tab);
-    setToast(TABS.find((t) => t.id === tab)?.label ?? "已切换");
-    window.setTimeout(() => setToast(""), 1200);
+    router.push(TAB_HREF[tab]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   const nav = (
     <>
-      {toast ? <Toast message={`已切换到${toast}`} /> : null}
       <nav
         className="fixed bottom-0 left-0 right-0 w-full border-t border-orange-100/80 bg-white/95 shadow-[0_-4px_20px_-8px_rgba(0,0,0,0.08)] lg:hidden"
         style={{
@@ -44,7 +63,8 @@ export default function MobileTabNav() {
       >
         <div className="mx-auto flex h-12 max-w-6xl items-stretch">
           {TABS.map((tab) => {
-            const isActive = mobileTab === tab.id;
+            const routeTab = PATH_TO_TAB[pathname];
+            const isActive = routeTab ? routeTab === tab.id : mobileTab === tab.id;
             return (
               <button
                 key={tab.id}

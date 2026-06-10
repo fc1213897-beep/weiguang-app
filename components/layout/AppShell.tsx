@@ -33,8 +33,14 @@ export type AppRouteId =
   | "stats"
   | "settings";
 
-/** 手机端 Tab 主流程 */
-const MOBILE_TAB_ROUTES: AppRouteId[] = ["today", "tasks", "chat"];
+/** 手机端 Tab 主流程（打开即今日任务） */
+const MOBILE_TAB_ROUTES: AppRouteId[] = [
+  "today",
+  "tasks",
+  "chat",
+  "me",
+  "settings",
+];
 
 const ROUTE_TO_TAB: Partial<Record<AppRouteId, MobileTabId>> = {
   today: "tasks",
@@ -69,7 +75,9 @@ export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
     }
   }, [route, setCompanionOpen]);
 
-  const showMobileTabs = MOBILE_TAB_ROUTES.includes(route);
+  const isMobileTabRoute = MOBILE_TAB_ROUTES.includes(route);
+  /** 手机端始终展示底 Tab，二级页（成长/记账）也可一键回今日任务 */
+  const showMobileTabs = true;
 
   return (
     <>
@@ -139,7 +147,7 @@ export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
             </div>
           </div>
 
-          {showMobileTabs ? (
+          {isMobileTabRoute ? (
             <>
               <MobileTaskView />
               <MobileChatView />

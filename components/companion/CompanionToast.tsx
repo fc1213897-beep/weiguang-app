@@ -2,20 +2,28 @@
 
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import { useUIStore } from "@/store/uiStore";
 
-/** 完成任务后的小光轻提示（约 3 秒消失） */
+/** 完成任务后的小光轻提示（约 3 秒消失；今日任务页由 MobileCompleteFeedback 承接） */
 export default function CompanionToast() {
   const message = useUIStore((s) => s.companionToast);
+  const mobileTab = useUIStore((s) => s.mobileTab);
   const clearCompanionToast = useUIStore((s) => s.clearCompanionToast);
+  const pathname = usePathname();
+  const onMobileTaskPage =
+    (pathname === "/today" || pathname === "/tasks") && mobileTab === "tasks";
 
   useEffect(() => {
-    if (!message) return;
+    if (!message || onMobileTaskPage) return;
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(30);
+    }
     const t = window.setTimeout(() => clearCompanionToast(), 3200);
     return () => window.clearTimeout(t);
-  }, [message, clearCompanionToast]);
+  }, [message, clearCompanionToast, onMobileTaskPage]);
 
-  if (!message) return null;
+  if (!message || onMobileTaskPage) return null;
 
   return createPortal(
     <div
