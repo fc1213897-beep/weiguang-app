@@ -29,7 +29,7 @@ export default function MobileCompleteFeedback() {
 
   return (
     <div
-      className="mobile-complete-pop mb-3 overflow-hidden rounded-2xl border border-amber-200/90 bg-gradient-to-r from-amber-50 via-orange-50 to-rose-50 px-4 py-3 shadow-md"
+      className="mobile-complete-pop overflow-hidden rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-100 via-orange-50 to-rose-50 px-4 py-3.5 shadow-lg ring-1 ring-amber-200/50"
       role="status"
     >
       <style>{`

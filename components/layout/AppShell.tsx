@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import MobileHeaderAuth from "@/components/auth/MobileHeaderAuth";
+import MobileShellHeader from "@/components/mobile/MobileShellHeader";
 import MobileAuthSheet from "@/components/auth/MobileAuthSheet";
 import FloatingChatEntry from "@/components/chat/FloatingChatEntry";
 import CompanionToast from "@/components/companion/CompanionToast";
@@ -139,13 +139,7 @@ export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
 
         {/* 手机 */}
         <div className="mx-auto w-full min-w-0 max-w-7xl space-y-2 lg:hidden">
-          <div className="flex items-center justify-between gap-2 px-1 py-1">
-            <h1 className="text-lg font-bold text-orange-600">微光</h1>
-            <div className="flex shrink-0 items-center gap-2">
-              <MobileHeaderAuth />
-              <MobileDrawerMenu />
-            </div>
-          </div>
+          <MobileShellHeader />
 
           {isMobileTabRoute ? (
             <>

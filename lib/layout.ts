@@ -21,6 +21,10 @@ export const Z_WELCOME_MODAL = 110;
 export const MOBILE_MAIN_PB =
   "max-lg:pb-[max(5rem,calc(3.5rem+env(safe-area-inset-bottom)))]";
 
+/** 手机今日页：Tab + 底部快捷添加条留白 */
+export const MOBILE_TASK_PB =
+  "max-lg:pb-[max(8.5rem,calc(6.5rem+env(safe-area-inset-bottom)))]";
+
 /** 桌面两栏：左菜单 | 主内容区（AI 为右下角浮动入口） */
 export const DESKTOP_GRID_CLASS =
   "lg:grid lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)]";

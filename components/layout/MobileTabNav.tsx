@@ -54,14 +54,14 @@ export default function MobileTabNav() {
   const nav = (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 w-full border-t border-orange-100/80 bg-white/95 shadow-[0_-4px_20px_-8px_rgba(0,0,0,0.08)] lg:hidden"
+        className="fixed bottom-0 left-0 right-0 w-full border-t border-orange-100/60 bg-white/98 shadow-[0_-6px_24px_-10px_rgba(0,0,0,0.1)] backdrop-blur-md lg:hidden"
         style={{
           zIndex: Z_MOBILE_TAB,
           paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))",
         }}
         aria-label="模块切换"
       >
-        <div className="mx-auto flex h-12 max-w-6xl items-stretch">
+        <div className="mx-auto flex h-[3.25rem] max-w-6xl items-stretch px-2">
           {TABS.map((tab) => {
             const routeTab = PATH_TO_TAB[pathname];
             const isActive = routeTab ? routeTab === tab.id : mobileTab === tab.id;
@@ -71,7 +71,7 @@ export default function MobileTabNav() {
                 type="button"
                 onClick={() => handleTabChange(tab.id)}
                 className={[
-                  "flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors",
+                  "relative flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors",
                   "touch-manipulation",
                   isActive
                     ? "font-semibold text-orange-600"
@@ -79,10 +79,16 @@ export default function MobileTabNav() {
                 ].join(" ")}
                 aria-current={isActive ? "page" : undefined}
               >
-                <span className="text-base" aria-hidden>
+                {isActive && (
+                  <span
+                    className="absolute top-1 h-0.5 w-8 rounded-full bg-orange-500"
+                    aria-hidden
+                  />
+                )}
+                <span className="text-lg" aria-hidden>
                   {tab.icon}
                 </span>
-                <span className="text-[11px]">{tab.label}</span>
+                <span className="text-[10px]">{tab.label}</span>
               </button>
             );
           })}
