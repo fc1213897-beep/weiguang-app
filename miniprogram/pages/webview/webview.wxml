@@ -1,0 +1,6 @@
+<view class="webview-page">
+  <web-view wx:if="{{url}}" src="{{url}}" binderror="onWebError"></web-view>
+  <view class="fallback card-soft" wx:else>
+    <text class="fallback-title">页面加载中…</text>
+  </view>
+</view>

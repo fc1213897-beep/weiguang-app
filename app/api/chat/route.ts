@@ -36,19 +36,19 @@ export async function POST(request: NextRequest) {
     }
 
     let expenseRecorded: ExpenseRow | null = null;
+    let user: { id: string } | null = null;
 
     try {
       const supabase = await createSupabaseServerClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const authResult = await supabase.auth.getUser();
+      user = authResult.data.user;
 
       if (user) {
         expenseRecorded = await tryRecordExpenseFromChat(message, async (input) => {
           const { data, error } = await supabase
             .from("expenses")
             .insert({
-              user_id: user.id,
+              user_id: user!.id,
               amount: input.amount,
               entry_type: input.entry_type ?? "expense",
               category: input.category ?? "other",
@@ -73,17 +73,22 @@ export async function POST(request: NextRequest) {
       : message;
 
     let reply: string;
-    try {
-      reply = await fetchXiaoguangReply(aiMessage, body.history ?? []);
-    } catch {
-      if (expenseRecorded) {
-        reply = buildExpenseConfirmReply(expenseRecorded);
-      } else {
-        reply = getGentleFallbackReply(
-          message,
-          body.reply_index ?? 0
-        );
+
+    if (user) {
+      try {
+        reply = await fetchXiaoguangReply(aiMessage, body.history ?? []);
+      } catch {
+        if (expenseRecorded) {
+          reply = buildExpenseConfirmReply(expenseRecorded);
+        } else {
+          reply = getGentleFallbackReply(message, body.reply_index ?? 0);
+        }
       }
+    } else {
+      // 未登录仅返回本地 fallback，避免匿名滥用 AI 额度
+      reply = expenseRecorded
+        ? buildExpenseConfirmReply(expenseRecorded)
+        : getGentleFallbackReply(message, body.reply_index ?? 0);
     }
 
     return NextResponse.json({

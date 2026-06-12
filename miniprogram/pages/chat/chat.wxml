@@ -12,6 +12,11 @@
     </view>
   </view>
 
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="loading-dot"></view>
+    <text class="loading-text">加载中…</text>
+  </view>
+
   <scroll-view
     class="messages"
     scroll-y

@@ -7,6 +7,7 @@ Page({
     messages: [],
     input: "",
     sending: false,
+    loading: false,
     scrollIntoView: "",
     loggedIn: false,
     loginError: "",
@@ -23,6 +24,7 @@ Page({
   },
 
   bootstrap() {
+    this.setData({ loading: true, loginError: "" });
     return auth
       .guardLogin()
       .then(() => {
@@ -32,6 +34,7 @@ Page({
       .catch((err) => {
         if (err.message === "请先登录") return;
         this.setData({
+          loading: false,
           loggedIn: false,
           loginError: err.message || "加载失败",
         });
@@ -39,19 +42,27 @@ Page({
   },
 
   loadMessages() {
+    this.setData({ loading: true });
     return request({
       url: "/api/mp/chat/messages",
       method: "GET",
-    }).then((res) => {
-      const body = res.data || {};
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw new Error(body.error || "加载失败");
-      }
+    })
+      .then((res) => {
+        const body = res.data || {};
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          throw new Error(body.error || "加载失败");
+        }
 
-      const messages = body.messages || [];
-      this.setData({ messages });
-      this.scrollToBottom();
-    });
+        const messages = body.messages || [];
+        this.setData({ messages, loading: false });
+        this.scrollToBottom();
+      })
+      .catch((err) => {
+        this.setData({
+          loading: false,
+          loginError: err.message || "加载失败",
+        });
+      });
   },
 
   onInput(e) {

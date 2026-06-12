@@ -1,0 +1,17 @@
+@import "../../styles/theme.wxss";
+
+.webview-page {
+  min-height: 100vh;
+  background: #fffdf7;
+}
+
+.fallback {
+  margin: 48rpx 28rpx;
+  padding: 48rpx 32rpx;
+  text-align: center;
+}
+
+.fallback-title {
+  font-size: 28rpx;
+  color: #78716c;
+}

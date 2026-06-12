@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import MobileShellHeader from "@/components/mobile/MobileShellHeader";
 import MobileAuthSheet from "@/components/auth/MobileAuthSheet";
 import FloatingChatEntry from "@/components/chat/FloatingChatEntry";
@@ -9,14 +9,15 @@ import CharacterModal from "@/components/companion/CharacterModal";
 import DesktopSidebar from "@/components/layout/DesktopSidebar";
 import DesktopWorkbench from "@/components/layout/DesktopWorkbench";
 import MobileChatView from "@/components/layout/MobileChatView";
-import MobileDrawerMenu from "@/components/layout/MobileDrawerMenu";
 import MobileMeView from "@/components/layout/MobileMeView";
 import MobileRouteView from "@/components/layout/MobileRouteView";
 import MobileTabNav from "@/components/layout/MobileTabNav";
 import MobileTaskView from "@/components/layout/MobileTaskView";
 import { MotionStyles } from "@/components/ui/motion-styles";
+import { useAuth } from "@/hooks/useAuth";
 import { DESKTOP_GRID_CLASS, MOBILE_MAIN_PB } from "@/lib/layout";
 import { panelClass } from "@/lib/tokens";
+import { useTodoStore } from "@/store/todoStore";
 import { useUIStore } from "@/store/uiStore";
 import type { MobileTabId } from "@/types/ui";
 
@@ -52,14 +53,11 @@ const ROUTE_TO_TAB: Partial<Record<AppRouteId, MobileTabId>> = {
 
 /** 三栏工作台（桌面）+ 手机端多视图 */
 export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
-  const [loading, setLoading] = useState(true);
+  const { isLoading: authLoading } = useAuth();
+  const storageReady = useTodoStore((s) => s.storageReady);
+  const loading = authLoading || !storageReady;
   const setMobileTab = useUIStore((s) => s.setMobileTab);
   const setCompanionOpen = useUIStore((s) => s.setCompanionOpen);
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setLoading(false), 380);
-    return () => window.clearTimeout(t);
-  }, []);
 
   useEffect(() => {
     const tab = ROUTE_TO_TAB[route];

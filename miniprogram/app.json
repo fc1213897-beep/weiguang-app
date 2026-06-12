@@ -4,7 +4,8 @@
     "pages/tasks/tasks",
     "pages/ledger/ledger",
     "pages/chat/chat",
-    "pages/me/me"
+    "pages/me/me",
+    "pages/webview/webview"
   ],
   "window": {
     "navigationBarTitleText": "微光",

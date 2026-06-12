@@ -3,7 +3,6 @@
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import PlanBlueprintForm from "@/components/countdown/PlanBlueprintForm";
-import { generatePlanId } from "@/lib/countdown/id-utils";
 import { getRecipes } from "@/lib/countdown/load-recipes";
 import { formatDaysLeft } from "@/lib/countdown/progress-utils";
 import { previewPlansForTarget } from "@/lib/countdown/plan-orchestrator";
@@ -36,7 +35,6 @@ export default function CountdownLabPanel() {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const selected = targets.find((t) => t.id === selectedId) ?? null;
   const recipes = getRecipes();
   const strategies = listStrategies();
 

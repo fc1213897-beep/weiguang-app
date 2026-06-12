@@ -62,6 +62,17 @@
   gap: 16rpx;
 }
 
+.menu-text-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.menu-sub {
+  font-size: 22rpx;
+  color: #a8a29e;
+}
+
 .menu-icon {
   font-size: 36rpx;
 }
@@ -104,6 +115,32 @@
   color: #78716c;
   line-height: 1.6;
   margin-top: 8rpx;
+}
+
+.tip-actions {
+  margin-top: 20rpx;
+}
+
+.tip-action {
+  display: inline-flex;
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  background: #fff7ed;
+}
+
+.tip-action-text {
+  font-size: 24rpx;
+  color: #c2410c;
+}
+
+.version-footer {
+  margin-top: 32rpx;
+  text-align: center;
+}
+
+.version-text {
+  font-size: 22rpx;
+  color: #d6d3d1;
 }
 
 .page-bottom-spacer {

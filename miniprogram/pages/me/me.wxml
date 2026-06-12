@@ -8,6 +8,28 @@
   </view>
 
   <view class="menu-card card-soft">
+    <view class="menu-row" bindtap="onOpenGrowth">
+      <view class="menu-left">
+        <text class="menu-icon">📈</text>
+        <view class="menu-text-col">
+          <text class="menu-label">成长空间</text>
+          <text class="menu-sub">旅程地图与统计热力图</text>
+        </view>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-divider"></view>
+    <view class="menu-row" bindtap="onOpenExamPlan">
+      <view class="menu-left">
+        <text class="menu-icon">📅</text>
+        <view class="menu-text-col">
+          <text class="menu-label">备考计划</text>
+          <text class="menu-sub">考试倒计时与长期目标</text>
+        </view>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-divider"></view>
     <navigator url="/pages/login/login?hint=pc" class="menu-row">
       <view class="menu-left">
         <text class="menu-icon">💻</text>
@@ -29,6 +51,15 @@
     <text class="tip-title">💡 和 PC 搭配使用</text>
     <text class="tip-line">手机：记任务、记账、跟小光聊天</text>
     <text class="tip-line">电脑：打开 weiguanglife.top 看统计与成长空间</text>
+    <view class="tip-actions">
+      <view class="tip-action" bindtap="onCopyWebHome">
+        <text class="tip-action-text">复制网站链接</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="version-footer">
+    <text class="version-text">微光 v{{version}}</text>
   </view>
 
   <view class="page-bottom-spacer"></view>

@@ -3,7 +3,9 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthCard from "@/components/auth/AuthCard";
+import WechatScanLogin from "@/components/auth/WechatScanLogin";
 import CountdownLabPanel from "@/components/countdown/CountdownLabPanel";
+import { formatAppVersion } from "@/lib/app-version";
 
 /** 我的：账号、备考计划、偏好 */
 export default function MeView() {
@@ -24,7 +26,10 @@ export default function MeView() {
       <div className="mt-6 space-y-6">
         <section>
           <h3 className="mb-3 text-sm font-semibold text-stone-700">账号</h3>
-          <AuthCard />
+          <div className="space-y-4">
+            <AuthCard />
+            <WechatScanLogin />
+          </div>
         </section>
 
         <section id="exam">
@@ -38,7 +43,7 @@ export default function MeView() {
           </div>
         </section>
 
-        <p className="text-center text-xs text-stone-400">微光 v0.2.0</p>
+        <p className="text-center text-xs text-stone-400">{formatAppVersion()}</p>
       </div>
     </div>
   );

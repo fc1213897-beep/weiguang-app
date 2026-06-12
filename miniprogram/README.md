@@ -11,15 +11,15 @@
 | 小光 | AI 聊天，支持自然语言记账（如「午饭 35」） |
 | 我的 | 账号信息、帮 PC 扫码登录、退出；入口跳转成长/记账 |
 
-## Web 与小程序能力地图（v0.2.0）
+## Web 与小程序能力地图（v0.2.1）
 
 | 能力 | Web 路由 | 小程序 |
 |------|----------|--------|
 | 今日任务 | `/today` | Tab「今日任务」 |
 | 小光聊天 | 桌面浮动 + 手机 Tab | Tab「小光」 |
 | 记账 | `/ledger` | Tab「记账」 |
-| 成长（概览/旅程/统计） | `/growth` | 我的 → 成长（打开 Web） |
-| 备考倒计时 | `/me` 备考计划 | 我的 → 备考计划与账号（Web 配置） |
+| 成长（概览/旅程/统计） | `/growth` | 我的 → 成长空间（Web 内嵌） |
+| 备考倒计时 | `/me` 备考计划 | 我的 → 备考计划（Web 内嵌） |
 | 账号 | `/me` | 我的 |
 
 > 备考倒计时、成长统计详情等 **Web 优先** 配置；小程序侧重每日执行（任务/记账/聊天）。
@@ -29,9 +29,13 @@
 `utils/config.js`：
 
 - **体验版 / 正式版 / 提审**：`API_BASE_PROD`（默认 `https://www.weiguanglife.top`），须与服务器 `NEXT_PUBLIC_APP_URL` 一致
-- **开发版**：自动使用 `API_BASE_DEV`（`http://...:3000`），开发者工具需勾选「不校验合法域名」
+- **开发版**：自动使用 `API_BASE_DEV`（默认 `http://127.0.0.1:3000`，本机 `npm run dev`），开发者工具需勾选「不校验合法域名」
+- **真机调试**：修改 `config.js` 中 `API_BASE_LAN` 为电脑局域网 IP
 
-提审前必须在微信公众平台配置 **request 合法域名** `www.weiguanglife.top`，且服务器已启用 HTTPS（见 `docs/服务器部署指南.md`）。
+提审前必须在微信公众平台配置 **request 合法域名** `www.weiguanglife.top`，且服务器已启用 HTTPS（见 `docs/服务器部署指南.md`）。  
+若使用「成长空间 / 备考计划」Web 内嵌，还需配置 **业务域名** `www.weiguanglife.top`。
+
+发版步骤见 [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md)。
 
 ## 开发
 

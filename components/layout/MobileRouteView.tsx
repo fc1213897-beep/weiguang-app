@@ -36,7 +36,7 @@ function RouteContent({ route }: Props) {
 
 /** 手机端：独立子页面（非 Tab 主流程） */
 export default function MobileRouteView({ route }: Props) {
-  let content: ReactNode = (
+  const content: ReactNode = (
     <Suspense
       fallback={
         <div className="h-24 animate-pulse rounded-2xl bg-stone-100" />

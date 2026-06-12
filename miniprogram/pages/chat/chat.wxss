@@ -176,3 +176,37 @@
   padding: 0 24rpx !important;
   font-size: 28rpx !important;
 }
+
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx;
+  flex-shrink: 0;
+}
+
+.loading-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: #fb923c;
+  animation: chat-pulse 1s ease-in-out infinite;
+}
+
+.loading-text {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #a8a29e;
+}
+
+@keyframes chat-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}

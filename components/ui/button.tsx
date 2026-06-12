@@ -1,5 +1,3 @@
-import { wgTokens } from "@/lib/tokens";
-
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "soft";
   fullWidth?: boolean;

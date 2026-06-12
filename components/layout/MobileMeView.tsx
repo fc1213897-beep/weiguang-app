@@ -6,6 +6,7 @@ import CountdownLabPanel from "@/components/countdown/CountdownLabPanel";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDaysLeft } from "@/lib/countdown/progress-utils";
+import { formatAppVersion } from "@/lib/app-version";
 import { getWeekMetrics } from "@/lib/growth-utils";
 import { panelClass } from "@/lib/tokens";
 import { useCountdownStore } from "@/store/countdownStore";
@@ -23,16 +24,12 @@ export default function MobileMeView() {
   const mobileTab = useUIStore((s) => s.mobileTab);
   const setAuthSheetOpen = useUIStore((s) => s.setAuthSheetOpen);
   const { isAuthenticated, authActionLoading, signOut } = useAuth();
-  const tasks = useTodoStore((s) => s.tasks);
+  const { streak, totalCompleted } = useTodoStore((s) => getWeekMetrics(s.tasks));
   const targets = useCountdownStore((s) => s.settings.targets);
 
   const active = useMemo(
     () => targets.find((t) => t.status === "active"),
     [targets]
-  );
-  const { streak, totalCompleted } = useMemo(
-    () => getWeekMetrics(tasks),
-    [tasks]
   );
 
   if (mobileTab !== "me") return null;
@@ -113,7 +110,7 @@ export default function MobileMeView() {
         ))}
       </div>
 
-      <p className="text-center text-[11px] text-stone-400">微光 v0.2.0</p>
+      <p className="text-center text-[11px] text-stone-400">{formatAppVersion()}</p>
     </div>
   );
 }

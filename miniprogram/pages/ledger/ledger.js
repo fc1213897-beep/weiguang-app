@@ -116,14 +116,24 @@ Page({
     return request({
       url: `/api/mp/expenses?entry_date=${encodeURIComponent(selectedDate)}`,
       method: "GET",
-    }).then((res) => {
-      if (loadId !== this._loadId) return;
-      const body = res.data || {};
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw new Error(body.error || "加载失败");
-      }
-      this.applyExpensesList(body.expenses, body.summary);
-    });
+    })
+      .then((res) => {
+        if (loadId !== this._loadId) return;
+        const body = res.data || {};
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          throw new Error(body.error || "加载失败");
+        }
+        this.applyExpensesList(body.expenses, body.summary);
+      })
+      .catch((err) => {
+        if (loadId !== this._loadId) return Promise.reject(err);
+        this.setData({ loading: false });
+        wx.showToast({
+          title: err.message || "加载失败",
+          icon: "none",
+        });
+        return Promise.reject(err);
+      });
   },
 
   loadInsight() {
@@ -155,7 +165,14 @@ Page({
     return Promise.all([
       this.loadExpenses(options),
       this.loadInsight(),
-    ]);
+    ]).catch((err) => {
+      if (!options.silent) {
+        wx.showToast({
+          title: err.message || "加载失败",
+          icon: "none",
+        });
+      }
+    });
   },
 
   playDateAnim(direction) {

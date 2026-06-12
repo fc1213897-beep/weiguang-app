@@ -231,7 +231,13 @@ Page({
     });
     if (this.data.loggedIn) {
       this.setData({ loading: true });
-      Promise.all([this.loadTasks(), this.loadInsight()]);
+      Promise.all([this.loadTasks(), this.loadInsight()]).catch((err) => {
+        this.setData({ loading: false });
+        wx.showToast({
+          title: err.message || "加载失败",
+          icon: "none",
+        });
+      });
     }
   },
 

@@ -54,13 +54,9 @@ export default function StatsDashboard() {
 
   const today = getTodayDateString();
 
-  const now = new Date();
-
-  const weekStart = startOfWeek(now);
-
-
-
   const metrics = useMemo(() => {
+    const now = new Date();
+    const weekStart = startOfWeek(now);
 
     const todayTasks = tasks.filter((t) => t.date === today);
 
@@ -135,8 +131,7 @@ export default function StatsDashboard() {
 
 
     return { todayDone, weekDone, todayFocus, weekFocus, streak, rate, trend, heatmap };
-
-  }, [tasks, today, now, weekStart]);
+  }, [tasks, today]);
 
 
 

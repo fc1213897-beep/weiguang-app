@@ -25,7 +25,6 @@ type Props = {
 /** 网页跨设备登录：电脑出码 → 手机浏览器打开确认页 */
 export default function WebScanLogin({ onSuccess, onError }: Props) {
   const [phase, setPhase] = useState<Phase>("idle");
-  const [scene, setScene] = useState("");
   const [qrcode, setQrcode] = useState("");
   const [approveUrl, setApproveUrl] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
@@ -120,7 +119,6 @@ export default function WebScanLogin({ onSuccess, onError }: Props) {
       const data = (await res.json()) as QrPayload & { error?: string };
       if (!res.ok) throw new Error(data.error ?? "生成失败");
 
-      setScene(data.scene);
       setQrcode(data.qrcode);
       setApproveUrl(data.approveUrl);
       setExpiresAt(data.expiresAt);
