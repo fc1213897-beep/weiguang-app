@@ -28,9 +28,9 @@ export function useChatSync() {
     setSyncEnabled(isAuthenticated);
     if (!isAuthenticated) {
       setCloudSessionId(null);
-      setStorageReady(false);
+      // 游客 storageReady 由 useChatHydration 设置，此处勿 reset
     }
-  }, [isAuthenticated, isLoading, setSyncEnabled, setCloudSessionId, setStorageReady]);
+  }, [isAuthenticated, isLoading, setSyncEnabled, setCloudSessionId]);
 
   useEffect(() => {
     if (isLoading || !isAuthenticated) return;

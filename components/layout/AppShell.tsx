@@ -55,6 +55,7 @@ const ROUTE_TO_TAB: Partial<Record<AppRouteId, MobileTabId>> = {
 export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
   const { isLoading: authLoading } = useAuth();
   const storageReady = useTodoStore((s) => s.storageReady);
+  // 仅等 auth；storageReady 在游客/登录两条 hydration 链路里各自置 true
   const loading = authLoading || !storageReady;
   const setMobileTab = useUIStore((s) => s.setMobileTab);
   const setCompanionOpen = useUIStore((s) => s.setCompanionOpen);
