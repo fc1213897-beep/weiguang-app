@@ -29,8 +29,8 @@
 `utils/config.js`：
 
 - **体验版 / 正式版 / 提审**：`API_BASE_PROD`（默认 `https://www.weiguanglife.top`），须与服务器 `NEXT_PUBLIC_APP_URL` 一致
-- **开发版**：自动使用 `API_BASE_DEV`（默认 `http://127.0.0.1:3000`，本机 `npm run dev`），开发者工具需勾选「不校验合法域名」
-- **真机调试**：修改 `config.js` 中 `API_BASE_LAN` 为电脑局域网 IP
+- **开发版（编译）**：默认 `API_BASE_LAN` = 生产 HTTPS（无需本机 npm run dev）
+- **本机联调 Next.js**：把 `config.js` 里 `API_BASE_LAN` 改为 `API_BASE_DEV`，并 `npm run dev`
 
 提审前必须在微信公众平台配置 **request 合法域名** `www.weiguanglife.top`，且服务器已启用 HTTPS（见 `docs/服务器部署指南.md`）。  
 若使用「成长空间 / 备考计划」Web 内嵌，还需配置 **业务域名** `www.weiguanglife.top`。
