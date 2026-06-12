@@ -42,7 +42,9 @@ export default function MobileTabNav() {
   /** 地址栏与 Tab 同步，保证打开页面落在正确 Tab */
   useEffect(() => {
     const tab = PATH_TO_TAB[pathname];
-    if (tab) setMobileTab(tab);
+    if (tab && useUIStore.getState().mobileTab !== tab) {
+      setMobileTab(tab);
+    }
   }, [pathname, setMobileTab]);
 
   function handleTabChange(tab: MobileTabId) {

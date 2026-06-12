@@ -19,8 +19,10 @@ export function useTodoSync() {
 
   useEffect(() => {
     if (isLoading) return;
-    setSyncEnabled(isAuthenticated);
-    // 游客 storageReady 由 useTodoHydration 设置，此处勿 reset，否则会无限重渲染
+    if (useTodoStore.getState().syncEnabled !== isAuthenticated) {
+      setSyncEnabled(isAuthenticated);
+    }
+    // 游客 storageReady 由 useTodoHydration 设置，此处勿 reset
   }, [isAuthenticated, isLoading, setSyncEnabled]);
 
   useEffect(() => {

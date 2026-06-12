@@ -17,7 +17,6 @@ import { MotionStyles } from "@/components/ui/motion-styles";
 import { useAuth } from "@/hooks/useAuth";
 import { DESKTOP_GRID_CLASS, MOBILE_MAIN_PB } from "@/lib/layout";
 import { panelClass } from "@/lib/tokens";
-import { useTodoStore } from "@/store/todoStore";
 import { useUIStore } from "@/store/uiStore";
 import type { MobileTabId } from "@/types/ui";
 
@@ -54,15 +53,15 @@ const ROUTE_TO_TAB: Partial<Record<AppRouteId, MobileTabId>> = {
 /** 三栏工作台（桌面）+ 手机端多视图 */
 export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
   const { isLoading: authLoading } = useAuth();
-  const storageReady = useTodoStore((s) => s.storageReady);
-  // 仅等 auth；storageReady 在游客/登录两条 hydration 链路里各自置 true
-  const loading = authLoading || !storageReady;
+  const loading = authLoading;
   const setMobileTab = useUIStore((s) => s.setMobileTab);
   const setCompanionOpen = useUIStore((s) => s.setCompanionOpen);
 
   useEffect(() => {
     const tab = ROUTE_TO_TAB[route];
-    if (tab) setMobileTab(tab);
+    if (tab && useUIStore.getState().mobileTab !== tab) {
+      setMobileTab(tab);
+    }
   }, [route, setMobileTab]);
 
   /** 桌面访问 /chat 时自动打开小光浮动层 */

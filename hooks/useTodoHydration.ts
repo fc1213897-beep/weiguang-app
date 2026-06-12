@@ -23,7 +23,9 @@ export function useTodoHydration() {
     const frameId = requestAnimationFrame(() => {
       const raw = loadFromStorage<unknown>(STORAGE_KEYS.tasks, []);
       setTasks(normalizeTaskItems(raw));
-      setStorageReady(true);
+      if (!useTodoStore.getState().storageReady) {
+        setStorageReady(true);
+      }
     });
     return () => cancelAnimationFrame(frameId);
   }, [useLocal, setTasks, setStorageReady]);
