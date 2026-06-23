@@ -25,10 +25,15 @@ export function useChatSync() {
 
   useEffect(() => {
     if (isLoading) return;
-    setSyncEnabled(isAuthenticated);
+    const state = useChatStore.getState();
+    if (state.syncEnabled !== isAuthenticated) {
+      setSyncEnabled(isAuthenticated);
+    }
     if (!isAuthenticated) {
-      setCloudSessionId(null);
       // 游客 storageReady 由 useChatHydration 设置，此处勿 reset
+      if (state.cloudSessionId !== null) {
+        setCloudSessionId(null);
+      }
     }
   }, [isAuthenticated, isLoading, setSyncEnabled, setCloudSessionId]);
 

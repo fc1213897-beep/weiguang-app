@@ -47,8 +47,19 @@ function startAuthListener() {
   if (listenerStarted || typeof window === "undefined") return;
   listenerStarted = true;
 
-  const supabase = getSupabaseClient();
   const { setFromSession } = useAuthStore.getState();
+
+  let supabase: ReturnType<typeof getSupabaseClient>;
+  try {
+    supabase = getSupabaseClient();
+  } catch (error) {
+    console.error("[auth] Supabase 未配置", error);
+    setFromSession(null);
+    useAuthStore
+      .getState()
+      .setAuthError("服务配置未完成，请稍后再试或联系管理员");
+    return;
+  }
 
   void (async () => {
     const { data, error } = await supabase.auth.getSession();
@@ -98,7 +109,14 @@ export function useAuth() {
     setAuthActionLoading(true);
     setAuthError(null);
 
-    const supabase = getSupabaseClient();
+    let supabase: ReturnType<typeof getSupabaseClient>;
+    try {
+      supabase = getSupabaseClient();
+    } catch {
+      setAuthActionLoading(false);
+      setAuthError("服务配置未完成，请稍后再试");
+      return false;
+    }
     const { error } = await supabase.auth.signInWithPassword({
       email: usernameToAuthEmail(username),
       password,
@@ -167,7 +185,14 @@ export function useAuth() {
   async function signOut() {
     setAuthActionLoading(true);
     setAuthError(null);
-    const supabase = getSupabaseClient();
+    let supabase: ReturnType<typeof getSupabaseClient>;
+    try {
+      supabase = getSupabaseClient();
+    } catch {
+      setAuthActionLoading(false);
+      setAuthError("服务配置未完成，请稍后再试");
+      return false;
+    }
     const { error } = await supabase.auth.signOut();
     setAuthActionLoading(false);
 

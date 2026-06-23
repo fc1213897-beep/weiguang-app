@@ -54,6 +54,7 @@ const ROUTE_TO_TAB: Partial<Record<AppRouteId, MobileTabId>> = {
 export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
   const { isLoading: authLoading } = useAuth();
   const loading = authLoading;
+  const mobileTab = useUIStore((s) => s.mobileTab);
   const setMobileTab = useUIStore((s) => s.setMobileTab);
   const setCompanionOpen = useUIStore((s) => s.setCompanionOpen);
 
@@ -141,9 +142,10 @@ export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
 
           {isMobileTabRoute ? (
             <>
-              <MobileTaskView />
-              <MobileChatView />
-              <MobileMeView />
+              {/* 仅挂载当前 Tab，避免隐藏页里的 hooks 在 /today 等路由下触发异常 */}
+              {mobileTab === "tasks" && <MobileTaskView />}
+              {mobileTab === "chat" && <MobileChatView />}
+              {mobileTab === "me" && <MobileMeView />}
             </>
           ) : (
             <MobileRouteView route={route} />

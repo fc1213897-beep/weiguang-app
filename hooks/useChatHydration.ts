@@ -37,7 +37,9 @@ export function useChatHydration() {
           nextId: saved.nextId ?? getNextIdFromMessages(saved.messages),
         });
       }
-      setStorageReady(true);
+      if (!useChatStore.getState().storageReady) {
+        setStorageReady(true);
+      }
     });
     return () => cancelAnimationFrame(frameId);
   }, [useLocal, hydrate, setStorageReady]);

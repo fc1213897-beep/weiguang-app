@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDaysLeft } from "@/lib/countdown/progress-utils";
 import { formatAppVersion } from "@/lib/app-version";
-import { getWeekMetrics } from "@/lib/growth-utils";
+import { useWeekStreakMetrics } from "@/hooks/useWeekStreakMetrics";
 import { panelClass } from "@/lib/tokens";
 import { useCountdownStore } from "@/store/countdownStore";
-import { useTodoStore } from "@/store/todoStore";
 import { useUIStore } from "@/store/uiStore";
 import { useMemo } from "react";
 
@@ -24,7 +23,7 @@ export default function MobileMeView() {
   const mobileTab = useUIStore((s) => s.mobileTab);
   const setAuthSheetOpen = useUIStore((s) => s.setAuthSheetOpen);
   const { isAuthenticated, authActionLoading, signOut } = useAuth();
-  const { streak, totalCompleted } = useTodoStore((s) => getWeekMetrics(s.tasks));
+  const { streak, totalCompleted } = useWeekStreakMetrics();
   const targets = useCountdownStore((s) => s.settings.targets);
 
   const active = useMemo(
