@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
-import { Z_MOBILE_TAB } from "@/lib/layout";
+import {
+  MOBILE_TAB_CONTENT_H,
+  MOBILE_TAB_SAFE_PB,
+  Z_MOBILE_TAB,
+} from "@/lib/layout";
 import { useUIStore } from "@/store/uiStore";
 import type { MobileTabId } from "@/types/ui";
 
@@ -29,7 +33,6 @@ const TABS: { id: MobileTabId; label: string; icon: string }[] = [
 
 /** 手机端底部固定 Tab（Portal 到 body） */
 export default function MobileTabNav() {
-  const mobileTab = useUIStore((s) => s.mobileTab);
   const setMobileTab = useUIStore((s) => s.setMobileTab);
   const router = useRouter();
   const pathname = usePathname();
@@ -59,14 +62,19 @@ export default function MobileTabNav() {
         className="fixed bottom-0 left-0 right-0 w-full border-t border-orange-100/60 bg-white/98 shadow-[0_-6px_24px_-10px_rgba(0,0,0,0.1)] backdrop-blur-md lg:hidden"
         style={{
           zIndex: Z_MOBILE_TAB,
-          paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))",
+          paddingBottom: MOBILE_TAB_SAFE_PB,
         }}
         aria-label="模块切换"
       >
-        <div className="mx-auto flex h-[3.25rem] max-w-6xl items-stretch px-2">
+        <div
+          className="mx-auto flex max-w-6xl items-stretch px-2"
+          style={{ height: MOBILE_TAB_CONTENT_H }}
+        >
           {TABS.map((tab) => {
             const routeTab = PATH_TO_TAB[pathname];
-            const isActive = routeTab ? routeTab === tab.id : mobileTab === tab.id;
+            // 二级页（成长/记账）不高亮任一 Tab
+            const isActive =
+              routeTab !== undefined && routeTab === tab.id;
             return (
               <button
                 key={tab.id}

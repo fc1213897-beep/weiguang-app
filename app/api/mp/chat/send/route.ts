@@ -13,7 +13,11 @@ import {
   insertChatMessageForMp,
   listChatMessagesForMp,
 } from "@/lib/mp-chat-server";
+import { detectSplitIntent, extractSplitGoal } from "@/lib/task-split";
+import { splitGoalWithAi } from "@/lib/task-split-ai";
+import { getTodayDateString } from "@/lib/task-utils";
 import type { ExpenseRow } from "@/types/database";
+import type { PlanDraft } from "@/types/task";
 
 /** POST /api/mp/chat/send — 发送消息并同步云端 */
 export async function POST(request: Request) {
@@ -61,13 +65,30 @@ export async function POST(request: Request) {
       : message;
 
     let reply: string;
-    try {
-      reply = await fetchXiaoguangReply(aiMessage, history);
-    } catch {
-      if (expenseRecorded) {
-        reply = buildExpenseConfirmReply(expenseRecorded);
-      } else {
+    let tasksSuggested: PlanDraft[] | undefined;
+
+    if (!expenseRecorded && detectSplitIntent(message)) {
+      try {
+        const goal = extractSplitGoal(message);
+        const split = await splitGoalWithAi(goal, getTodayDateString());
+        if (split.drafts.length > 0) {
+          tasksSuggested = split.drafts;
+          reply = `${split.summary}\n\n我帮你拆成了 ${split.drafts.length} 个小步骤，可以一键加入今日计划～`;
+        } else {
+          reply = split.summary;
+        }
+      } catch {
         reply = getGentleFallbackReply(message, session.reply_index ?? 0);
+      }
+    } else {
+      try {
+        reply = await fetchXiaoguangReply(aiMessage, history);
+      } catch {
+        if (expenseRecorded) {
+          reply = buildExpenseConfirmReply(expenseRecorded);
+        } else {
+          reply = getGentleFallbackReply(message, session.reply_index ?? 0);
+        }
       }
     }
 
@@ -83,6 +104,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       reply,
       expense_recorded: expenseRecorded,
+      tasks_suggested: tasksSuggested,
       user_message: {
         id: userRow.id,
         role: userRow.role,

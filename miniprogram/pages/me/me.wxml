@@ -3,11 +3,41 @@
     <view class="profile-glow"></view>
     <text class="profile-emoji">✨</text>
     <text class="profile-name">微光</text>
-    <text class="profile-desc" wx:if="{{email}}">{{email}}</text>
-    <text class="profile-desc" wx:else>微信已登录 · 与 PC 数据同步</text>
+    <text class="profile-desc" wx:if="{{loggedIn && email}}">{{email}}</text>
+    <text class="profile-desc" wx:elif="{{loggedIn}}">微信已登录 · 与 PC 数据同步</text>
+    <text class="profile-desc" wx:else>游客模式 · 可先体验，登录后云同步</text>
   </view>
 
-  <view class="menu-card card-soft">
+  <view class="login-card card-soft" wx:if="{{!loggedIn}}">
+    <text class="login-card-title">登录微光</text>
+    <text class="login-card-desc">登录后任务、记账与小光对话会保存到云端，并可与电脑网页同步</text>
+    <button class="btn-login" bindtap="onGoLogin">微信一键登录</button>
+  </view>
+
+  <view class="menu-card card-soft" wx:if="{{loggedIn}}">
+    <view class="notify-section">
+      <text class="notify-title">微信温柔提醒</text>
+      <text class="notify-desc">可选开启，不会强压式催促</text>
+      <view class="notify-row">
+        <text class="notify-label">每日待办摘要（约 8:00）</text>
+        <switch
+          checked="{{remindEnabled}}"
+          disabled="{{notifyLoading}}"
+          bindchange="onToggleRemind"
+          color="#ea580c"
+        />
+      </view>
+      <view class="notify-row">
+        <text class="notify-label">批量添加后通知</text>
+        <switch
+          checked="{{instantOnAdd}}"
+          disabled="{{notifyLoading}}"
+          bindchange="onToggleInstant"
+          color="#ea580c"
+        />
+      </view>
+    </view>
+    <view class="menu-divider"></view>
     <view class="menu-row" bindtap="onOpenGrowth">
       <view class="menu-left">
         <text class="menu-icon">📈</text>
@@ -29,19 +59,43 @@
       </view>
       <text class="menu-arrow">›</text>
     </view>
-    <view class="menu-divider"></view>
-    <navigator url="/pages/login/login?hint=pc" class="menu-row">
+    <view class="menu-divider" wx:if="{{loggedIn}}"></view>
+    <navigator url="/pages/login/login?hint=pc" class="menu-row" wx:if="{{loggedIn}}">
       <view class="menu-left">
         <text class="menu-icon">💻</text>
         <text class="menu-label">帮电脑扫码登录</text>
       </view>
       <text class="menu-arrow">›</text>
     </navigator>
-    <view class="menu-divider"></view>
-    <view class="menu-row" bindtap="onLogout">
+    <view class="menu-divider" wx:if="{{loggedIn}}"></view>
+    <view class="menu-row" bindtap="onLogout" wx:if="{{loggedIn}}">
       <view class="menu-left">
         <text class="menu-icon">🚪</text>
         <text class="menu-label danger">退出登录</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="menu-card card-soft" wx:if="{{!loggedIn}}">
+    <view class="menu-row" bindtap="onOpenGrowth">
+      <view class="menu-left">
+        <text class="menu-icon">📈</text>
+        <view class="menu-text-col">
+          <text class="menu-label">成长空间</text>
+          <text class="menu-sub">旅程地图与统计热力图</text>
+        </view>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-divider"></view>
+    <view class="menu-row" bindtap="onOpenExamPlan">
+      <view class="menu-left">
+        <text class="menu-icon">📅</text>
+        <view class="menu-text-col">
+          <text class="menu-label">备考计划</text>
+          <text class="menu-sub">考试倒计时与长期目标</text>
+        </view>
       </view>
       <text class="menu-arrow">›</text>
     </view>

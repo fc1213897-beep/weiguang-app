@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { isCountdownAutoTask } from "@/lib/countdown/note-utils";
+import { Z_TASK_CARD_MENU } from "@/lib/layout";
 
 type Props = {
   text: string;
@@ -135,10 +136,14 @@ export default function MobileTaskCard({
           {menuOpen && (
             <>
               <div
-                className="fixed inset-0 z-40"
+                className="fixed inset-0"
+                style={{ zIndex: Z_TASK_CARD_MENU - 1 }}
                 onClick={() => setMenuOpen(false)}
               />
-              <div className="absolute right-0 top-full z-50 mt-1 min-w-[7rem] overflow-hidden rounded-xl border border-stone-200 bg-white py-1 shadow-lg">
+              <div
+                className="absolute right-0 top-full mt-1 min-w-[7rem] overflow-hidden rounded-xl border border-stone-200 bg-white py-1 shadow-lg"
+                style={{ zIndex: Z_TASK_CARD_MENU }}
+              >
                 {onSave && (
                   <button
                     type="button"

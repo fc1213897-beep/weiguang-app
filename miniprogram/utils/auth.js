@@ -29,9 +29,43 @@ function clearSession() {
   wx.removeStorageSync(SESSION_KEY);
 }
 
-/** 跳转登录页（未登录时 Tab 页调用） */
-function redirectToLogin() {
-  wx.reLaunch({ url: LOGIN_PAGE });
+/** 用户主动进入登录页（保留返回栈，符合审核「先体验后登录」） */
+function navigateToLogin(query) {
+  const suffix = query ? `?${query}` : "";
+  wx.navigateTo({ url: `${LOGIN_PAGE}${suffix}` });
+}
+
+/** 仅用于 PC 扫码等必须直达登录页的场景 */
+function redirectToLogin(query) {
+  const suffix = query ? `?${query}` : "";
+  wx.navigateTo({ url: `${LOGIN_PAGE}${suffix}` });
+}
+
+/**
+ * 需要登录时温和提示，用户确认后再跳转
+ */
+function promptLogin(options = {}) {
+  const title = options.title || "登录后可云同步";
+  const content =
+    options.content ||
+    "登录后任务、记账与小光对话会保存到云端，并可与电脑网页同步。";
+  return new Promise((resolve) => {
+    wx.showModal({
+      title,
+      content,
+      confirmText: options.confirmText || "去登录",
+      cancelText: options.cancelText || "先看看",
+      success: (res) => {
+        if (res.confirm) {
+          navigateToLogin(options.query || "");
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      },
+      fail: () => resolve(false),
+    });
+  });
 }
 
 /**
@@ -82,18 +116,24 @@ function loginWithMp() {
 }
 
 /**
- * Tab 页守卫：无本地 Session 则跳转登录页
+ * 有 Session 则返回，否则返回 null（不强制跳转登录页）
  */
-function guardLogin() {
+function resolveSession() {
   if (hasValidSession()) {
     return Promise.resolve(getSession());
   }
-  redirectToLogin();
-  return Promise.reject(new Error("请先登录"));
+  return Promise.resolve(null);
 }
 
 /**
- * 确保已登录：有 Session 直接返回，否则静默 mp-login（兼容旧逻辑）
+ * @deprecated 请使用 resolveSession，勿在页面 onShow 强制跳转登录
+ */
+function guardLogin() {
+  return resolveSession();
+}
+
+/**
+ * 确保已登录：有 Session 直接返回，否则静默 mp-login
  */
 function ensureLogin() {
   if (hasValidSession()) {
@@ -107,8 +147,11 @@ module.exports = {
   hasValidSession,
   saveSession,
   clearSession,
+  navigateToLogin,
   redirectToLogin,
+  promptLogin,
   loginWithMp,
+  resolveSession,
   guardLogin,
   ensureLogin,
 };

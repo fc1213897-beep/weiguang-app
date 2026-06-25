@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import ChatTaskSuggestCard from "@/components/chat/ChatTaskSuggestCard";
 import { useChatStore } from "@/store/chatStore";
 
 type Props = {
@@ -91,6 +92,9 @@ export default function AIChat({
                 </span>
               )}
               {msg.text}
+              {msg.role === "assistant" && msg.tasksSuggested?.length ? (
+                <ChatTaskSuggestCard drafts={msg.tasksSuggested} />
+              ) : null}
               {msg.role === "assistant" && msg.expenseRecorded && (
                 <span className="mt-1.5 block text-[11px] font-medium text-orange-600/90">
                   💰 已记入今日账本

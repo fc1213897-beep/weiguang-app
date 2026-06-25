@@ -24,7 +24,6 @@ function request(options) {
       success(res) {
         if (res.statusCode === 401) {
           auth.clearSession();
-          auth.redirectToLogin();
           reject(new Error("登录已失效，请重新登录"));
           return;
         }

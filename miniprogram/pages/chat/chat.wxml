@@ -1,7 +1,12 @@
 <view class="chat-page">
   <view class="error-banner" wx:if="{{loginError}}">
     <text class="error-text">{{loginError}}</text>
-    <text class="error-retry" bindtap="onRetryLogin">重试</text>
+    <text class="error-retry" bindtap="onRetryLogin">去登录</text>
+  </view>
+
+  <view class="guest-banner card-soft" wx:if="{{!loggedIn}}">
+    <text class="guest-banner-text">体验模式：可先浏览，发送消息需登录</text>
+    <text class="guest-banner-login" bindtap="onGoLogin">登录</text>
   </view>
 
   <view class="chat-header card-soft">
@@ -34,6 +39,20 @@
       <view class="bubble">
         <text class="bubble-text">{{item.content}}</text>
         <text class="expense-hint" wx:if="{{item.expense_recorded}}">💰 已记入今日账本</text>
+        <view class="task-suggest-card" wx:if="{{item.tasks_suggested && item.tasks_suggested.length}}">
+          <text class="task-suggest-title">建议加入今日</text>
+          <text
+            class="task-suggest-line"
+            wx:for="{{item.tasks_suggested}}"
+            wx:for-item="task"
+            wx:key="text"
+          >· {{task.text}}</text>
+          <view
+            class="task-suggest-btn"
+            data-index="{{index}}"
+            bindtap="onAddSuggestedTasks"
+          >加入今日计划</view>
+        </view>
       </view>
       <view class="avatar user-avatar" wx:if="{{item.role === 'user'}}">我</view>
     </view>
@@ -49,19 +68,19 @@
   <view class="input-bar">
     <input
       class="chat-input"
-      placeholder="和小光说说，或「午饭 35」记账"
+      placeholder="{{loggedIn ? '和小光说说，或「午饭 35」记账' : '登录后和小光聊天、记账'}}"
       placeholder-class="placeholder"
       value="{{input}}"
       bindinput="onInput"
       confirm-type="send"
       bindconfirm="onSend"
-      disabled="{{sending || !loggedIn}}"
+      disabled="{{sending}}"
     />
     <button
       class="btn-send btn-primary"
       bindtap="onSend"
       loading="{{sending}}"
-      disabled="{{sending || !loggedIn}}"
+      disabled="{{sending}}"
     >
       发送
     </button>

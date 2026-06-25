@@ -70,6 +70,11 @@ Page({
         this.setData({ mpLoading: false });
         wx.showToast({ title: "登录成功", icon: "success" });
         setTimeout(() => {
+          const pages = getCurrentPages();
+          if (pages.length > 1) {
+            wx.navigateBack();
+            return;
+          }
           wx.switchTab({ url: "/pages/tasks/tasks" });
         }, 400);
       })

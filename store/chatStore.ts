@@ -47,7 +47,11 @@ async function fetchAIReply(
   userText: string,
   historyMessages: ChatMessage[],
   replyIndex: number
-): Promise<{ reply: string; expenseRecorded: boolean }> {
+): Promise<{
+  reply: string;
+  expenseRecorded: boolean;
+  tasksSuggested?: import("@/types/task").PlanDraft[];
+}> {
   const history = historyMessages
     .filter((m) => m.role === "user" || m.role === "assistant")
     .map((m) => ({ role: m.role, content: m.text }));
@@ -66,11 +70,13 @@ async function fetchAIReply(
       reply?: string;
       error?: string;
       expense_recorded?: { amount?: number } | null;
+      tasks_suggested?: import("@/types/task").PlanDraft[];
     };
     if (!res.ok || !data.reply?.trim()) throw new Error("chat_failed");
     return {
       reply: data.reply.trim(),
       expenseRecorded: !!data.expense_recorded,
+      tasksSuggested: data.tasks_suggested,
     };
   } catch {
     return {
@@ -130,11 +136,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
     }
 
-    const { reply: assistantText, expenseRecorded } = await fetchAIReply(
-      value,
-      historyBeforeSend,
-      replyIndex
-    );
+    const { reply: assistantText, expenseRecorded, tasksSuggested } =
+      await fetchAIReply(value, historyBeforeSend, replyIndex);
 
     const assistantId = get().nextId;
     const assistantMsg: ChatMessage = {
@@ -142,6 +145,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       role: "assistant",
       text: assistantText,
       expenseRecorded,
+      tasksSuggested,
     };
 
     const newReplyIndex = get().replyIndex + 1;

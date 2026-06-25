@@ -2,6 +2,7 @@
 
 import ChatPanel from "@/components/chat/ChatPanel";
 import { getXiaoguangLine } from "@/lib/growth-utils";
+import { MOBILE_CHAT_MIN_H } from "@/lib/layout";
 import { panelClass } from "@/lib/tokens";
 import { useTodoStore } from "@/store/todoStore";
 import { useUIStore } from "@/store/uiStore";
@@ -24,7 +25,8 @@ export default function MobileChatView() {
 
   return (
     <section
-      className={[panelClass, "flex min-h-[calc(100dvh-10rem)] flex-col"].join(" ")}
+      className={[panelClass, "flex flex-col"].join(" ")}
+      style={{ minHeight: MOBILE_CHAT_MIN_H }}
     >
       <header className="mb-2 shrink-0 border-b border-orange-100/60 pb-3">
         <h2 className="text-base font-semibold text-stone-800">和小光聊聊</h2>

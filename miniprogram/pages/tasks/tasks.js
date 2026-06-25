@@ -1,4 +1,5 @@
 const auth = require("../../utils/auth.js");
+const guestStore = require("../../utils/guest-store.js");
 const { request } = require("../../utils/request.js");
 const dateUtil = require("../../utils/date.js");
 const taskPlan = require("../../utils/task-plan.js");
@@ -59,6 +60,11 @@ Page({
     fabPressed: false,
     insightText: "",
     insightLoading: false,
+    splitGoal: "",
+    splitLoading: false,
+    splitPreview: null,
+    splitSummary: "",
+    batchAdding: false,
   },
 
   _tasksLoadId: 0,
@@ -66,7 +72,7 @@ Page({
   onLoad() {
     const today = dateUtil.getTodayDateString();
     const progress = buildProgressMeta(0, 0);
-    this.setData({
+    const updates = {
       selectedDate: today,
       dateLabel: dateUtil.formatDisplayDate(today),
       dateWeekday: dateUtil.formatWeekday(today),
@@ -74,13 +80,25 @@ Page({
       planDraft: taskPlan.createDefaultPlanDraft(today),
       progressPercent: progress.progressPercent,
       progressRingStyle: progress.progressRingStyle,
-    });
+    };
+
+    // 未登录时立即进入体验模式，顶部提示不必等 bootstrap
+    if (!auth.hasValidSession()) {
+      updates.loggedIn = false;
+      updates.loading = false;
+    }
+
+    this.setData(updates);
+
+    if (!auth.hasValidSession()) {
+      this.loadGuestTasks();
+    }
   },
 
   onShow() {
     setTabSelected(this, 0);
     if (this.data.adding || this.data.planModalOpen) return;
-    if (this.data.loggedIn) {
+    if (auth.hasValidSession() && this.data.loggedIn) {
       this.loadTasks({ silent: true });
       this.loadInsight();
       return;
@@ -93,26 +111,50 @@ Page({
   },
 
   onRetryLogin() {
-    auth.clearSession();
-    auth.redirectToLogin();
+    auth.navigateToLogin();
+  },
+
+  onGoLogin() {
+    auth.navigateToLogin();
   },
 
   bootstrap() {
     this.setData({ loading: true, loginError: "" });
     return auth
-      .guardLogin()
-      .then(() => {
+      .resolveSession()
+      .then((session) => {
+        if (!session) {
+          this.loadGuestTasks();
+          this.setData({
+            loggedIn: false,
+            loading: false,
+            loginError: "",
+          });
+          return;
+        }
         this.setData({ loggedIn: true, loginError: "" });
         return Promise.all([this.loadTasks(), this.loadInsight()]);
       })
       .catch((err) => {
-        if (err.message === "请先登录") return;
         this.setData({
           loading: false,
           loggedIn: false,
           loginError: err.message || "加载失败",
         });
       });
+  },
+
+  loadGuestTasks() {
+    const raw = guestStore.getGuestTasksByDate(this.data.selectedDate);
+    const tasks = raw.map((t) => ({
+      id: t.id,
+      title: t.title,
+      completed: !!t.completed,
+      task_type: t.task_type || "other",
+      priority: t.priority || "medium",
+      pomodoro_minutes: t.pomodoro_minutes || 0,
+    }));
+    this.applyTasksList(tasks);
   },
 
   applyTasksList(tasks, options = {}) {
@@ -238,15 +280,12 @@ Page({
           icon: "none",
         });
       });
+      return;
     }
+    this.loadGuestTasks();
   },
 
   openPlanModal() {
-    if (!this.data.loggedIn) {
-      wx.showToast({ title: "请先登录", icon: "none" });
-      auth.redirectToLogin();
-      return;
-    }
     if (this.data.planModalOpen) return;
 
     this.setData({
@@ -268,10 +307,94 @@ Page({
 
   closePlanModal() {
     if (!this.data.planModalOpen) return;
-    this.setData({ planModalAnim: false, planFlash: false });
+    this.setData({
+      planModalAnim: false,
+      planFlash: false,
+      splitPreview: null,
+      splitGoal: "",
+    });
     setTimeout(() => {
       this.setData({ planModalOpen: false });
     }, 300);
+  },
+
+  onSplitGoalInput(e) {
+    this.setData({ splitGoal: (e.detail && e.detail.value) || "" });
+  },
+
+  onRequestSplit() {
+    if (!this.data.loggedIn) {
+      auth.navigateToLogin();
+      return;
+    }
+    const goal = (this.data.splitGoal || "").trim();
+    if (!goal || this.data.splitLoading) return;
+
+    this.setData({ splitLoading: true });
+    request({
+      url: "/api/mp/tasks/split",
+      method: "POST",
+      data: {
+        mode: "ai",
+        goal,
+        task_date: this.data.selectedDate,
+      },
+    })
+      .then((res) => {
+        const body = res.data || {};
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          throw new Error(body.error || "拆分失败");
+        }
+        this.setData({
+          splitPreview: body.drafts || [],
+          splitSummary: body.summary || "",
+          splitLoading: false,
+        });
+      })
+      .catch((err) => {
+        this.setData({ splitLoading: false });
+        wx.showToast({ title: err.message || "拆分失败", icon: "none" });
+      });
+  },
+
+  onCancelSplitPreview() {
+    this.setData({ splitPreview: null });
+  },
+
+  onConfirmSplitBatch() {
+    const drafts = this.data.splitPreview || [];
+    if (!drafts.length || this.data.batchAdding || !this.data.loggedIn) return;
+
+    this.setData({ batchAdding: true });
+    const tasks = drafts.map((d) => ({
+      title: (d.text || "").trim(),
+      task_date: this.data.selectedDate,
+      task_type: d.category || "study",
+      priority: d.priority || "medium",
+      pomodoro_minutes: d.pomodoroMinutes ?? 0,
+    })).filter((t) => t.title);
+
+    request({
+      url: "/api/mp/tasks/batch",
+      method: "POST",
+      data: { tasks },
+    })
+      .then((res) => {
+        const body = res.data || {};
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          throw new Error(body.error || "添加失败");
+        }
+        wx.showToast({ title: `已添加 ${body.count || tasks.length} 项`, icon: "success" });
+        this.triggerCelebrate();
+        this.closePlanModal();
+        return this.loadTasks({ silent: true });
+      })
+      .catch((err) => {
+        wx.showToast({ title: err.message || "添加失败", icon: "none" });
+      })
+      .finally(() => {
+        this.setData({ batchAdding: false });
+      });
   },
 
   stopBubble() {},
@@ -349,9 +472,31 @@ Page({
 
   createTaskFromDraft(draft, options = {}) {
     const title = (draft.text || "").trim();
-    if (!title || this.data.adding || !this.data.loggedIn) {
+    if (!title || this.data.adding) {
       if (!title) wx.showToast({ title: "请先填写计划名称", icon: "none" });
       return Promise.resolve(false);
+    }
+
+    if (!this.data.loggedIn) {
+      guestStore.addGuestTask({
+        title,
+        task_date: this.data.selectedDate,
+        task_type: draft.category || "other",
+        priority: draft.priority || "medium",
+        pomodoro_minutes: draft.pomodoroMinutes ?? 0,
+        completed: false,
+      });
+      this.loadGuestTasks();
+      if (!options.silentToast) {
+        wx.showToast({
+          title: options.toastTitle || "已放进今日计划 ✨",
+          icon: "success",
+        });
+        if (options.celebrate !== false) {
+          this.triggerCelebrate();
+        }
+      }
+      return Promise.resolve(true);
     }
 
     this.setData({ adding: true });
@@ -430,7 +575,13 @@ Page({
   onToggleTask(e) {
     const id = e.currentTarget.dataset.id;
     const completed = e.currentTarget.dataset.completed;
-    if (!id || !this.data.loggedIn) return;
+    if (!id) return;
+
+    if (!this.data.loggedIn) {
+      guestStore.updateGuestTask(id, { completed: !completed });
+      this.loadGuestTasks();
+      return;
+    }
 
     request({
       url: `/api/mp/tasks/${id}`,
@@ -455,7 +606,7 @@ Page({
   onDeleteTask(e) {
     const id = e.currentTarget.dataset.id;
     const title = e.currentTarget.dataset.title || "这条任务";
-    if (!id || !this.data.loggedIn) return;
+    if (!id) return;
 
     wx.showModal({
       title: "删除任务",
@@ -463,6 +614,13 @@ Page({
       confirmColor: "#ea580c",
       success: (res) => {
         if (!res.confirm) return;
+
+        if (!this.data.loggedIn) {
+          guestStore.deleteGuestTask(id);
+          this.loadGuestTasks();
+          wx.showToast({ title: "已删除", icon: "success" });
+          return;
+        }
 
         request({
           url: `/api/mp/tasks/${id}`,

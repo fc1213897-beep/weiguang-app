@@ -1,7 +1,12 @@
 <view class="ledger-page">
   <view class="error-banner" wx:if="{{loginError}}">
     <text class="error-text">{{loginError}}</text>
-    <text class="error-retry" bindtap="onRetryLogin">重试</text>
+    <text class="error-retry" bindtap="onRetryLogin">去登录</text>
+  </view>
+
+  <view class="guest-banner card-elevated" wx:if="{{!loggedIn}}">
+    <text class="guest-banner-text">体验模式：可先记账，登录后云同步</text>
+    <text class="guest-banner-login" bindtap="onGoLogin">登录</text>
   </view>
 
   <!-- 日期切换 -->
@@ -95,7 +100,7 @@
 
   <view
     class="empty-card card-elevated"
-    wx:if="{{!loading && loggedIn && expenses.length === 0}}"
+    wx:if="{{!loading && expenses.length === 0}}"
     hover-class="empty-pressed"
     bindtap="openExpenseModal"
   >
@@ -114,7 +119,6 @@
 
   <view
     class="fab {{fabPressed ? 'fab-pressed' : ''}}"
-    wx:if="{{loggedIn}}"
     hover-class="fab-hover"
     bindtap="openExpenseModal"
     bindtouchstart="onFabTouchStart"

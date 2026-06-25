@@ -49,6 +49,26 @@ export async function createTaskForMp(
   return mapRow(data as Record<string, unknown>);
 }
 
+/** 批量创建任务（小程序确认写入） */
+export async function createTasksBatchForMp(
+  userId: string,
+  inputs: CreateTaskInput[]
+): Promise<TaskRow[]> {
+  const results: TaskRow[] = [];
+  for (const input of inputs) {
+    const title = input.title?.trim();
+    const task_date = input.task_date?.trim();
+    if (!title || !task_date) continue;
+    const row = await createTaskForMp(userId, {
+      ...input,
+      title,
+      task_date,
+    });
+    results.push(row);
+  }
+  return results;
+}
+
 export async function updateTaskForMp(
   userId: string,
   taskId: string,

@@ -131,7 +131,7 @@ weiguang-app/
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `mobileTab` | `"tasks" \| "companion"` | 手机底部 Tab |
+| `mobileTab` | `"tasks" \| "chat" \| "me"` | 手机底部 Tab |
 
 ### 3.4 派生数据（`hooks/useTodoSelectors.ts`）
 
@@ -331,16 +331,20 @@ Phase D  Realtime 订阅 tasks / messages（多设备同步）
 
 ### 10.2 手机端（`< lg`）Tab 切换
 
-| Tab | 显示 |
-|-----|------|
-| `tasks` | 中栏 TaskPanel（含日历、任务；统计在任务 Tab 内） |
-| `companion` | CompanionRail + ChatPanel 纵向堆叠 |
+| Tab | 路由 | 显示 |
+|-----|------|------|
+| `tasks` | `/today` | `MobileTaskView`（倒计时、任务列表、底部快捷添加条） |
+| `chat` | `/chat` | `MobileChatView`（全屏 `ChatPanel`） |
+| `me` | `/me` | `MobileMeView`（账号、备考、成长/记账二级入口） |
+
+**二级页**（`/growth`、`/ledger`）：`MobileRouteView` 复用桌面视图，顶栏带「返回」至 `/me`，底 Tab 不高亮。
 
 - 底部 `MobileTabNav` 固定 + `safe-area-inset-bottom`
+- 今日页 `MobileQuickAddBar` 叠在 Tab 上方，高度常量见 `lib/layout.ts`
 - 根容器 `overflow-x-hidden`、`min-w-0` 防止横向溢出
-- 聊天区 `max-h` 使用 `dvh` 限制，内部滚动
+- 聊天区 `min-height` 使用 `MOBILE_CHAT_MIN_H`（`dvh` − 顶栏 − Tab）
 
-**状态**：`uiStore.mobileTab`，与 URL 深链可后续结合（`/tasks` `/companion`）。
+**状态**：`uiStore.mobileTab` 与 URL 同步（`/today` `/chat` `/me`）。
 
 ---
 

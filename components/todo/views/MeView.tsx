@@ -39,7 +39,7 @@ export default function MeView() {
         <section>
           <h3 className="mb-3 text-sm font-semibold text-stone-700">偏好</h3>
           <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50/50 p-6 text-center text-sm text-stone-400">
-            主题、提醒等功能正在规划中
+            微信温柔提醒请在小程序「我的」中开启；PC 端支持智能拆分与清单导入
           </div>
         </section>
 

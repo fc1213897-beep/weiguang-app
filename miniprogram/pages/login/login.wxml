@@ -9,7 +9,7 @@
 
     <view class="card-soft main-card">
       <text class="card-title">微信一键登录</text>
-      <text class="card-desc">登录后任务与小光对话将保存到云端，可与电脑网页同步</text>
+      <text class="card-desc">可选登录：同步任务、记账与小光对话到云端，并与电脑网页互通</text>
 
       <view class="error-banner" wx:if="{{mpError}}">
         <text class="error-text">{{mpError}}</text>

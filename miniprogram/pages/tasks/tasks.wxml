@@ -1,7 +1,12 @@
 <view class="tasks-page">
   <view class="error-banner" wx:if="{{loginError}}">
     <text class="error-text">{{loginError}}</text>
-    <text class="error-retry" bindtap="onRetryLogin">重试</text>
+    <text class="error-retry" bindtap="onRetryLogin">去登录</text>
+  </view>
+
+  <view class="guest-banner card-elevated" wx:if="{{!loggedIn}}">
+    <text class="guest-banner-text">体验模式：可先添加任务，登录后云同步</text>
+    <text class="guest-banner-login" bindtap="onGoLogin">登录</text>
   </view>
 
   <!-- 顶部日期 + 进度环 -->
@@ -69,7 +74,7 @@
   </view>
 
   <!-- 小光快捷行（与 FAB 对齐，减少杂乱） -->
-  <view class="quick-bar card-elevated" wx:if="{{loggedIn}}">
+  <view class="quick-bar card-elevated">
     <view
       class="quick-suggest"
       hover-class="quick-pressed"
@@ -100,7 +105,7 @@
   <!-- 空状态：治愈小芽 + 引导点击 -->
   <view
     class="empty-card card-elevated empty-tap"
-    wx:if="{{!loading && loggedIn && tasks.length === 0}}"
+    wx:if="{{!loading && tasks.length === 0}}"
     hover-class="empty-pressed"
     bindtap="openPlanModal"
   >
@@ -154,7 +159,6 @@
   <!-- 悬浮新建按钮 -->
   <view
     class="fab {{fabPressed ? 'fab-pressed' : ''}}"
-    wx:if="{{loggedIn}}"
     hover-class="fab-hover"
     bindtap="openPlanModal"
     bindtouchstart="onFabTouchStart"
@@ -195,7 +199,45 @@
       </view>
 
       <scroll-view class="plan-modal-body" scroll-y enhanced show-scrollbar="{{false}}">
-        <view class="plan-form {{planFlash ? 'plan-form-flash' : ''}}">
+        <block wx:if="{{splitPreview && splitPreview.length}}">
+          <view class="split-preview-box">
+            <text class="split-summary">{{splitSummary}}</text>
+            <view
+              class="split-preview-item"
+              wx:for="{{splitPreview}}"
+              wx:key="text"
+            >
+              <text>{{item.text}}</text>
+            </view>
+            <view class="split-actions">
+              <view class="btn-split-cancel" bindtap="onCancelSplitPreview">返回</view>
+              <view
+                class="btn-split-confirm {{batchAdding ? 'btn-disabled' : ''}}"
+                bindtap="onConfirmSplitBatch"
+              >
+                {{batchAdding ? '添加中…' : '加入今日'}}
+              </view>
+            </view>
+          </view>
+        </block>
+        <view class="plan-form {{planFlash ? 'plan-form-flash' : ''}}" wx:else>
+          <view class="split-box" wx:if="{{loggedIn}}">
+            <text class="field-label">让小光拆分大目标</text>
+            <textarea
+              class="split-textarea"
+              placeholder="例如：今天复习高数第一章"
+              value="{{splitGoal}}"
+              bindinput="onSplitGoalInput"
+              maxlength="200"
+            />
+            <view
+              class="btn-split {{splitLoading ? 'btn-disabled' : ''}}"
+              bindtap="onRequestSplit"
+            >
+              {{splitLoading ? '思考中…' : '智能拆分 ✨'}}
+            </view>
+          </view>
+
           <view class="suggest-box">
             <view class="suggest-head">
               <text class="suggest-label">✨ 小光建议</text>

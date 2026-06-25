@@ -1,4 +1,5 @@
 const auth = require("../../utils/auth.js");
+const guestStore = require("../../utils/guest-store.js");
 const { request } = require("../../utils/request.js");
 const dateUtil = require("../../utils/date.js");
 const expensePlan = require("../../utils/expense-plan.js");
@@ -48,19 +49,30 @@ Page({
 
   onLoad() {
     const today = dateUtil.getTodayDateString();
-    this.setData({
+    const updates = {
       selectedDate: today,
       dateLabel: dateUtil.formatDisplayDate(today),
       dateWeekday: dateUtil.formatWeekday(today),
       isToday: true,
       expenseDraft: expensePlan.createDefaultExpenseDraft(today),
-    });
+    };
+
+    if (!auth.hasValidSession()) {
+      updates.loggedIn = false;
+      updates.loading = false;
+    }
+
+    this.setData(updates);
+
+    if (!auth.hasValidSession()) {
+      this.loadGuestExpenses();
+    }
   },
 
   onShow() {
     setTabSelected(this, 1);
     if (this.data.adding || this.data.expenseModalOpen) return;
-    if (this.data.loggedIn) {
+    if (auth.hasValidSession() && this.data.loggedIn) {
       this.loadData({ silent: true });
       return;
     }
@@ -72,26 +84,43 @@ Page({
   },
 
   onRetryLogin() {
-    auth.clearSession();
-    auth.redirectToLogin();
+    auth.navigateToLogin();
+  },
+
+  onGoLogin() {
+    auth.navigateToLogin();
   },
 
   bootstrap() {
     this.setData({ loading: true, loginError: "" });
     return auth
-      .guardLogin()
-      .then(() => {
+      .resolveSession()
+      .then((session) => {
+        if (!session) {
+          this.loadGuestExpenses();
+          this.setData({
+            loggedIn: false,
+            loading: false,
+            loginError: "",
+          });
+          return;
+        }
         this.setData({ loggedIn: true, loginError: "" });
         return this.loadData();
       })
       .catch((err) => {
-        if (err.message === "请先登录") return;
         this.setData({
           loading: false,
           loggedIn: false,
           loginError: err.message || "加载失败",
         });
       });
+  },
+
+  loadGuestExpenses() {
+    const expenses = guestStore.getGuestExpensesByDate(this.data.selectedDate);
+    const summary = guestStore.summarizeGuestExpenses(expenses);
+    this.applyExpensesList(expenses, summary);
   },
 
   applyExpensesList(expenses, summary) {
@@ -208,7 +237,9 @@ Page({
     if (this.data.loggedIn) {
       this.setData({ loading: true });
       this.loadData();
+      return;
     }
+    this.loadGuestExpenses();
   },
 
   onToggleList() {
@@ -216,11 +247,6 @@ Page({
   },
 
   openExpenseModal() {
-    if (!this.data.loggedIn) {
-      wx.showToast({ title: "请先登录", icon: "none" });
-      auth.redirectToLogin();
-      return;
-    }
     if (this.data.expenseModalOpen) return;
 
     this.setData({
@@ -305,6 +331,22 @@ Page({
     }
 
     this.setData({ adding: true });
+
+    if (!this.data.loggedIn) {
+      guestStore.addGuestExpense({
+        amount,
+        entry_type: draft.entry_type,
+        category: draft.category,
+        note: (draft.note || "").trim(),
+        entry_date: this.data.selectedDate,
+      });
+      wx.showToast({ title: "已记下 ✨", icon: "success" });
+      this.closeExpenseModal();
+      this.loadGuestExpenses();
+      this.setData({ adding: false });
+      return;
+    }
+
     request({
       url: "/api/mp/expenses",
       method: "POST",
@@ -337,7 +379,7 @@ Page({
   onDeleteExpense(e) {
     const id = e.currentTarget.dataset.id;
     const label = e.currentTarget.dataset.label || "这条记录";
-    if (!id || !this.data.loggedIn) return;
+    if (!id) return;
 
     wx.showModal({
       title: "删除记录",
@@ -345,6 +387,14 @@ Page({
       confirmColor: "#ea580c",
       success: (res) => {
         if (!res.confirm) return;
+
+        if (!this.data.loggedIn) {
+          guestStore.deleteGuestExpense(id);
+          this.loadGuestExpenses();
+          wx.showToast({ title: "已删除", icon: "success" });
+          return;
+        }
+
         request({
           url: `/api/mp/expenses/${id}`,
           method: "DELETE",

@@ -3,7 +3,7 @@
 .ledger-page {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 24rpx 28rpx 0;
+  padding: 24rpx 28rpx var(--mp-page-bottom);
   background: #fffdf7;
 }
 
@@ -34,6 +34,29 @@
 }
 
 .error-retry {
+  flex-shrink: 0;
+  font-size: 26rpx;
+  color: #ea580c;
+  font-weight: 600;
+}
+
+.guest-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+  padding: 20rpx 24rpx;
+}
+
+.guest-banner-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #78716c;
+  line-height: 1.5;
+}
+
+.guest-banner-login {
   flex-shrink: 0;
   font-size: 26rpx;
   color: #ea580c;
@@ -338,12 +361,14 @@
   color: #a8a29e;
 }
 
-.page-bottom-spacer { height: 180rpx; }
+.page-bottom-spacer {
+  height: 0;
+}
 
 .fab {
   position: fixed;
   right: 32rpx;
-  bottom: calc(140rpx + env(safe-area-inset-bottom));
+  bottom: var(--mp-fab-bottom);
   display: flex;
   align-items: center;
   gap: 8rpx;
@@ -351,7 +376,7 @@
   background: linear-gradient(135deg, #fb923c, #ea580c);
   border-radius: 999rpx;
   box-shadow: 0 8rpx 24rpx rgba(234, 88, 12, 0.35);
-  z-index: 100;
+  z-index: 900;
 }
 
 .fab-pressed { transform: scale(0.96); }

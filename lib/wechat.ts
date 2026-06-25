@@ -206,3 +206,40 @@ export async function getWechatUnlimitedQrcode(scene: string): Promise<Buffer> {
 
   return buf;
 }
+
+export type SubscribeMessageData = Record<string, { value: string }>;
+
+/**
+ * 发送订阅消息（需用户已授权对应 template_id）
+ */
+export async function sendSubscribeMessage(input: {
+  openid: string;
+  templateId: string;
+  page?: string;
+  data: SubscribeMessageData;
+}): Promise<void> {
+  const accessToken = await getWechatAccessToken();
+  const url = `https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=${encodeURIComponent(accessToken)}`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      touser: input.openid,
+      template_id: input.templateId,
+      page: input.page ?? "pages/tasks/tasks",
+      miniprogram_state: "formal",
+      lang: "zh_CN",
+      data: input.data,
+    }),
+  });
+
+  const data = (await res.json()) as { errcode?: number; errmsg?: string };
+  if (data.errcode !== 0) {
+    throw new Error(
+      data.errmsg
+        ? `订阅消息发送失败：${data.errmsg} (${data.errcode})`
+        : "订阅消息发送失败"
+    );
+  }
+}

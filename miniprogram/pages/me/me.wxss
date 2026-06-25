@@ -44,6 +44,70 @@
   padding: 0 24rpx;
 }
 
+.login-card {
+  padding: 32rpx 28rpx;
+  margin-bottom: 24rpx;
+}
+
+.login-card-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #292524;
+}
+
+.login-card-desc {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #78716c;
+  line-height: 1.55;
+}
+
+.btn-login {
+  margin-top: 28rpx;
+  background: #ea580c;
+  color: #ffffff;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.btn-login::after {
+  border: none;
+}
+
+.notify-section {
+  padding: 20rpx 28rpx 8rpx;
+}
+
+.notify-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #292524;
+}
+
+.notify-desc {
+  display: block;
+  margin-top: 8rpx;
+  margin-bottom: 16rpx;
+  font-size: 22rpx;
+  color: #a8a29e;
+}
+
+.notify-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 0;
+}
+
+.notify-label {
+  font-size: 26rpx;
+  color: #44403c;
+}
+
 .menu-card {
   padding: 8rpx 0;
   margin-bottom: 24rpx;
@@ -144,5 +208,5 @@
 }
 
 .page-bottom-spacer {
-  height: var(--tab-bar-clearance);
+  height: var(--mp-page-bottom);
 }

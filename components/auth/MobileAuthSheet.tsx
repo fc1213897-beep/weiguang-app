@@ -49,6 +49,7 @@ export default function MobileAuthSheet() {
     >
       <aside
         className="absolute bottom-0 left-0 right-0 max-h-[88dvh] overflow-y-auto rounded-t-3xl border border-orange-100/80 bg-white p-4 shadow-2xl wg-modal-in"
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="账号登录"

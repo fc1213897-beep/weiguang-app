@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  MOBILE_TAB_TOTAL_BOTTOM,
+  Z_MOBILE_QUICK_ADD,
+} from "@/lib/layout";
+import {
   getRandomXiaoguangSuggestion,
   QUICK_PLAN_PRESETS,
 } from "@/lib/task-plan";
@@ -23,9 +27,10 @@ export default function MobileQuickAddBar() {
 
   return (
     <div
-      className="fixed left-0 right-0 z-[48] border-t border-orange-100/80 bg-white/95 px-3 py-2 backdrop-blur-sm lg:hidden"
+      className="fixed left-0 right-0 border-t border-orange-100/80 bg-white/95 px-3 py-2 backdrop-blur-sm lg:hidden"
       style={{
-        bottom: "calc(3rem + max(0.5rem, env(safe-area-inset-bottom)))",
+        bottom: MOBILE_TAB_TOTAL_BOTTOM,
+        zIndex: Z_MOBILE_QUICK_ADD,
       }}
     >
       <div className="mx-auto flex max-w-6xl items-center gap-2">

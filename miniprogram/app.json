@@ -1,10 +1,10 @@
 {
   "pages": [
-    "pages/login/login",
     "pages/tasks/tasks",
     "pages/ledger/ledger",
     "pages/chat/chat",
     "pages/me/me",
+    "pages/login/login",
     "pages/webview/webview"
   ],
   "window": {

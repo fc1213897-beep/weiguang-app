@@ -1,6 +1,5 @@
 "use client";
 
-import MobileDrawerMenu from "@/components/layout/MobileDrawerMenu";
 import MobileHeaderAuth from "@/components/auth/MobileHeaderAuth";
 import { formatDaysLeft } from "@/lib/countdown/progress-utils";
 import { getWeekMetrics } from "@/lib/growth-utils";
@@ -51,7 +50,6 @@ export default function MobileShellHeader() {
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <MobileHeaderAuth />
-        <MobileDrawerMenu />
       </div>
     </div>
   );

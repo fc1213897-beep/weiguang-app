@@ -4,6 +4,15 @@
 
 ---
 
+## 零、微信审核（登录规范）
+
+- [ ] **首页为 `pages/tasks/tasks`**，打开小程序不强制跳转登录页
+- [ ] 未登录可浏览今日任务 / 记账 / 小光欢迎语，任务与记账支持本机体验模式
+- [ ] 登录入口在「我的」或各页「登录」链接触发，使用 `navigateTo` 而非 `reLaunch` 挡在首页
+- [ ] 小光**发送消息**需登录时，先弹窗说明再跳转（用户可取消继续浏览）
+
+---
+
 ## 一、服务器端（必须先完成）
 
 - [ ] 服务器 `git pull` 到包含本版本的最新代码
@@ -25,6 +34,9 @@
 | `DASHSCOPE_API_KEY` | 小光 AI（缺失则聊天失败） |
 | `WX_MP_LOGIN_PAGE` | `pages/login/login` |
 | `WX_MP_ENV_VERSION` | 本地开发 `develop`；体验版 `trial`；正式版 `release` |
+| `WX_SUBSCRIBE_TMPL_DAILY` | 每日待办摘要订阅模板 ID |
+| `WX_SUBSCRIBE_TMPL_TASK_ADDED` | 任务添加提醒订阅模板 ID |
+| `CRON_SECRET` | 每日推送 cron 鉴权密钥 |
 
 ### Supabase SQL（首次部署确认已执行）
 
@@ -33,6 +45,7 @@
 - [ ] `supabase/sql/chat_init.sql`
 - [ ] `supabase/sql/expenses_init.sql`
 - [ ] `supabase/sql/auth_lookup_rpc.sql`
+- [ ] `supabase/sql/wx_subscribe_init.sql`（订阅消息与提醒偏好）
 
 ---
 
@@ -46,6 +59,15 @@
   - 「我的 → 成长空间 / 备考计划」依赖此项
 - [ ] AppID 与服务器 `NEXT_PUBLIC_WX_APPID` 一致
 - [ ] 小程序类目、简介、头像已填写（提审必填）
+- [ ] **订阅消息模板**（类目：任务/日程）：每日待办摘要、任务添加提醒，ID 写入服务器 `.env`
+- [ ] 隐私政策说明：订阅消息仅用于用户主动开启的温柔提醒，可随时关闭
+
+### 服务器定时任务（每日摘要）
+
+```bash
+0 8 * * * curl -sS -X POST -H "Authorization: Bearer $CRON_SECRET" \
+  https://www.weiguanglife.top/api/internal/push-daily-tasks
+```
 
 ---
 
@@ -65,9 +87,12 @@
 4. [ ] 小光：发送消息并收到回复
 5. [ ] 我的 → 成长空间（Web 内嵌或复制链接）
 6. [ ] 我的 → 备考计划
-7. [ ] 我的 → 帮电脑扫码登录（PC 端生成码 → 手机授权）
-8. [ ] 退出登录 → 重新登录
-9. [ ] 与 PC 网页同一账号数据同步
+8. [ ] 新建计划 → 智能拆分 → 预览确认写入
+9. [ ] 小光聊天：「帮我拆…」→ 建议卡片 → 加入今日
+10. [ ] 我的 → 温柔提醒：开启每日摘要 / 添加通知（需授权订阅）
+11. [ ] 我的 → 帮电脑扫码登录（PC 端生成码 → 手机授权）
+12. [ ] 退出登录 → 重新登录
+13. [ ] 与 PC 网页同一账号数据同步
 
 ---
 
@@ -81,7 +106,7 @@
 
 ### 提审说明参考
 
-> 微光是一款学习陪伴工具。用户可管理每日任务、记录收支、与 AI 助手「小光」对话。登录后可与 PC 网页数据同步。成长统计与备考计划在 Web 页查看。
+> 微光是一款学习陪伴工具。用户可管理每日任务、记录收支、与 AI 助手「小光」对话。登录后可与 PC 网页数据同步。可选订阅消息用于每日待办温柔提醒（用户主动开启）。成长统计与备考计划在 Web 页查看。
 
 ---
 
@@ -97,9 +122,11 @@
 
 ---
 
-## 六、本版本改动摘要（v0.2.1）
+## 六、本版本改动摘要（v0.2.1+）
 
-- 「我的」页新增成长空间、备考计划 Web 入口
-- 新增 `pages/webview/webview` 内嵌网页页
-- 统一 AppID 文档、开启代码压缩
-- 版本号升至 0.2.1
+- 游客模式首进（审核合规）
+- 智能拆分任务：PC 新建计划 / 小程序 / 小光聊天
+- PC 清单导入（多行粘贴）
+- 微信订阅消息：每日摘要 + 批量添加通知（我的 → 温柔提醒）
+- 服务器 cron：`0 8 * * * curl -H "Authorization: Bearer $CRON_SECRET" https://www.weiguanglife.top/api/internal/push-daily-tasks`
+- 公众平台申请订阅模板并配置 `WX_SUBSCRIBE_TMPL_*`

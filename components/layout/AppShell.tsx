@@ -15,7 +15,7 @@ import MobileTabNav from "@/components/layout/MobileTabNav";
 import MobileTaskView from "@/components/layout/MobileTaskView";
 import { MotionStyles } from "@/components/ui/motion-styles";
 import { useAuth } from "@/hooks/useAuth";
-import { DESKTOP_GRID_CLASS, MOBILE_MAIN_PB } from "@/lib/layout";
+import { DESKTOP_GRID_CLASS, getMobileMainPbClass } from "@/lib/layout";
 import { panelClass } from "@/lib/tokens";
 import { useUIStore } from "@/store/uiStore";
 import type { MobileTabId } from "@/types/ui";
@@ -84,7 +84,7 @@ export default function AppShell({ route = "today" }: { route?: AppRouteId }) {
       <main
         className={[
           "wg-page-in min-h-screen p-2 sm:p-4",
-          MOBILE_MAIN_PB,
+          getMobileMainPbClass(route, mobileTab),
           "lg:p-6 lg:pb-6 xl:p-8",
         ].join(" ")}
       >

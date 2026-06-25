@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import PlanCreateForm from "@/components/todo/PlanCreateForm";
+import PlanCreateTabs from "@/components/todo/PlanCreateTabs";
 import { Z_MODAL } from "@/lib/layout";
 import { useUIStore } from "@/store/uiStore";
 import { useTodoStore } from "@/store/todoStore";
@@ -14,14 +15,19 @@ export default function PlanCreateModal() {
   const setCreatePlanOpen = useUIStore((s) => s.setCreatePlanOpen);
   const resetPlanDraft = useTodoStore((s) => s.resetPlanDraft);
   const addTask = useTodoStore((s) => s.addTask);
+  const selectedDate = useTodoStore((s) => s.selectedDate);
   const [mounted, setMounted] = useState(false);
+  const [batchMode, setBatchMode] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setBatchMode(false);
+      return;
+    }
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -31,6 +37,7 @@ export default function PlanCreateModal() {
 
   function handleClose() {
     resetPlanDraft();
+    setBatchMode(false);
     setCreatePlanOpen(false);
   }
 
@@ -50,7 +57,7 @@ export default function PlanCreateModal() {
       onClick={handleClose}
     >
       <div
-        className="wg-modal-in flex h-[100dvh] w-full max-w-lg flex-col overflow-hidden rounded-none border border-orange-100/90 bg-[#fffdf9] shadow-xl sm:h-auto sm:max-h-[88dvh] sm:rounded-3xl sm:max-w-md"
+        className="wg-modal-in flex h-[100dvh] w-full max-w-lg flex-col overflow-hidden rounded-none border border-orange-100/90 bg-[#fffdf9] shadow-xl sm:h-auto sm:max-h-[88dvh] sm:rounded-3xl sm:max-w-md lg:max-w-lg"
         style={{
           maxHeight: "min(100dvh, 720px)",
         }}
@@ -77,15 +84,48 @@ export default function PlanCreateModal() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
-          <PlanCreateForm
-            variant="mobile"
-            showSubmitButton={false}
-            onCreated={handleClose}
-          />
+          <div className="hidden lg:block">
+            <PlanCreateTabs
+              taskDate={selectedDate}
+              onDone={handleClose}
+            />
+            <div className="mt-4 border-t border-orange-100/50 pt-4">
+              <PlanCreateForm
+                variant="desktop"
+                showSubmitButton
+                onCreated={handleClose}
+              />
+            </div>
+          </div>
+
+          <div className="lg:hidden">
+            {!batchMode ? (
+              <>
+                <PlanCreateForm
+                  variant="mobile"
+                  showSubmitButton={false}
+                  onCreated={handleClose}
+                />
+                <button
+                  type="button"
+                  className="mt-3 w-full rounded-xl border border-dashed border-orange-200 py-2.5 text-xs text-orange-700"
+                  onClick={() => setBatchMode(true)}
+                >
+                  智能拆分 / 导入清单（需登录）
+                </button>
+              </>
+            ) : (
+              <PlanCreateTabs
+                taskDate={selectedDate}
+                onDone={handleClose}
+                showTabs
+              />
+            )}
+          </div>
         </div>
 
         <div
-          className="shrink-0 border-t border-orange-100/60 bg-white/95 px-4 py-3 sm:px-5"
+          className="shrink-0 border-t border-orange-100/60 bg-white/95 px-4 py-3 sm:px-5 lg:hidden"
           style={{
             paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
           }}

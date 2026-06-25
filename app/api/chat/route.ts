@@ -12,7 +12,10 @@ import {
 } from "@/lib/chat-expense";
 import { getGentleFallbackReply } from "@/lib/fallback-reply";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { detectSplitIntent, extractSplitGoal } from "@/lib/task-split";
+import { splitGoalWithAi } from "@/lib/task-split-ai";
 import type { ExpenseRow } from "@/types/database";
+import type { PlanDraft } from "@/types/task";
 
 export type { ChatHistoryItem };
 
@@ -37,6 +40,7 @@ export async function POST(request: NextRequest) {
 
     let expenseRecorded: ExpenseRow | null = null;
     let user: { id: string } | null = null;
+    let tasksSuggested: PlanDraft[] | undefined;
 
     try {
       const supabase = await createSupabaseServerClient();
@@ -74,7 +78,20 @@ export async function POST(request: NextRequest) {
 
     let reply: string;
 
-    if (user) {
+    if (user && !expenseRecorded && detectSplitIntent(message)) {
+      try {
+        const goal = extractSplitGoal(message);
+        const split = await splitGoalWithAi(goal, getTodayDateString());
+        if (split.drafts.length > 0) {
+          tasksSuggested = split.drafts;
+          reply = `${split.summary}\n\n我帮你拆成了 ${split.drafts.length} 个小步骤，点击下方可以加入今日计划～`;
+        } else {
+          reply = split.summary;
+        }
+      } catch {
+        reply = getGentleFallbackReply(message, body.reply_index ?? 0);
+      }
+    } else if (user) {
       try {
         reply = await fetchXiaoguangReply(aiMessage, body.history ?? []);
       } catch {
@@ -94,6 +111,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       reply,
       expense_recorded: expenseRecorded,
+      tasks_suggested: tasksSuggested,
     });
   } catch (error) {
     console.error("[chat] internal error:", error);

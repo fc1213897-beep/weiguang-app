@@ -87,6 +87,7 @@ export default function MobileMeView() {
       </div>
 
       <div className="space-y-2">
+        <p className="px-1 text-xs font-medium text-stone-500">更多功能</p>
         {LINKS.map((item) => (
           <Link
             key={item.href}
