@@ -5,6 +5,22 @@ const dateUtil = require("../../utils/date.js");
 const taskPlan = require("../../utils/task-plan.js");
 const { setTabSelected } = require("../../utils/tab.js");
 
+function formatRemindLabel(remindAt, remindSentAt) {
+  if (!remindAt || remindSentAt) return "";
+  const d = new Date(remindAt);
+  if (Number.isNaN(d.getTime())) return "";
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
+  return `🔔 ${h}:${m}`;
+}
+
+function buildRemindIso(dateStr, timeStr) {
+  const [hh, mm] = (timeStr || "").split(":");
+  if (!hh || !mm) return null;
+  const iso = new Date(`${dateStr}T${hh}:${mm}:00+08:00`).toISOString();
+  return iso;
+}
+
 function decorateTask(task) {
   const cat = taskPlan.getCategoryMeta(task.task_type || "other");
   const priorityLabel = taskPlan.getPriorityLabel(task.priority || "medium");
@@ -19,6 +35,8 @@ function decorateTask(task) {
     categoryLabel: cat.label,
     priorityLabel,
     metaLine: metaParts.join(" · "),
+    remindLabel: formatRemindLabel(task.remind_at, task.remind_sent_at),
+    hasRemind: !!formatRemindLabel(task.remind_at, task.remind_sent_at),
   };
 }
 
@@ -65,6 +83,8 @@ Page({
     splitPreview: null,
     splitSummary: "",
     batchAdding: false,
+    tmplTaskRemind: "",
+    remindPickTime: "09:00",
   },
 
   _tasksLoadId: 0,
@@ -98,12 +118,14 @@ Page({
   onShow() {
     setTabSelected(this, 0);
     if (this.data.adding || this.data.planModalOpen) return;
-    if (auth.hasValidSession() && this.data.loggedIn) {
-      this.loadTasks({ silent: true });
-      this.loadInsight();
-      return;
-    }
-    this.bootstrap();
+    auth.ensureSession().then((session) => {
+      if (session && this.data.loggedIn) {
+        this.loadTasks({ silent: true });
+        this.loadInsight();
+        return;
+      }
+      this.bootstrap();
+    });
   },
 
   onPullDownRefresh() {
@@ -133,6 +155,7 @@ Page({
           return;
         }
         this.setData({ loggedIn: true, loginError: "" });
+        this.loadSubscribeConfig();
         return Promise.all([this.loadTasks(), this.loadInsight()]);
       })
       .catch((err) => {
@@ -207,6 +230,115 @@ Page({
         if (loadId !== this._tasksLoadId) return Promise.reject(err);
         this.setData({ loading: false });
         return Promise.reject(err);
+      });
+  },
+
+  loadSubscribeConfig() {
+    return request({ url: "/api/mp/subscribe-config", method: "GET" })
+      .then((res) => {
+        const body = res.data || {};
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          this.setData({ tmplTaskRemind: body.task_remind || "" });
+        }
+      })
+      .catch(() => {});
+  },
+
+  requestTaskRemindSubscribe(templateId, taskId) {
+    return new Promise((resolve) => {
+      if (!templateId) {
+        resolve("skip");
+        return;
+      }
+      wx.requestSubscribeMessage({
+        tmplIds: [templateId],
+        success: (res) => {
+          const status = res[templateId] || "reject";
+          request({
+            url: "/api/mp/subscribe",
+            method: "POST",
+            data: { template_id: templateId, status, task_id: taskId },
+          }).finally(() => resolve(status));
+        },
+        fail: () => resolve("fail"),
+      });
+    });
+  },
+
+  onRemindTimeChange(e) {
+    const taskId = e.currentTarget.dataset.id;
+    const timeStr = (e.detail && e.detail.value) || "";
+    if (!taskId || !timeStr) return;
+    this.setData({ remindPickTime: timeStr });
+
+    const remindAt = buildRemindIso(this.data.selectedDate, timeStr);
+    if (!remindAt) {
+      wx.showToast({ title: "时间无效", icon: "none" });
+      return;
+    }
+    if (new Date(remindAt).getTime() <= Date.now()) {
+      wx.showToast({ title: "请选将来的时间", icon: "none" });
+      return;
+    }
+
+    wx.showModal({
+      title: "微信温柔提醒",
+      content:
+        "将为该任务设置提醒。微信需授权一次，到点推送一条消息（非强提醒，可随时取消）。",
+      confirmText: "继续",
+      success: (modalRes) => {
+        if (!modalRes.confirm) return;
+
+        this.requestTaskRemindSubscribe(this.data.tmplTaskRemind, taskId)
+          .then((status) => {
+            if (status === "reject" || status === "fail") {
+              wx.showToast({ title: "未授权订阅", icon: "none" });
+              return null;
+            }
+            return request({
+              url: `/api/mp/tasks/${taskId}`,
+              method: "PATCH",
+              data: {
+                remind_at: remindAt,
+                remind_sent_at: null,
+              },
+            });
+          })
+          .then((res) => {
+            if (!res) return;
+            const body = res.data || {};
+            if (res.statusCode < 200 || res.statusCode >= 300) {
+              throw new Error(body.error || "设置失败");
+            }
+            wx.showToast({ title: "已设置提醒", icon: "success" });
+            return this.loadTasks({ silent: true });
+          })
+          .catch((err) => {
+            wx.showToast({ title: err.message || "设置失败", icon: "none" });
+          });
+      },
+    });
+  },
+
+  onClearRemind(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id || !this.data.loggedIn) return;
+
+    request({
+      url: `/api/mp/tasks/${id}`,
+      method: "PATCH",
+      data: { remind_at: null, remind_sent_at: null },
+    })
+      .then((res) => {
+        const body = res.data || {};
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          throw new Error(body.error || "取消失败");
+        }
+        wx.showToast({ title: "已取消提醒", icon: "none" });
+        return this.loadTasks({ silent: true });
+      })
+      .catch((err) => {
+        wx.showToast({ title: err.message || "取消失败", icon: "none" });
       });
   },
 
@@ -586,7 +718,12 @@ Page({
     request({
       url: `/api/mp/tasks/${id}`,
       method: "PATCH",
-      data: { completed: !completed },
+      data: {
+        completed: !completed,
+        ...(!completed
+          ? { remind_at: null, remind_sent_at: null }
+          : {}),
+      },
     })
       .then((res) => {
         const body = res.data || {};

@@ -137,14 +137,43 @@
       <view class="task-body">
         <text class="task-title">{{item.title}}</text>
         <text class="task-meta">{{item.metaLine}}</text>
+        <text class="task-remind-label" wx:if="{{item.hasRemind}}">{{item.remindLabel}}</text>
       </view>
-      <view
-        class="btn-delete"
-        data-id="{{item.id}}"
-        data-title="{{item.title}}"
-        catchtap="onDeleteTask"
-      >
-        删除
+      <view class="task-actions">
+        <picker
+          wx:if="{{loggedIn && !item.completed}}"
+          mode="time"
+          value="{{remindPickTime}}"
+          data-id="{{item.id}}"
+          bindchange="onRemindTimeChange"
+        >
+          <view class="btn-remind" catchtap="stopBubble">
+            {{item.hasRemind ? '改提醒' : '提醒'}}
+          </view>
+        </picker>
+        <view
+          class="btn-remind-guest"
+          wx:if="{{!loggedIn && !item.completed}}"
+          catchtap="onGoLogin"
+        >
+          提醒
+        </view>
+        <view
+          class="btn-remind-clear"
+          wx:if="{{loggedIn && item.hasRemind}}"
+          data-id="{{item.id}}"
+          catchtap="onClearRemind"
+        >
+          取消
+        </view>
+        <view
+          class="btn-delete"
+          data-id="{{item.id}}"
+          data-title="{{item.title}}"
+          catchtap="onDeleteTask"
+        >
+          删除
+        </view>
       </view>
     </view>
   </view>

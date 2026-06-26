@@ -2,9 +2,9 @@ const { getApiBase, formatRequestFail } = require("./config.js");
 const auth = require("./auth.js");
 
 /**
- * 带 Bearer Token 的请求；401 时清 session 并抛错
+ * 带 Bearer Token 的请求；401 时尝试续期一次并重试
  */
-function request(options) {
+function request(options, retried = false) {
   const session = auth.getSession();
   const url = options.url.startsWith("http")
     ? options.url
@@ -22,6 +22,23 @@ function request(options) {
         ...(options.header || {}),
       },
       success(res) {
+        if (res.statusCode === 401 && !retried) {
+          auth
+            .renewSession()
+            .then((newSession) => {
+              if (!newSession) {
+                auth.clearSession();
+                reject(new Error("登录已失效，请重新登录"));
+                return;
+              }
+              request(options, true).then(resolve).catch(reject);
+            })
+            .catch(() => {
+              auth.clearSession();
+              reject(new Error("登录已失效，请重新登录"));
+            });
+          return;
+        }
         if (res.statusCode === 401) {
           auth.clearSession();
           reject(new Error("登录已失效，请重新登录"));

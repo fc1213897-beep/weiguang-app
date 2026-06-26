@@ -16,6 +16,10 @@ export type TaskItem = {
   pomodoroMinutes: number;
   /** 备注，可选 */
   note: string;
+  /** 微信提醒时刻（ISO 8601，UTC） */
+  remindAt?: string | null;
+  /** 提醒是否已推送 */
+  remindSentAt?: string | null;
 };
 
 /** 创建面板草稿 */

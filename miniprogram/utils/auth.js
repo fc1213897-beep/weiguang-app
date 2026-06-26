@@ -2,6 +2,10 @@ const { getApiBase, formatRequestFail } = require("./config.js");
 
 const SESSION_KEY = "wg_session";
 const LOGIN_PAGE = "/pages/login/login";
+/** 续期间隔节流（毫秒） */
+const RENEW_THROTTLE_MS = 5 * 60 * 1000;
+let lastRenewAttemptAt = 0;
+let renewPromise = null;
 
 function getSession() {
   try {
@@ -11,9 +15,22 @@ function getSession() {
   }
 }
 
+function isSessionExpired(bufferSec = 300) {
+  const session = getSession();
+  if (!session || !session.access_token) return true;
+  if (!session.expires_at) return false;
+  const expiresMs =
+    typeof session.expires_at === "number"
+      ? session.expires_at * 1000
+      : new Date(session.expires_at).getTime();
+  if (Number.isNaN(expiresMs)) return false;
+  return Date.now() >= expiresMs - bufferSec * 1000;
+}
+
 function hasValidSession() {
   const session = getSession();
-  return !!(session && session.access_token);
+  if (!session || !session.access_token) return false;
+  return !isSessionExpired();
 }
 
 function saveSession(data) {
@@ -115,14 +132,94 @@ function loginWithMp() {
   });
 }
 
+/** 使用 refresh_token 续期 */
+function refreshWithToken(refreshToken) {
+  return new Promise((resolve, reject) => {
+    wx.request({
+      url: `${getApiBase()}/api/auth/mp-refresh`,
+      method: "POST",
+      header: { "Content-Type": "application/json" },
+      data: { refresh_token: refreshToken },
+      success(res) {
+        const body = res.data || {};
+        if (
+          res.statusCode >= 200 &&
+          res.statusCode < 300 &&
+          body.access_token
+        ) {
+          const prev = getSession() || {};
+          saveSession({
+            ...body,
+            user: body.user || prev.user,
+          });
+          resolve(getSession());
+          return;
+        }
+        reject(new Error(body.error || "续期失败"));
+      },
+      fail(err) {
+        reject(new Error(formatRequestFail(err)));
+      },
+    });
+  });
+}
+
+/**
+ * 静默续期：优先 refresh_token，失败则 wx.login
+ */
+function renewSession() {
+  if (renewPromise) return renewPromise;
+
+  renewPromise = (async () => {
+    const session = getSession();
+    if (!session || !session.access_token) return null;
+    if (!isSessionExpired()) return session;
+
+    if (session.refresh_token) {
+      try {
+        return await refreshWithToken(session.refresh_token);
+      } catch {
+        /* fallback 静默微信登录 */
+      }
+    }
+
+    try {
+      return await loginWithMp();
+    } catch {
+      return null;
+    }
+  })().finally(() => {
+    renewPromise = null;
+  });
+
+  return renewPromise;
+}
+
+/**
+ * 确保 Session 有效（节流，避免频繁续期）
+ */
+function ensureSession() {
+  const session = getSession();
+  if (session && session.access_token && !isSessionExpired()) {
+    return Promise.resolve(session);
+  }
+  if (!session || !session.access_token) {
+    return Promise.resolve(null);
+  }
+
+  const now = Date.now();
+  if (now - lastRenewAttemptAt < RENEW_THROTTLE_MS && session.access_token) {
+    return Promise.resolve(session);
+  }
+  lastRenewAttemptAt = now;
+  return renewSession();
+}
+
 /**
  * 有 Session 则返回，否则返回 null（不强制跳转登录页）
  */
 function resolveSession() {
-  if (hasValidSession()) {
-    return Promise.resolve(getSession());
-  }
-  return Promise.resolve(null);
+  return ensureSession().then((session) => session || null);
 }
 
 /**
@@ -136,21 +233,24 @@ function guardLogin() {
  * 确保已登录：有 Session 直接返回，否则静默 mp-login
  */
 function ensureLogin() {
-  if (hasValidSession()) {
-    return Promise.resolve(getSession());
-  }
-  return loginWithMp();
+  return ensureSession().then((session) => {
+    if (session) return session;
+    return loginWithMp();
+  });
 }
 
 module.exports = {
   getSession,
   hasValidSession,
+  isSessionExpired,
   saveSession,
   clearSession,
   navigateToLogin,
   redirectToLogin,
   promptLogin,
   loginWithMp,
+  renewSession,
+  ensureSession,
   resolveSession,
   guardLogin,
   ensureLogin,

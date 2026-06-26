@@ -1,3 +1,11 @@
+const auth = require("./utils/auth.js");
+
 App({
-  onLaunch() {},
+  onLaunch() {
+    auth.ensureSession().catch(() => {});
+  },
+
+  onShow() {
+    auth.ensureSession().catch(() => {});
+  },
 });

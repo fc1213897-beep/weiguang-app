@@ -599,6 +599,55 @@
   line-height: 1.4;
 }
 
+.task-remind-label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #ea580c;
+}
+
+.task-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.btn-remind {
+  padding: 10rpx 18rpx;
+  font-size: 22rpx;
+  color: #c2410c;
+  background: #fff7ed;
+  border-radius: 14rpx;
+  border: 1rpx solid #fed7aa;
+}
+
+.btn-remind-guest {
+  padding: 10rpx 18rpx;
+  font-size: 22rpx;
+  color: #a8a29e;
+  background: #fafaf9;
+  border-radius: 14rpx;
+  border: 1rpx solid #e7e5e4;
+}
+
+.btn-remind-clear {
+  padding: 8rpx 16rpx;
+  font-size: 20rpx;
+  color: #78716c;
+  background: #fafaf9;
+  border-radius: 12rpx;
+}
+
+.remind-picker-anchor {
+  position: fixed;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
 .task-card.is-done .task-title {
   color: #a8a29e;
   text-decoration: line-through;

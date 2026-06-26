@@ -105,3 +105,21 @@ export async function deleteTaskForMp(
 
   if (error) throw new Error(error.message);
 }
+
+/** 查询到点待推送的单任务提醒 */
+export async function listDueTaskReminders(): Promise<TaskRow[]> {
+  const admin = getSupabaseAdminClient();
+  const now = new Date().toISOString();
+  const { data, error } = await admin
+    .from("tasks")
+    .select("*")
+    .eq("completed", false)
+    .is("remind_sent_at", null)
+    .not("remind_at", "is", null)
+    .lte("remind_at", now)
+    .order("remind_at", { ascending: true })
+    .limit(200);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => mapRow(row as Record<string, unknown>));
+}

@@ -72,11 +72,13 @@ Page({
   onShow() {
     setTabSelected(this, 1);
     if (this.data.adding || this.data.expenseModalOpen) return;
-    if (auth.hasValidSession() && this.data.loggedIn) {
-      this.loadData({ silent: true });
-      return;
-    }
-    this.bootstrap();
+    auth.ensureSession().then((session) => {
+      if (session && this.data.loggedIn) {
+        this.loadData({ silent: true });
+        return;
+      }
+      this.bootstrap();
+    });
   },
 
   onPullDownRefresh() {

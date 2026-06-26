@@ -36,7 +36,8 @@
 | `WX_MP_ENV_VERSION` | 本地开发 `develop`；体验版 `trial`；正式版 `release` |
 | `WX_SUBSCRIBE_TMPL_DAILY` | 每日待办摘要订阅模板 ID |
 | `WX_SUBSCRIBE_TMPL_TASK_ADDED` | 任务添加提醒订阅模板 ID |
-| `CRON_SECRET` | 每日推送 cron 鉴权密钥 |
+| `WX_SUBSCRIBE_TMPL_TASK_REMIND` | 单任务到点提醒模板 ID（字段建议 thing1 + time2） |
+| `CRON_SECRET` | 定时推送 cron 鉴权密钥 |
 
 ### Supabase SQL（首次部署确认已执行）
 
@@ -46,6 +47,7 @@
 - [ ] `supabase/sql/expenses_init.sql`
 - [ ] `supabase/sql/auth_lookup_rpc.sql`
 - [ ] `supabase/sql/wx_subscribe_init.sql`（订阅消息与提醒偏好）
+- [ ] `supabase/sql/task_reminders_init.sql`（单任务 remind_at 字段）
 
 ---
 
@@ -59,14 +61,23 @@
   - 「我的 → 成长空间 / 备考计划」依赖此项
 - [ ] AppID 与服务器 `NEXT_PUBLIC_WX_APPID` 一致
 - [ ] 小程序类目、简介、头像已填写（提审必填）
-- [ ] **订阅消息模板**（类目：任务/日程）：每日待办摘要、任务添加提醒，ID 写入服务器 `.env`
+- [ ] **订阅消息模板**（类目：任务/日程）：每日摘要、任务添加、**单任务提醒**，ID 写入服务器 `.env`
 - [ ] 隐私政策说明：订阅消息仅用于用户主动开启的温柔提醒，可随时关闭
 
-### 服务器定时任务（每日摘要）
+### 服务器定时任务（推送）
+
+每日摘要（按用户在「我的」设定的时间，建议每 5 分钟跑一次）：
 
 ```bash
-0 8 * * * curl -sS -X POST -H "Authorization: Bearer $CRON_SECRET" \
+*/5 * * * * curl -sS -X POST -H "Authorization: Bearer $CRON_SECRET" \
   https://www.weiguanglife.top/api/internal/push-daily-tasks
+```
+
+单任务到点提醒（每 5 分钟扫描到期任务）：
+
+```bash
+*/5 * * * * curl -sS -X POST -H "Authorization: Bearer $CRON_SECRET" \
+  https://www.weiguanglife.top/api/internal/push-task-reminders
 ```
 
 ---
@@ -89,10 +100,12 @@
 6. [ ] 我的 → 备考计划
 8. [ ] 新建计划 → 智能拆分 → 预览确认写入
 9. [ ] 小光聊天：「帮我拆…」→ 建议卡片 → 加入今日
-10. [ ] 我的 → 温柔提醒：开启每日摘要 / 添加通知（需授权订阅）
-11. [ ] 我的 → 帮电脑扫码登录（PC 端生成码 → 手机授权）
-12. [ ] 退出登录 → 重新登录
-13. [ ] 与 PC 网页同一账号数据同步
+10. [ ] 我的 → 温柔提醒：开启每日摘要、设置时间 / 添加通知（需授权订阅）
+11. [ ] 今日任务：为单条任务设「提醒」→ 授权订阅 → 到点收到微信消息
+12. [ ] 关闭小程序 1h+ 再开，仍保持登录态
+13. [ ] 我的 → 帮电脑扫码登录（PC 端生成码 → 手机授权）
+14. [ ] 退出登录 → 重新登录
+15. [ ] 与 PC 网页同一账号数据同步
 
 ---
 
@@ -127,6 +140,7 @@
 - 游客模式首进（审核合规）
 - 智能拆分任务：PC 新建计划 / 小程序 / 小光聊天
 - PC 清单导入（多行粘贴）
-- 微信订阅消息：每日摘要 + 批量添加通知（我的 → 温柔提醒）
-- 服务器 cron：`0 8 * * * curl -H "Authorization: Bearer $CRON_SECRET" https://www.weiguanglife.top/api/internal/push-daily-tasks`
-- 公众平台申请订阅模板并配置 `WX_SUBSCRIBE_TMPL_*`
+- 微信订阅消息：每日摘要（可自定义时间）+ 批量添加通知 + **单任务到点提醒**
+- 登录态静默续期（refresh_token / wx.login），减少「登录已失效」
+- 服务器 cron：每 5 分钟 `push-daily-tasks` + `push-task-reminders`
+- SQL：`task_reminders_init.sql`；模板 `WX_SUBSCRIBE_TMPL_TASK_REMIND`

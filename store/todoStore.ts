@@ -39,6 +39,7 @@ type TodoState = {
   addTasksFromDrafts: (drafts: PlanDraft[]) => number;
   toggleTask: (id: string) => void;
   editTask: (id: string, text: string) => void;
+  setTaskRemind: (id: string, remindAt: string | null) => void;
   deleteTask: (id: string) => void;
 };
 
@@ -170,11 +171,20 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     const nextDone = !item.done;
     set((s) => ({
       tasks: s.tasks.map((t) =>
-        t.id === id ? { ...t, done: nextDone } : t
+        t.id === id
+          ? {
+              ...t,
+              done: nextDone,
+              ...(nextDone ? { remindAt: null, remindSentAt: null } : {}),
+            }
+          : t
       ),
     }));
     if (get().syncEnabled) {
-      void updateCloudTask(id, { completed: nextDone }).then((res) => {
+      void updateCloudTask(id, {
+        completed: nextDone,
+        ...(nextDone ? { remind_at: null, remind_sent_at: null } : {}),
+      }).then((res) => {
         if (res.error) console.error("[todo sync] updateTask", res.error);
       });
     }
@@ -212,6 +222,24 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     if (get().syncEnabled) {
       void updateCloudTask(id, { title: value }).then((res) => {
         if (res.error) console.error("[todo sync] updateTask", res.error);
+      });
+    }
+  },
+
+  setTaskRemind: (id, remindAt) => {
+    set((s) => ({
+      tasks: s.tasks.map((item) =>
+        item.id === id
+          ? { ...item, remindAt, remindSentAt: null }
+          : item
+      ),
+    }));
+    if (get().syncEnabled) {
+      void updateCloudTask(id, {
+        remind_at: remindAt,
+        remind_sent_at: null,
+      }).then((res) => {
+        if (res.error) console.error("[todo sync] setTaskRemind", res.error);
       });
     }
   },

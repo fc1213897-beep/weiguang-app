@@ -20,6 +20,8 @@ export type TaskRow = {
   pomodoro_minutes: number;
   /** 归属日期 YYYY-MM-DD */
   task_date: string;
+  remind_at: string | null;
+  remind_sent_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -32,6 +34,8 @@ export type CreateTaskInput = {
   task_type?: DbTaskType;
   priority?: DbTaskPriority;
   pomodoro_minutes?: number;
+  remind_at?: string | null;
+  remind_sent_at?: string | null;
 };
 
 /** 更新任务入参（部分字段） */
@@ -44,6 +48,8 @@ export type UpdateTaskInput = Partial<
     | "priority"
     | "pomodoro_minutes"
     | "task_date"
+    | "remind_at"
+    | "remind_sent_at"
   >
 >;
 

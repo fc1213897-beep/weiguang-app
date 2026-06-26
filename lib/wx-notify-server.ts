@@ -1,17 +1,49 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { listTasksForMp } from "@/lib/mp-tasks-server";
+import { listDueTaskReminders, listTasksForMp } from "@/lib/mp-tasks-server";
 import { sendSubscribeMessage } from "@/lib/wechat";
 import {
   getWxSubscribeTemplateDaily,
   getWxSubscribeTemplateTaskAdded,
+  getWxSubscribeTemplateTaskRemind,
 } from "@/lib/wx-subscribe-config";
 
+const CHINA_TZ = "Asia/Shanghai";
+
 function getTodayDateString(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: CHINA_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+function getChinaNowMinutes(): { dateStr: string; totalMinutes: number } {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: CHINA_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(new Date());
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "0";
+  const dateStr = `${get("year")}-${get("month")}-${get("day")}`;
+  const hours = Number(get("hour"));
+  const minutes = Number(get("minute"));
+  return { dateStr, totalMinutes: hours * 60 + minutes };
+}
+
+/** 用户设定的每日摘要时刻是否落在当前时间窗口内 */
+function isWithinRemindWindow(remindTime: string, windowMinutes = 5): boolean {
+  const [h, m] = remindTime.split(":").map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return false;
+  const china = getChinaNowMinutes();
+  const target = h * 60 + m;
+  const diff = Math.abs(china.totalMinutes - target);
+  return diff <= windowMinutes || diff >= 24 * 60 - windowMinutes;
 }
 
 async function getUserOpenid(userId: string): Promise<string | null> {
@@ -25,17 +57,61 @@ async function getUserOpenid(userId: string): Promise<string | null> {
 
 async function hasSubscribeGrant(
   userId: string,
-  templateId: string
+  templateId: string,
+  taskId?: string | null
 ): Promise<boolean> {
   const admin = getSupabaseAdminClient();
-  const { data } = await admin
+  let query = admin
     .from("wx_subscribe_grants")
     .select("status")
     .eq("user_id", userId)
     .eq("template_id", templateId)
-    .eq("status", "accept")
-    .maybeSingle();
+    .eq("status", "accept");
+
+  if (taskId) {
+    query = query.eq("task_id", taskId);
+  } else {
+    query = query.is("task_id", null);
+  }
+
+  const { data } = await query.maybeSingle();
   return !!data;
+}
+
+async function markGrantSent(
+  userId: string,
+  templateId: string,
+  taskId?: string | null
+) {
+  const admin = getSupabaseAdminClient();
+  let query = admin
+    .from("wx_subscribe_grants")
+    .update({ status: "sent" })
+    .eq("user_id", userId)
+    .eq("template_id", templateId);
+
+  if (taskId) {
+    query = query.eq("task_id", taskId);
+  } else {
+    query = query.is("task_id", null);
+  }
+
+  await query;
+}
+
+async function hasDailyDigestSentToday(userId: string): Promise<boolean> {
+  const admin = getSupabaseAdminClient();
+  const china = getChinaNowMinutes();
+  const dayStart = new Date(`${china.dateStr}T00:00:00+08:00`).toISOString();
+  const { data } = await admin
+    .from("notification_log")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("kind", "daily_digest")
+    .gte("sent_at", dayStart)
+    .limit(1);
+
+  return (data?.length ?? 0) > 0;
 }
 
 async function getNotificationPrefs(userId: string) {
@@ -94,19 +170,24 @@ export async function trySendTaskAddedNotify(
       },
     });
 
+    await markGrantSent(userId, templateId);
     await logNotification(userId, templateId, "task_added", { count, source });
   } catch (e) {
     console.error("[wx-notify] task_added:", e);
   }
 }
 
-/** 每日待办摘要推送（cron 调用） */
+/** 每日待办摘要推送（cron 调用，按用户 remind_time 窗口） */
 export async function pushDailyTaskDigestForUser(userId: string): Promise<boolean> {
   const templateId = getWxSubscribeTemplateDaily();
   if (!templateId) return false;
 
   const prefs = await getNotificationPrefs(userId);
   if (!prefs?.remind_enabled) return false;
+
+  const remindTime = prefs.remind_time || "08:00";
+  if (!isWithinRemindWindow(remindTime)) return false;
+  if (await hasDailyDigestSentToday(userId)) return false;
 
   const openid = await getUserOpenid(userId);
   if (!openid) return false;
@@ -140,9 +221,11 @@ export async function pushDailyTaskDigestForUser(userId: string): Promise<boolea
     },
   });
 
+  await markGrantSent(userId, templateId);
   await logNotification(userId, templateId, "daily_digest", {
     pending: pending.length,
     today,
+    remind_time: remindTime,
   });
 
   return true;
@@ -176,24 +259,119 @@ export async function pushDailyTaskDigestAll(): Promise<{
   return { sent, skipped };
 }
 
+/** 到点单任务提醒推送（cron 每 1–5 分钟） */
+export async function pushDueTaskReminders(): Promise<{
+  sent: number;
+  skipped: number;
+}> {
+  const templateId = getWxSubscribeTemplateTaskRemind();
+  if (!templateId) return { sent: 0, skipped: 0 };
+
+  const due = await listDueTaskReminders();
+  let sent = 0;
+  let skipped = 0;
+
+  for (const task of due) {
+    try {
+      const openid = await getUserOpenid(task.user_id);
+      if (!openid) {
+        skipped += 1;
+        continue;
+      }
+
+      const granted = await hasSubscribeGrant(
+        task.user_id,
+        templateId,
+        task.id
+      );
+      if (!granted) {
+        skipped += 1;
+        continue;
+      }
+
+      const timeLabel = task.remind_at
+        ? new Intl.DateTimeFormat("zh-CN", {
+            timeZone: CHINA_TZ,
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }).format(new Date(task.remind_at))
+        : "";
+
+      await sendSubscribeMessage({
+        openid,
+        templateId,
+        page: "pages/tasks/tasks",
+        data: {
+          thing1: { value: task.title.slice(0, 20) },
+          time2: { value: timeLabel.slice(0, 20) },
+        },
+      });
+
+      const admin = getSupabaseAdminClient();
+      await admin
+        .from("tasks")
+        .update({ remind_sent_at: new Date().toISOString() })
+        .eq("id", task.id);
+
+      await markGrantSent(task.user_id, templateId, task.id);
+      await logNotification(task.user_id, templateId, "task_remind", {
+        task_id: task.id,
+        title: task.title,
+      });
+      sent += 1;
+    } catch (e) {
+      console.error("[wx-notify] task_remind:", task.id, e);
+      skipped += 1;
+    }
+  }
+
+  return { sent, skipped };
+}
+
 export async function saveSubscribeGrant(input: {
   userId: string;
   openid: string;
   templateId: string;
   status: string;
+  taskId?: string | null;
 }) {
   const admin = getSupabaseAdminClient();
-  const { error } = await admin.from("wx_subscribe_grants").upsert(
-    {
-      user_id: input.userId,
-      openid: input.openid,
-      template_id: input.templateId,
-      status: input.status,
-      granted_at: new Date().toISOString(),
-    },
-    { onConflict: "user_id,template_id" }
-  );
-  if (error) throw new Error(error.message);
+  let query = admin
+    .from("wx_subscribe_grants")
+    .select("id")
+    .eq("user_id", input.userId)
+    .eq("template_id", input.templateId);
+
+  if (input.taskId) {
+    query = query.eq("task_id", input.taskId);
+  } else {
+    query = query.is("task_id", null);
+  }
+
+  const { data: existing } = await query.maybeSingle();
+
+  const row = {
+    user_id: input.userId,
+    openid: input.openid,
+    template_id: input.templateId,
+    status: input.status,
+    task_id: input.taskId ?? null,
+    granted_at: new Date().toISOString(),
+  };
+
+  if (existing?.id) {
+    const { error } = await admin
+      .from("wx_subscribe_grants")
+      .update(row)
+      .eq("id", existing.id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await admin.from("wx_subscribe_grants").insert(row);
+    if (error) throw new Error(error.message);
+  }
 }
 
 export async function upsertNotificationPrefs(

@@ -12,6 +12,8 @@ export function taskRowToTaskItem(row: TaskRow): TaskItem {
     priority: row.priority,
     pomodoroMinutes: row.pomodoro_minutes,
     note: "",
+    remindAt: row.remind_at ?? null,
+    remindSentAt: row.remind_sent_at ?? null,
   };
 }
 
@@ -39,6 +41,15 @@ export function taskItemToUpdateInput(
   if (patch.priority !== undefined) out.priority = patch.priority;
   if (patch.pomodoroMinutes !== undefined) {
     out.pomodoro_minutes = patch.pomodoroMinutes;
+  }
+  if (patch.remindAt !== undefined) {
+    out.remind_at = patch.remindAt;
+    if (patch.remindAt === null) {
+      out.remind_sent_at = null;
+    }
+  }
+  if (patch.remindSentAt !== undefined) {
+    out.remind_sent_at = patch.remindSentAt;
   }
   return out;
 }

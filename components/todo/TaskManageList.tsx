@@ -2,14 +2,17 @@
 
 import { useMemo } from "react";
 import TaskCard from "@/components/todo/TaskCard";
+import { useAuth } from "@/hooks/useAuth";
 import { formatSelectedDateDisplay } from "@/lib/task-utils";
 import { useTodoStore } from "@/store/todoStore";
 
 /** 桌面端：按日期分组的全局任务管理列表 */
 export default function TaskManageList() {
   const tasks = useTodoStore((s) => s.tasks);
+  const { isAuthenticated } = useAuth();
   const toggleTask = useTodoStore((s) => s.toggleTask);
   const editTask = useTodoStore((s) => s.editTask);
+  const setTaskRemind = useTodoStore((s) => s.setTaskRemind);
   const deleteTask = useTodoStore((s) => s.deleteTask);
 
   const grouped = useMemo(() => {
@@ -53,8 +56,12 @@ export default function TaskManageList() {
                 priority={item.priority}
                 pomodoroMinutes={item.pomodoroMinutes}
                 note={item.note}
+                remindAt={item.remindAt}
                 onToggle={() => toggleTask(item.id)}
                 onSave={(text) => editTask(item.id, text)}
+                onRemindChange={
+                  isAuthenticated ? (at) => setTaskRemind(item.id, at) : undefined
+                }
                 onDelete={() => deleteTask(item.id)}
               />
             ))}

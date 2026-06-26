@@ -15,10 +15,20 @@ type Props = {
   priority?: TaskPriority;
   pomodoroMinutes?: number;
   note?: string;
+  remindAt?: string | null;
   onToggle?: () => void;
   onSave?: (text: string) => void;
+  onRemindChange?: (remindAt: string | null) => void;
   onDelete?: () => void;
 };
+
+function toDatetimeLocalValue(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 export default function TaskCard({
   text,
@@ -27,8 +37,10 @@ export default function TaskCard({
   priority = "medium",
   pomodoroMinutes = 0,
   note = "",
+  remindAt = null,
   onToggle,
   onSave,
+  onRemindChange,
   onDelete,
 }: Props) {
   const catMeta = getCategoryMeta(category);
@@ -309,6 +321,32 @@ export default function TaskCard({
                 )}
               </button>
             </div>
+
+            {!done && onRemindChange && (
+              <div className="relative border-t border-orange-100/60 pt-3">
+                <label className="flex flex-col gap-1.5 text-xs text-stone-500">
+                  <span>微信提醒时间（需已在小程序授权，到点推送到微信）</span>
+                  <input
+                    type="datetime-local"
+                    className="w-full max-w-xs rounded-lg border border-orange-200 bg-white px-3 py-2 text-sm text-stone-700 outline-none focus:border-orange-400"
+                    value={toDatetimeLocalValue(remindAt)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (!raw) {
+                        onRemindChange(null);
+                        return;
+                      }
+                      const iso = new Date(raw).toISOString();
+                      if (new Date(iso).getTime() <= Date.now()) {
+                        window.alert("请选择将来的时间");
+                        return;
+                      }
+                      onRemindChange(iso);
+                    }}
+                  />
+                </label>
+              </div>
+            )}
           </>
         )}
       </div>

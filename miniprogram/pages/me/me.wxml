@@ -19,13 +19,19 @@
       <text class="notify-title">微信温柔提醒</text>
       <text class="notify-desc">可选开启，不会强压式催促</text>
       <view class="notify-row">
-        <text class="notify-label">每日待办摘要（约 8:00）</text>
+        <text class="notify-label">每日待办摘要</text>
         <switch
           checked="{{remindEnabled}}"
           disabled="{{notifyLoading}}"
           bindchange="onToggleRemind"
           color="#ea580c"
         />
+      </view>
+      <view class="notify-row notify-time-row" wx:if="{{remindEnabled}}">
+        <text class="notify-label">摘要发送时间</text>
+        <picker mode="time" value="{{remindTime}}" bindchange="onRemindTimeChange">
+          <text class="notify-time-value">{{remindTime}}</text>
+        </picker>
       </view>
       <view class="notify-row">
         <text class="notify-label">批量添加后通知</text>

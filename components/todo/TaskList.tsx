@@ -1,14 +1,17 @@
 "use client";
 
 import TaskCard from "@/components/todo/TaskCard";
+import { useAuth } from "@/hooks/useAuth";
 import { getTodayDateString } from "@/lib/task-utils";
 import { useTodoSelectors } from "@/hooks/useTodoSelectors";
 import { useTodoStore } from "@/store/todoStore";
 
 export default function TaskList() {
   const { tasksForSelectedDate, selectedDate } = useTodoSelectors();
+  const { isAuthenticated } = useAuth();
   const toggleTask = useTodoStore((s) => s.toggleTask);
   const editTask = useTodoStore((s) => s.editTask);
+  const setTaskRemind = useTodoStore((s) => s.setTaskRemind);
   const deleteTask = useTodoStore((s) => s.deleteTask);
 
   const isToday = selectedDate === getTodayDateString();
@@ -38,8 +41,12 @@ export default function TaskList() {
           priority={item.priority}
           pomodoroMinutes={item.pomodoroMinutes}
           note={item.note}
+          remindAt={item.remindAt}
           onToggle={() => toggleTask(item.id)}
           onSave={(text) => editTask(item.id, text)}
+          onRemindChange={
+            isAuthenticated ? (at) => setTaskRemind(item.id, at) : undefined
+          }
           onDelete={() => deleteTask(item.id)}
         />
       ))}

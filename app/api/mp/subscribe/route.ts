@@ -14,6 +14,7 @@ export async function POST(request: Request) {
       template_id?: string;
       status?: string;
       openid?: string;
+      task_id?: string;
     };
 
     const templateId = body.template_id?.trim();
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
       openid,
       templateId,
       status: body.status?.trim() || "accept",
+      taskId: body.task_id?.trim() || null,
     });
 
     return NextResponse.json({ ok: true });

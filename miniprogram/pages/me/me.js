@@ -10,6 +10,7 @@ Page({
     version: APP_VERSION,
     remindEnabled: false,
     instantOnAdd: false,
+    remindTime: "08:00",
     tmplDaily: "",
     tmplTaskAdded: "",
     notifyLoading: false,
@@ -17,15 +18,16 @@ Page({
 
   onShow() {
     setTabSelected(this, 3);
-    const loggedIn = auth.hasValidSession();
-    const session = loggedIn ? auth.getSession() : null;
-    const email = (session && session.user && session.user.email) || "";
-    this.setData({ loggedIn, email });
+    auth.ensureSession().then((session) => {
+      const loggedIn = !!session;
+      const email = (session && session.user && session.user.email) || "";
+      this.setData({ loggedIn, email });
 
-    if (loggedIn) {
-      this.loadNotifyPrefs();
-      this.loadSubscribeConfig();
-    }
+      if (loggedIn) {
+        this.loadNotifyPrefs();
+        this.loadSubscribeConfig();
+      }
+    });
   },
 
   loadSubscribeConfig() {
@@ -50,6 +52,7 @@ Page({
           this.setData({
             remindEnabled: !!body.prefs.remind_enabled,
             instantOnAdd: !!body.prefs.instant_on_add,
+            remindTime: body.prefs.remind_time || "08:00",
           });
         }
       })
@@ -108,6 +111,58 @@ Page({
       .catch(() => {
         this.setData({ notifyLoading: false });
         wx.showToast({ title: "设置失败", icon: "none" });
+      });
+  },
+
+  onRemindTimePick(e) {
+    if (!this.data.loggedIn) return;
+    const remindTime = (e.detail && e.detail.value) || "08:00";
+    this.saveNotifyPrefs({ remind_time: remindTime })
+      .then(() => {
+        this.setData({ remindTime });
+        wx.showToast({ title: "已更新提醒时间", icon: "none" });
+      })
+      .catch(() => {
+        wx.showToast({ title: "保存失败", icon: "none" });
+      });
+  },
+
+  onToggleRemind(e) {
+    if (!this.data.loggedIn) {
+      auth.navigateToLogin();
+      return;
+    }
+    const enabled = !!e.detail.value;
+    this.setData({ notifyLoading: true });
+    const run = enabled
+      ? this.requestSubscribe(this.data.tmplDaily)
+      : Promise.resolve("skip");
+
+    run
+      .then(() => this.saveNotifyPrefs({ remind_enabled: enabled }))
+      .then(() => {
+        this.setData({ remindEnabled: enabled, notifyLoading: false });
+        wx.showToast({
+          title: enabled ? "已开启每日提醒" : "已关闭",
+          icon: "none",
+        });
+      })
+      .catch(() => {
+        this.setData({ notifyLoading: false });
+        wx.showToast({ title: "设置失败", icon: "none" });
+      });
+  },
+
+  onRemindTimeChange(e) {
+    if (!this.data.loggedIn) return;
+    const remindTime = (e.detail && e.detail.value) || "08:00";
+    this.setData({ remindTime });
+    this.saveNotifyPrefs({ remind_time: remindTime })
+      .then(() => {
+        wx.showToast({ title: "提醒时间已更新", icon: "none" });
+      })
+      .catch(() => {
+        wx.showToast({ title: "保存失败", icon: "none" });
       });
   },
 
